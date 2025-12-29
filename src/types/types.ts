@@ -7,3 +7,10 @@ export interface Courses {
   videos: number;
   duration: string;
 }
+
+export interface UserType {
+  id: number;
+  name: string;
+  email: string;
+  role: "user" | "admin";
+}
