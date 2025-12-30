@@ -13,4 +13,5 @@ export interface UserType {
   name: string;
   email: string;
   role: "user" | "admin";
+  avatar?: string;
 }
