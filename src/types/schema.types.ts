@@ -26,7 +26,7 @@ export interface Lesson {
   title: string;
   description: string | null;
   course_id: number;
-  lesson_order: string;
+  lesson_order: number;
   video_url: string | null;
   video_duration: number | null;
   published: boolean;

@@ -1,8 +1,8 @@
-import { Courses } from "@/types/types";
+import { Course } from "@/types/schema.types";
 import { Clock, Eye, Play, Users } from "lucide-react";
 
 interface CourseCardProps {
-  course: Courses;
+  course: Course;
   onClick: () => void;
 }
 
@@ -26,11 +26,11 @@ const CourseCard = ({ course, onClick }: CourseCardProps) => {
         <div className="space-y-2 text-xs sm:text-sm text-gray-600 mb-4">
           <div className="flex items-center gap-2">
             <Play size={14} className="flex-shrink-0" />
-            <span>{course.videos} видео хичээл</span>
+            <span>{course.thumbnail_url} видео хичээл</span>
           </div>
           <div className="flex items-center gap-2">
             <Clock size={14} className="flex-shrink-0" />
-            <span>{course.duration}</span>
+            <span>{course.user_id}</span>
           </div>
           {/* <div className="flex items-center gap-2">
             <Eye size={14} className="flex-shrink-0" />
