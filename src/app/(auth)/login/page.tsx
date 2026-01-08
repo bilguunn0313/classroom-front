@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import { useUserContext } from "../../../lib/userProvider";
 import { authAPI } from "../../../lib/auth";
@@ -32,32 +31,63 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
+      // Clear any existing data first
+      localStorage.removeItem("token");
+      localStorage.removeItem("currentUser");
+
       const response = await authAPI.login(data.email, data.password);
 
+      console.log("📦 [LOGIN PAGE] Response received:", {
+        success: response.success,
+        hasToken: !!response.data?.token,
+        hasUser: !!response.data?.user,
+      });
+
       if (!response.success) {
+        console.error("❌ [LOGIN PAGE] Response not successful");
         throw new Error(response.message || "Login failed");
       }
 
+      // Store token
       localStorage.setItem("token", response.data.token);
+
+      // Verify token was stored
+      const storedToken = localStorage.getItem("token");
+
+      // Store user
+      localStorage.setItem("currentUser", JSON.stringify(response.data.user));
+
+      // Verify user was stored
+      const storedUser = localStorage.getItem("currentUser");
+
+      // Update context
       setUser(response.data.user);
 
-      const roleRoutes = {
-        admin: "/course",
-        user: "/course",
-      };
+      // Test the token immediately
+      try {
+        const testResponse = await authAPI.verify();
+        console.log("✅ [LOGIN PAGE] Token test successful:", testResponse);
+      } catch (testError) {
+        console.error("❌ [LOGIN PAGE] Token test FAILED:", testError);
+        console.error("⚠️ [LOGIN PAGE] This means the token doesn't work!");
+      }
 
-      router.push(
-        roleRoutes[response.data.user.role as keyof typeof roleRoutes] ||
-          "/course"
-      );
+      // Use replace to prevent back button issues
+      router.replace("/course");
     } catch (err) {
       if (err instanceof AxiosError) {
+        console.error("Status:", err.response?.status);
+        console.error("Response data:", err.response?.data);
+        console.error("Request URL:", err.config?.url);
+
         setError("root", {
           message: err.response?.data?.message || "Login failed",
         });
       } else if (err instanceof Error) {
+        console.error("Error message:", err.message);
         setError("root", { message: err.message });
       } else {
+        console.error("Unknown error type");
         setError("root", { message: "Something went wrong" });
       }
     }
@@ -65,14 +95,11 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full space-y-8">
+      <div className="max-w-md w-full space-y-8 rounded-lg border border-gray-200 shadow-sm p-8">
         <div>
           <h2 className="text-center text-3xl font-bold text-gray-900">
-            Sign in to your account
+            Cosmo Training
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Welcome back! Please enter your details.
-          </p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
@@ -86,8 +113,7 @@ export default function LoginPage() {
             <Input
               id="email"
               type="email"
-              label="Email address"
-              placeholder="you@example.com"
+              label="Имэйл"
               autoComplete="email"
               error={errors.email?.message}
               {...register("email")}
@@ -96,50 +122,17 @@ export default function LoginPage() {
             <Input
               id="password"
               type="password"
-              label="Password"
-              placeholder="••••••••"
+              label="Нууц үг"
               autoComplete="current-password"
               error={errors.password?.message}
               {...register("password")}
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                type="checkbox"
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label
-                htmlFor="remember-me"
-                className="ml-2 text-sm text-gray-900"
-              >
-                Remember me
-              </label>
-            </div>
-            <a
-              href="/forgot-password"
-              className="text-sm font-medium text-blue-600 hover:text-blue-500"
-            >
-              Forgot password?
-            </a>
-          </div>
-
           <Button type="submit" loading={isSubmitting}>
-            Sign in
+            Нэвтрэх
           </Button>
         </form>
-
-        <p className="text-center text-sm text-gray-600">
-          Don't have an account?{" "}
-          <a
-            href="/register"
-            className="font-medium text-blue-600 hover:text-blue-500"
-          >
-            Sign up
-          </a>
-        </p>
       </div>
     </div>
   );

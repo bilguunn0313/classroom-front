@@ -1,4 +1,3 @@
-import { refresh } from "next/cache";
 import api from "./axios";
 
 export const authAPI = {

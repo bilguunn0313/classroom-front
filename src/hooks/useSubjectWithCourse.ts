@@ -49,7 +49,7 @@ export function useSubjectWithCourse() {
         })
       );
 
-      const filtered = data.filter((item) => item.courses.length > 0);
+      const filtered = data.filter((item) => item.courses?.length > 0);
 
       setData(filtered);
     } catch (error) {
