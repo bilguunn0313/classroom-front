@@ -7,6 +7,7 @@ export const courseAPI = {
   },
   getByUser: async (userId: number) => {
     const res = await api.get(`/course/${userId}`);
+
     return res.data;
   },
   getById: async (id: number) => {
