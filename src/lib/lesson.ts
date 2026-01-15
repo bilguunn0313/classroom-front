@@ -17,7 +17,7 @@ export const lessonAPI = {
     description?: string | null;
     lessonOrder: number;
   }) => {
-    const res = await api.post("/lessonn", data);
+    const res = await api.post("/lesson/create", data);
     return res.data;
   },
 
@@ -29,7 +29,7 @@ export const lessonAPI = {
       lessonOrder: number;
     }
   ) => {
-    const res = await api.patch(`/lesson/${id}`, data);
+    const res = await api.patch(`/lesson/update/${id}`, data);
     return res.data;
   },
 
@@ -41,7 +41,7 @@ export const lessonAPI = {
     const formData = new FormData();
     formData.append("video", file);
 
-    const response = await api.post(`/lessons/${id}/upload-video`, formData, {
+    const response = await api.post(`/lesson/${id}/upload-video`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -64,6 +64,13 @@ export const lessonAPI = {
 
   delete: async (id: number) => {
     const res = await api.delete(`/lesson/${id}`);
+    return res.data;
+  },
+
+  reorder: async (courseId: number, lessonOrder: number[]) => {
+    const res = await api.patch(`/lesson/${courseId}/reorder`, {
+      lessonOrder,
+    });
     return res.data;
   },
 };

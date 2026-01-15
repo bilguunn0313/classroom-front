@@ -185,14 +185,14 @@ const Header = () => {
       </div>
 
       {/* HERO SECTION */}
-      <div className="container mx-auto px-4 py-12 sm:py-16 md:py-24 text-center">
+      {/* <div className="container mx-auto px-4 py-12 sm:py-16 md:py-24 text-center">
         <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3">
           Онлайн сургалтууд руу тавтай морил!
         </h1>
         <p className="text-sm sm:text-base md:text-lg opacity-90 max-w-2xl mx-auto">
           Та хүссэн үедээ, хүссэн газраасаа суралцаж, өөрийгөө хөгжүүлээрэй.
         </p>
-      </div>
+      </div> */}
 
       {/* MOBILE NAVIGATION */}
       {isMenuOpen && (

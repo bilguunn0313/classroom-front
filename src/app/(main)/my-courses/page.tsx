@@ -149,6 +149,20 @@ export default function MyCoursesPage() {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
+
+                    {!course.published && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 w-8 p-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePublish(course.id);
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
 
                   {/* Status badge */}

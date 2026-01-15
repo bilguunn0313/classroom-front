@@ -2,16 +2,16 @@ import api from "./axios";
 
 export const courseAPI = {
   getBySubject: async (subjectId: number) => {
-    const res = await api.get(`/course/${subjectId}`);
+    const res = await api.get(`/course/subject/${subjectId}`);
     return res.data;
   },
   getByUser: async (userId: number) => {
-    const res = await api.get(`/course/${userId}`);
+    const res = await api.get(`/course/user/${userId}`);
 
     return res.data;
   },
   getById: async (id: number) => {
-    const res = await api.get(`/course/${id}`);
+    const res = await api.get(`/course/detail/${id}`);
     return res.data;
   },
   create: async (data: {
@@ -38,7 +38,7 @@ export const courseAPI = {
     return res.data;
   },
   publish: async (id: number) => {
-    const res = await api.patch(`/course/${id}`);
+    const res = await api.patch(`/course/${id}/publish`);
     return res.data;
   },
   delete: async (id: number) => {

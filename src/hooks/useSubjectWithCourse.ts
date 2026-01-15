@@ -32,9 +32,13 @@ export function useSubjectWithCourse() {
         subjectResponse.data.map(async (subject: Subject) => {
           try {
             const courseResponse = await courseAPI.getBySubject(subject.id);
+            const publishedCourses = courseResponse.data.filter(
+              (c: Course) => c.published === true
+            );
             return {
               subject,
               course: courseResponse.success ? courseResponse.data : [],
+              publishedCourses,
             };
           } catch (error) {
             console.error(
@@ -49,7 +53,7 @@ export function useSubjectWithCourse() {
         })
       );
 
-      const filtered = data.filter((item) => item.courses?.length > 0);
+      const filtered = data.filter((item) => item.course?.length > 0);
 
       setData(filtered);
     } catch (error) {
