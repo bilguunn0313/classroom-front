@@ -13,18 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { lessonAPI } from "@/lib/lesson";
-
-interface Lesson {
-  id: number;
-  course_id: number;
-  title: string;
-  description: string | null;
-  video_url: string | null;
-  video_duration: number | null;
-  text: string | null;
-  lesson_order: number;
-  published: boolean;
-}
+import { Lesson } from "@/types/schema.types";
 
 interface DraggableLessonListProps {
   lessons: Lesson[];
@@ -32,7 +21,7 @@ interface DraggableLessonListProps {
   onLessonsReorder: (lessons: Lesson[]) => void;
   onEditLesson: (lessonId: number) => void;
   onDeleteLesson: (lessonId: number) => void;
-  onTogglePublish: (lesson: Lesson) => void;
+  onTogglePublish: (lesson: Lesson) => Promise<void> | void;
   formatDuration: (seconds: number | null) => string;
 }
 

@@ -2,7 +2,7 @@ import api from "./axios";
 
 export const lessonAPI = {
   getByCourse: async (course_id: number) => {
-    const res = await api.get(`/lesson/${course_id}`);
+    const res = await api.get(`/lesson/course/${course_id}`);
     return res.data;
   },
 
@@ -15,6 +15,9 @@ export const lessonAPI = {
     courseId: number;
     title: string;
     description?: string | null;
+    videoUrl?: string | null;
+    videoDuration?: number | null;
+    text?: string | null;
     lessonOrder: number;
   }) => {
     const res = await api.post("/lesson/create", data);
@@ -26,6 +29,9 @@ export const lessonAPI = {
     data: {
       title: string;
       description?: string | null;
+      videoUrl?: string | null;
+      videoDuration?: number | null;
+      text?: string | null;
       lessonOrder: number;
     }
   ) => {

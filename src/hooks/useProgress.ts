@@ -11,10 +11,14 @@ interface LessonProgress {
   last_position: number;
 }
 
+interface LocalProgress extends LessonProgress {
+  duration?: number; // Video duration for percentage calculation
+}
+
 interface UseProgressReturn {
-  progressMap: Map<number, LessonProgress>;
+  progressMap: Map<number, LocalProgress>;
   loading: boolean;
-  updateProgress: (lessonId: number, position: number) => Promise<void>;
+  updateProgress: (lessonId: number, position: number, duration?: number) => Promise<void>;
   markComplete: (lessonId: number) => Promise<void>;
   isCompleted: (lessonId: number) => boolean;
   getProgress: (lessonId: number) => number;
@@ -23,7 +27,7 @@ interface UseProgressReturn {
 }
 
 export function useProgress(courseId: number): UseProgressReturn {
-  const [progressMap, setProgressMap] = useState<Map<number, LessonProgress>>(
+  const [progressMap, setProgressMap] = useState<Map<number, LocalProgress>>(
     new Map()
   );
   const [loading, setLoading] = useState(true);
@@ -32,7 +36,7 @@ export function useProgress(courseId: number): UseProgressReturn {
     try {
       setLoading(true);
       const progressList = await lessonProgressAPI.getByCourse(courseId);
-      const map = new Map<number, LessonProgress>();
+      const map = new Map<number, LocalProgress>();
       progressList.forEach((p: LessonProgress) => {
         map.set(p.lesson_id, p);
       });
@@ -51,7 +55,7 @@ export function useProgress(courseId: number): UseProgressReturn {
   }, [courseId, fetchProgress]);
 
   const updateProgress = useCallback(
-    async (lessonId: number, position: number) => {
+    async (lessonId: number, position: number, duration?: number) => {
       try {
         const updated = await lessonProgressAPI.update(lessonId, {
           lastPosition: Math.floor(position),
@@ -59,7 +63,11 @@ export function useProgress(courseId: number): UseProgressReturn {
 
         setProgressMap((prev) => {
           const newMap = new Map(prev);
-          newMap.set(lessonId, updated);
+          const existing = prev.get(lessonId);
+          newMap.set(lessonId, {
+            ...updated,
+            duration: duration || existing?.duration,
+          });
           return newMap;
         });
       } catch (error) {
@@ -96,7 +104,13 @@ export function useProgress(courseId: number): UseProgressReturn {
   const getProgress = useCallback(
     (lessonId: number) => {
       const progress = progressMap.get(lessonId);
-      return progress?.completed ? 100 : 0;
+      if (!progress) return 0;
+      if (progress.completed) return 100;
+      // Calculate actual percentage if we have duration
+      if (progress.duration && progress.duration > 0) {
+        return Math.min(100, (progress.last_position / progress.duration) * 100);
+      }
+      return 0;
     },
     [progressMap]
   );

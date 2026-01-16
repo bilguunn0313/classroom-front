@@ -34,7 +34,7 @@ export default function UserContextProvider({
   children: React.ReactNode;
 }) {
   const [user, setUser] = useState<UserType | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
 
   useEffect(() => {

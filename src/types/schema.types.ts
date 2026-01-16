@@ -32,5 +32,5 @@ export interface Lesson {
   published: boolean;
   created_at: string;
   updated_at?: string;
-  text: string;
+  text: string | null;
 }
