@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { pdfAPI } from "@/lib/pdf";
 
 interface PdfMaterial {
   id: number;
@@ -20,14 +21,12 @@ interface PdfUploadZoneProps {
   lessonId: number;
   materials: PdfMaterial[];
   onMaterialsUpdate: (materials: PdfMaterial[]) => void;
-  uploadEndpoint?: string; // Your file upload API endpoint
 }
 
 export function PdfUploadZone({
   lessonId,
   materials,
   onMaterialsUpdate,
-  uploadEndpoint = "/api/upload/pdf",
 }: PdfUploadZoneProps) {
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
@@ -63,22 +62,7 @@ export function PdfUploadZone({
     setUploading(true);
 
     try {
-      // Upload file to your server/cloud storage
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("lessonId", lessonId.toString());
-
-      const response = await fetch(uploadEndpoint, {
-        method: "POST",
-        body: formData,
-        credentials: "include", // Include auth cookies
-      });
-
-      if (!response.ok) {
-        throw new Error("Upload failed");
-      }
-
-      const result = await response.json();
+      const result = await pdfAPI.uploadFile(lessonId, file, file.name);
       const newMaterial = result.data;
 
       onMaterialsUpdate([...materials, newMaterial]);
@@ -114,24 +98,7 @@ export function PdfUploadZone({
     setAddingUrl(true);
 
     try {
-      const response = await fetch(`/api/pdf-materials/lesson/${lessonId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          title: urlTitle,
-          fileUrl: urlLink,
-          fileSize: null,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to add PDF");
-      }
-
-      const result = await response.json();
+      const result = await pdfAPI.addByUrl(lessonId, urlTitle, urlLink, null);
       const newMaterial = result.data;
 
       onMaterialsUpdate([...materials, newMaterial]);
@@ -156,15 +123,7 @@ export function PdfUploadZone({
     setDeleting(materialId);
 
     try {
-      const response = await fetch(`/api/pdf-materials/${materialId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error("Delete failed");
-      }
-
+      await pdfAPI.delete(materialId);
       onMaterialsUpdate(materials.filter((m) => m.id !== materialId));
       toast.success("PDF амжилттай устгагдлаа");
     } catch (error) {

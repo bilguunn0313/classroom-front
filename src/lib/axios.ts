@@ -1,11 +1,22 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000",
   headers: {
     "Content-Type": "application/json",
   },
   timeout: 10000,
+});
+
+// Debug logging
+api.interceptors.request.use((config) => {
+  console.log("🌐 API Request:", {
+    method: config.method?.toUpperCase(),
+    url: config.url,
+    baseURL: config.baseURL,
+    fullURL: `${config.baseURL}${config.url}`,
+  });
+  return config;
 });
 
 let isRedirecting = false;

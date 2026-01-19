@@ -20,6 +20,7 @@ import { lessonAPI } from "@/lib/lesson";
 import { Lesson } from "@/types/schema.types";
 import { PdfUploadZone } from "./PdfUploadZone";
 import { Progress } from "@/components/ui/progress";
+import { pdfAPI } from "@/lib/pdf";
 
 interface CreateEditLessonDialogProps {
   courseId: number;
@@ -60,6 +61,11 @@ export function CreateEditLessonDialog({
         setVideoDuration(lesson.video_duration?.toString() || "");
         setText(lesson.text || "");
         setLessonOrder(lesson.lesson_order.toString());
+
+        // Load PDF materials for editing
+        if (lesson.id) {
+          loadPdfMaterials(lesson.id);
+        }
       } else {
         // Reset form for new lesson
         resetForm();
@@ -67,13 +73,26 @@ export function CreateEditLessonDialog({
     }
   }, [lesson, open]);
 
-  const handleVideoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const loadPdfMaterials = async (lessonId: number) => {
+    try {
+      const result = await pdfAPI.getByLesson(lessonId);
+      setPdfMaterials(result.data || []);
+    } catch (error) {
+      console.error("Error loading PDF materials:", error);
+    }
+  };
+
+  const handleVideoFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     // Check file size (max 500MB)
     if (file.size > 500 * 1024 * 1024) {
-      toast.error("Видео файл 500MB-аас бага байх ёстой. HandBrake ашиглан багасгана уу.");
+      toast.error(
+        "Видео файл 500MB-аас бага байх ёстой. HandBrake ашиглан багасгана уу.",
+      );
       e.target.value = "";
       return;
     }
@@ -94,7 +113,9 @@ export function CreateEditLessonDialog({
       const durationInSeconds = Math.round(video.duration);
       setVideoDuration(durationInSeconds.toString());
       window.URL.revokeObjectURL(video.src);
-      toast.success(`Видео хугацаа: ${Math.floor(durationInSeconds / 60)} мин ${durationInSeconds % 60} сек`);
+      toast.success(
+        `Видео хугацаа: ${Math.floor(durationInSeconds / 60)} мин ${durationInSeconds % 60} сек`,
+      );
     };
     video.onerror = () => {
       toast.error("Видео файлыг уншиж чадсангүй");
@@ -165,7 +186,9 @@ export function CreateEditLessonDialog({
       onSuccess();
       resetForm();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Хичээл хадгалахад алдаа гарлаа");
+      toast.error(
+        error.response?.data?.message || "Хичээл хадгалахад алдаа гарлаа",
+      );
     } finally {
       setSaving(false);
     }
@@ -248,7 +271,6 @@ export function CreateEditLessonDialog({
               />
             </div>
           </div>
-
           {/* Video Content */}
           <div className="border-t pt-6">
             <h4 className="font-semibold mb-4">Видео хуулах (заавал биш)</h4>
@@ -264,7 +286,8 @@ export function CreateEditLessonDialog({
                   disabled={uploading}
                 />
                 <p className="text-sm text-gray-500">
-                  💡 Зөвлөгөө: Том видео файлыг HandBrake программ ашиглан 720p чанарт багасгаарай
+                  💡 Зөвлөгөө: Том видео файлыг HandBrake программ ашиглан 720p
+                  чанарт багасгаарай
                 </p>
               </div>
 
@@ -279,7 +302,8 @@ export function CreateEditLessonDialog({
                         </p>
                         <p className="text-xs text-blue-700">
                           {(videoFile.size / (1024 * 1024)).toFixed(2)} MB
-                          {videoDuration && ` • ${Math.floor(parseInt(videoDuration) / 60)} мин ${parseInt(videoDuration) % 60} сек`}
+                          {videoDuration &&
+                            ` • ${Math.floor(parseInt(videoDuration) / 60)} мин ${parseInt(videoDuration) % 60} сек`}
                         </p>
                       </div>
                     </div>
@@ -290,7 +314,9 @@ export function CreateEditLessonDialog({
                       onClick={() => {
                         setVideoFile(null);
                         setVideoDuration("");
-                        const fileInput = document.getElementById("videoFile") as HTMLInputElement;
+                        const fileInput = document.getElementById(
+                          "videoFile",
+                        ) as HTMLInputElement;
                         if (fileInput) fileInput.value = "";
                       }}
                       disabled={uploading}
@@ -312,10 +338,11 @@ export function CreateEditLessonDialog({
               )}
             </div>
           </div>
-
           {/* Text Content - Optional */}
           <div className="border-t pt-6">
-            <h4 className="font-semibold mb-4">Нэмэлт текст контент (заавал биш)</h4>
+            <h4 className="font-semibold mb-4">
+              Нэмэлт текст контент (заавал биш)
+            </h4>
             <p className="text-sm text-gray-500 mb-3">
               Хичээлийн дэлгэрэнгүй тайлбар, код жишээ, тэмдэглэл гэх мэт
             </p>
@@ -332,8 +359,7 @@ export function CreateEditLessonDialog({
             </div>
           </div>
 
-          {/* PDF Materials - Disabled until backend API is ready */}
-          {/* {isEdit && lesson?.id && (
+          {isEdit && lesson?.id && (
             <div className="border-t pt-6">
               <PdfUploadZone
                 lessonId={lesson.id}
@@ -341,8 +367,7 @@ export function CreateEditLessonDialog({
                 onMaterialsUpdate={setPdfMaterials}
               />
             </div>
-          )} */}
-
+          )}
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t">
             <Button
@@ -355,15 +380,21 @@ export function CreateEditLessonDialog({
             </Button>
             <Button type="submit" disabled={saving || uploading}>
               <Save className="mr-2 h-4 w-4" />
-              {uploading ? "Видео хуулж байна..." : saving ? "Хадгалж байна..." : isEdit ? "Шинэчлэх" : "Үүсгэх"}
+              {uploading
+                ? "Видео хуулж байна..."
+                : saving
+                  ? "Хадгалж байна..."
+                  : isEdit
+                    ? "Шинэчлэх"
+                    : "Үүсгэх"}
             </Button>
           </div>
-
           {/* Note for new lessons */}
           {!isEdit && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-800">
-                💡 <strong>Анхаар:</strong> Хичээл нь зөвхөн видео, зөвхөн текст, эсвэл хоёуланд нь агуулгатай байж болно.
+                💡 <strong>Анхаар:</strong> Хичээл нь зөвхөн видео, зөвхөн
+                текст, эсвэл хоёуланд нь агуулгатай байж болно.
               </p>
             </div>
           )}

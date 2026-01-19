@@ -46,7 +46,7 @@ const Header = () => {
   };
 
   const handleSubjectClick = (subjectId: number) => {
-    router.push(`/subjects/${subjectId}/courses`);
+    router.push(`/subjects/${subjectId}`);
     setShowSubjectsDropdown(false);
     setIsMenuOpen(false);
   };

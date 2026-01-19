@@ -1,0 +1,49 @@
+import api from "./axios";
+
+export const pdfAPI = {
+  // Get all PDFs for a lesson
+  getByLesson: async (lessonId: number) => {
+    const res = await api.get(`/pdf/lesson/${lessonId}`);
+    return res.data;
+  },
+
+  // Upload PDF file
+  uploadFile: async (lessonId: number, file: File, title?: string) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("lessonId", lessonId.toString());
+    if (title) {
+      formData.append("title", title);
+    } else {
+      formData.append("title", file.name);
+    }
+
+    const res = await api.post(`/api/upload/pdf/${lessonId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return res.data;
+  },
+
+  // Add PDF by URL
+  addByUrl: async (
+    lessonId: number,
+    title: string,
+    fileUrl: string,
+    fileSize?: number | null,
+  ) => {
+    const res = await api.post(`/pdf-materials/lesson/${lessonId}`, {
+      title,
+      fileUrl,
+      fileSize: fileSize || null,
+    });
+    return res.data;
+  },
+
+  // Delete PDF material
+  delete: async (id: number) => {
+    const res = await api.delete(`/pdf/${id}`);
+    return res.data;
+  },
+};
