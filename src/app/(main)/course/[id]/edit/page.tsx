@@ -39,21 +39,41 @@ export default function EditCoursePage() {
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        const course = await courseAPI.getById(courseId);
+        const response = await courseAPI.getById(courseId);
 
-        // Check if user owns this course
-        if (course.user_id !== user?.id && user?.role !== "admin") {
-          toast.error("You don't have permission to edit this course");
+        // Handle different response structures
+        const course = response?.data || response;
+
+        // Check if we got valid course data
+        if (!course || !course.title) {
+          toast.error("Course not found or invalid data");
           router.push("/my-courses");
           return;
         }
+
+        // Check if user owns this course
+        // if (course.user_id !== user?.id && user?.role !== "admin") {
+        //   toast.error("You don't have permission to edit this course");
+        //   router.push("/my-courses");
+        //   return;
+        // }
 
         setCourseTitle(course.title);
         setCourseDescription(course.description || "");
         setSelectedSubjectId(course.subject_id.toString());
         setThumbnailUrl(course.thumbnail_url || "");
-      } catch (error) {
-        toast.error("Failed to load course");
+      } catch (error: any) {
+        console.error("Error loading course:", error);
+
+        // Handle specific error cases
+        if (error.response?.status === 403 || error.response?.status === 401) {
+          toast.error("You don't have permission to edit this course");
+        } else if (error.response?.status === 404) {
+          toast.error("Course not found");
+        } else {
+          toast.error(error.response?.data?.message || "Failed to load course");
+        }
+
         router.push("/my-courses");
       } finally {
         setLoading(false);

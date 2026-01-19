@@ -52,10 +52,10 @@ export function ManageLessonsDialog({
   const handleDelete = async (id: number) => {
     try {
       await lessonAPI.delete(id);
-      toast.success("Lesson deleted successfully");
+      toast.success("Хичээл амжилттай устгагдлаа");
       onLessonsUpdate();
     } catch (error) {
-      toast.error("Failed to delete lesson");
+      toast.error("Хичээл устгахад алдаа гарлаа");
     } finally {
       setDeleteId(null);
     }
@@ -64,14 +64,14 @@ export function ManageLessonsDialog({
   const handlePublish = async (lesson: Lesson) => {
     try {
       if (lesson.published) {
-        toast.error("Cannot unpublish lessons yet");
+        toast.error("Нийтлэгдсэн хичээлийг буцааж хаах боломжгүй");
         return;
       }
       await lessonAPI.publish(lesson.id);
-      toast.success("Lesson published successfully");
+      toast.success("Хичээл амжилттай нийтлэгдлээ");
       onLessonsUpdate();
     } catch (error) {
-      toast.error("Failed to publish lesson");
+      toast.error("Хичээл нийтлэхэд алдаа гарлаа");
     }
   };
 
@@ -81,14 +81,14 @@ export function ManageLessonsDialog({
         <DialogTrigger asChild>
           <Button variant="outline" size="sm">
             <Settings className="h-4 w-4 mr-2" />
-            Manage Lessons
+            Хичээл удирдах
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Manage Course Lessons</DialogTitle>
+            <DialogTitle>Сургалтын хичээлүүд удирдах</DialogTitle>
             <DialogDescription>
-              Add, edit, reorder, or delete lessons for this course
+              Хичээл нэмэх, засах, дараалал өөрчлөх эсвэл устгах
             </DialogDescription>
           </DialogHeader>
 
@@ -96,7 +96,7 @@ export function ManageLessonsDialog({
             {/* Header Actions */}
             <div className="flex justify-between items-center">
               <p className="text-sm text-gray-600">
-                {lessons.length} lesson{lessons.length !== 1 ? "s" : ""}
+                Нийт {lessons.length} хичээл
               </p>
               <CreateEditLessonDialog
                 courseId={courseId}
@@ -106,7 +106,7 @@ export function ManageLessonsDialog({
                 trigger={
                   <Button size="sm">
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Lesson
+                    Хичээл нэмэх
                   </Button>
                 }
               />
@@ -115,9 +115,9 @@ export function ManageLessonsDialog({
             {/* Lessons List */}
             {lessons.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                <p>No lessons yet</p>
+                <p>Одоогоор хичээл байхгүй байна</p>
                 <p className="text-sm mt-2">
-                  Click "Add Lesson" to get started
+                  "Хичээл нэмэх" товчийг дарж эхлээрэй
                 </p>
               </div>
             ) : (
@@ -142,10 +142,10 @@ export function ManageLessonsDialog({
                         {lesson.published ? (
                           <span className="text-green-600 flex items-center gap-1">
                             <Eye className="h-3 w-3" />
-                            Published
+                            Нийтлэгдсэн
                           </span>
                         ) : (
-                          <span className="text-yellow-600">Draft</span>
+                          <span className="text-yellow-600">Ноорог</span>
                         )}
                       </div>
                     </div>
@@ -199,19 +199,18 @@ export function ManageLessonsDialog({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Lesson?</AlertDialogTitle>
+            <AlertDialogTitle>Хичээл устгах уу?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. The lesson and all its data will be
-              permanently deleted.
+              Энэ үйлдлийг буцаах боломжгүй. Хичээл болон түүний бүх өгөгдөл бүрмөсөн устгагдана.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Цуцлах</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteId && handleDelete(deleteId)}
               className="bg-red-600 hover:bg-red-700"
             >
-              Delete
+              Устгах
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

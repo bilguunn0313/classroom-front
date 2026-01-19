@@ -29,7 +29,7 @@ interface PdfMaterial {
 export default function CreateEditLessonPage() {
   const router = useRouter();
   const params = useParams();
-  const courseId = parseInt(params.courseId as string);
+  const courseId = parseInt(params.id as string);
   const lessonId = params.lessonId ? parseInt(params.lessonId as string) : null;
   const isEdit = !!lessonId;
 

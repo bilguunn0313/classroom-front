@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Plus, Video } from "lucide-react";
 import { toast } from "sonner";
 import { DraggableLessonList } from "@/components/lesson/DraggableLessonList";
+import { CreateEditLessonDialog } from "@/components/lesson/CreateEditLessonDialog";
 import { Lesson } from "@/types/schema.types";
 
 interface Course {
@@ -65,6 +66,19 @@ export default function ManageLessonsPage() {
 
   const handleLessonsReorder = (reorderedLessons: Lesson[]) => {
     setLessons(reorderedLessons);
+  };
+
+  const handleLessonUpdate = async () => {
+    try {
+      const lessonsData = await lessonAPI.getByCourse(courseId);
+      setLessons(
+        lessonsData.sort(
+          (a: Lesson, b: Lesson) => a.lesson_order - b.lesson_order
+        )
+      );
+    } catch (error) {
+      toast.error("Failed to refresh lessons");
+    }
   };
 
   const handleDeleteLesson = async (lessonId: number) => {
@@ -140,14 +154,16 @@ export default function ManageLessonsPage() {
                   </h1>
                   <p className="text-gray-600 mt-1">{course?.title}</p>
                 </div>
-                <Button
-                  onClick={() =>
-                    router.push(`/course/${courseId}/lesson/create`)
+                <CreateEditLessonDialog
+                  courseId={courseId}
+                  onSuccess={handleLessonUpdate}
+                  trigger={
+                    <Button>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Хичээл нэмэх
+                    </Button>
                   }
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Хичээл нэмэх
-                </Button>
+                />
               </div>
 
               {lessons.length === 0 ? (
@@ -156,14 +172,16 @@ export default function ManageLessonsPage() {
                   <p className="text-gray-600 mb-4">
                     Одоогоор хичээл байхгүй байна
                   </p>
-                  <Button
-                    onClick={() =>
-                      router.push(`/course/${courseId}/lesson/create`)
+                  <CreateEditLessonDialog
+                    courseId={courseId}
+                    onSuccess={handleLessonUpdate}
+                    trigger={
+                      <Button>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Анхны хичээлээ нэмэх
+                      </Button>
                     }
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Анхны хичээлээ нэмэх
-                  </Button>
+                  />
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -179,7 +197,7 @@ export default function ManageLessonsPage() {
                     courseId={courseId}
                     onLessonsReorder={handleLessonsReorder}
                     onEditLesson={(lessonId) =>
-                      router.push(`/course/${courseId}/lesson/${lessonId}/edit`)
+                      router.push(`/course/${courseId}/lessons/${lessonId}/edit`)
                     }
                     onDeleteLesson={handleDeleteLesson}
                     onTogglePublish={handleTogglePublish}

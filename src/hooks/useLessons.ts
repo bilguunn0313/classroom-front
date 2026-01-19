@@ -35,9 +35,12 @@ export function useLessons(courseId: number): useLessonsReturn {
     try {
       setLoading(true);
       setError(null);
-      const res = await lessonAPI.getByCourse(courseId);
+      const response = await lessonAPI.getByCourse(courseId);
 
-      const sorted = res.data.sort(
+      // Handle different response structures
+      const lessonsData = response?.data || response || [];
+
+      const sorted = (Array.isArray(lessonsData) ? lessonsData : []).sort(
         (a: Lesson, b: Lesson) => a.lesson_order - b.lesson_order
       );
       setLessons(sorted);
@@ -47,7 +50,12 @@ export function useLessons(courseId: number): useLessonsReturn {
       }
     } catch (error: any) {
       console.error("Error fetching lessons:", error);
-      setError(error.message || "Failed to load lessons");
+      // Don't set error if it's just an empty result
+      if (error.response?.status !== 404) {
+        setError(error.message || "Failed to load lessons");
+      } else {
+        setLessons([]);
+      }
     } finally {
       setLoading(false);
     }

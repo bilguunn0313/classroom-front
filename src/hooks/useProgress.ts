@@ -37,12 +37,19 @@ export function useProgress(courseId: number): UseProgressReturn {
       setLoading(true);
       const progressList = await lessonProgressAPI.getByCourse(courseId);
       const map = new Map<number, LocalProgress>();
-      progressList.forEach((p: LessonProgress) => {
-        map.set(p.lesson_id, p);
-      });
+      if (Array.isArray(progressList)) {
+        progressList.forEach((p: LessonProgress) => {
+          map.set(p.lesson_id, p);
+        });
+      }
       setProgressMap(map);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to fetch progress:", error);
+      // It's OK if there's no progress yet (empty course or new user)
+      if (error.response?.status !== 404) {
+        console.warn("Unexpected error fetching progress:", error.message);
+      }
+      setProgressMap(new Map());
     } finally {
       setLoading(false);
     }

@@ -33,8 +33,19 @@ export function useCourse(courseId: number): UseCourseReturn {
     try {
       setLoading(true);
       setError(null);
-      const data = await courseAPI.getById(courseId);
-      setCourse(data);
+      const response = await courseAPI.getById(courseId);
+
+      // Handle different response structures from backend
+      // Backend might return { success, data } or just the course object
+      const courseData = response?.data || response;
+
+      console.log("Course data loaded:", courseData); // Debug log
+
+      if (!courseData || !courseData.id) {
+        throw new Error("Invalid course data received");
+      }
+
+      setCourse(courseData);
     } catch (err: any) {
       console.error("Failed to fetch course:", err);
       setError(err.message || "Failed to load course");

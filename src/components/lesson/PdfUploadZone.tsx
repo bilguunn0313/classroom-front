@@ -49,14 +49,14 @@ export function PdfUploadZone({
 
     // Validate file type
     if (file.type !== "application/pdf") {
-      toast.error("Only PDF files are allowed");
+      toast.error("Зөвхөн PDF файл оруулах боломжтой");
       return;
     }
 
     // Validate file size (max 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      toast.error("File size must be less than 10MB");
+      toast.error("PDF файл 10MB-аас бага байх ёстой");
       return;
     }
 
@@ -82,7 +82,7 @@ export function PdfUploadZone({
       const newMaterial = result.data;
 
       onMaterialsUpdate([...materials, newMaterial]);
-      toast.success("PDF uploaded successfully");
+      toast.success("PDF амжилттай хуулагдлаа");
 
       // Reset file input
       if (fileInputRef.current) {
@@ -90,7 +90,7 @@ export function PdfUploadZone({
       }
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Failed to upload PDF");
+      toast.error("PDF хуулахад алдаа гарлаа");
     } finally {
       setUploading(false);
     }
@@ -99,7 +99,7 @@ export function PdfUploadZone({
   // Handle URL-based PDF addition
   const handleAddUrl = async () => {
     if (!urlTitle.trim() || !urlLink.trim()) {
-      toast.error("Title and URL are required");
+      toast.error("Гарчиг болон URL заавал оруулна уу");
       return;
     }
 
@@ -107,7 +107,7 @@ export function PdfUploadZone({
     try {
       new URL(urlLink);
     } catch {
-      toast.error("Invalid URL");
+      toast.error("Буруу URL хаяг");
       return;
     }
 
@@ -135,7 +135,7 @@ export function PdfUploadZone({
       const newMaterial = result.data;
 
       onMaterialsUpdate([...materials, newMaterial]);
-      toast.success("PDF added successfully");
+      toast.success("PDF амжилттай нэмэгдлээ");
 
       // Reset form
       setUrlTitle("");
@@ -143,7 +143,7 @@ export function PdfUploadZone({
       setShowUrlInput(false);
     } catch (error) {
       console.error("Add URL error:", error);
-      toast.error("Failed to add PDF");
+      toast.error("PDF нэмэхэд алдаа гарлаа");
     } finally {
       setAddingUrl(false);
     }
@@ -151,7 +151,7 @@ export function PdfUploadZone({
 
   // Handle delete
   const handleDelete = async (materialId: number) => {
-    if (!confirm("Are you sure you want to delete this PDF?")) return;
+    if (!confirm("PDF файлыг устгах уу?")) return;
 
     setDeleting(materialId);
 
@@ -166,10 +166,10 @@ export function PdfUploadZone({
       }
 
       onMaterialsUpdate(materials.filter((m) => m.id !== materialId));
-      toast.success("PDF deleted successfully");
+      toast.success("PDF амжилттай устгагдлаа");
     } catch (error) {
       console.error("Delete error:", error);
-      toast.error("Failed to delete PDF");
+      toast.error("PDF устгахад алдаа гарлаа");
     } finally {
       setDeleting(null);
     }
@@ -312,15 +312,15 @@ export function PdfUploadZone({
         {uploading ? (
           <>
             <Loader2 className="mx-auto h-12 w-12 text-blue-600 animate-spin mb-3" />
-            <p className="text-sm text-gray-600">Uploading PDF...</p>
+            <p className="text-sm text-gray-600">PDF хуулж байна...</p>
           </>
         ) : (
           <>
             <Upload className="mx-auto h-12 w-12 text-gray-400 mb-3" />
             <p className="text-sm text-gray-600 mb-1">
-              Click to upload or drag and drop
+              Дарж файл сонгох эсвэл чирж оруулах
             </p>
-            <p className="text-xs text-gray-500">PDF files only (max 10MB)</p>
+            <p className="text-xs text-gray-500">Зөвхөн PDF файл (MAX 10MB)</p>
           </>
         )}
       </div>
@@ -329,7 +329,7 @@ export function PdfUploadZone({
       {materials.length > 0 && (
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-gray-700">
-            Uploaded Materials ({materials.length})
+            Хуулагдсан материалууд ({materials.length})
           </h4>
           <div className="space-y-2">
             {materials.map((material) => (

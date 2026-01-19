@@ -110,6 +110,20 @@ const CourseDetailPage = () => {
     ? lessons
     : lessons.filter((l) => l.published);
 
+  // Helper function to get full video URL
+  const getFullVideoUrl = (videoUrl: string | null) => {
+    if (!videoUrl) return null;
+
+    // If URL is already absolute (starts with http/https), return as is
+    if (videoUrl.startsWith("http://") || videoUrl.startsWith("https://")) {
+      return videoUrl;
+    }
+
+    // Otherwise, prepend the API base URL
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+    return `${apiUrl}${videoUrl.startsWith("/") ? "" : "/"}${videoUrl}`;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -117,7 +131,7 @@ const CourseDetailPage = () => {
         <div className="container mx-auto px-4 py-12 flex justify-center items-center min-h-[60vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading course...</p>
+            <p className="text-gray-600">Сургалт ачааллаж байна...</p>
           </div>
         </div>
         <Footer />
@@ -131,8 +145,8 @@ const CourseDetailPage = () => {
         <Header />
         <div className="container mx-auto px-4 py-12">
           <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg max-w-2xl mx-auto">
-            <p className="font-semibold">Error</p>
-            <p>{courseError || "Course not found"}</p>
+            <p className="font-semibold">Алдаа</p>
+            <p>{courseError || "Сургалт олдсонгүй"}</p>
           </div>
         </div>
         <Footer />
@@ -152,7 +166,7 @@ const CourseDetailPage = () => {
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
           >
             <ArrowLeft size={20} />
-            <span className="text-sm md:text-base">Back to courses</span>
+            <span className="text-sm md:text-base">Буцах</span>
           </button>
 
           {/* Show Manage button if owner */}
@@ -173,7 +187,7 @@ const CourseDetailPage = () => {
             className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg flex items-center justify-between hover:bg-blue-700 transition-colors"
           >
             <span className="font-medium">
-              Course Content ({visibleLessons.length} lessons)
+              Хичээлүүд ({visibleLessons.length} хичээл)
             </span>
             <BookOpen size={20} />
           </button>
@@ -187,7 +201,7 @@ const CourseDetailPage = () => {
               {selectedLesson?.video_url ? (
                 <video
                   ref={videoRef}
-                  src={selectedLesson.video_url}
+                  src={getFullVideoUrl(selectedLesson.video_url)}
                   controls
                   className="w-full h-full"
                   controlsList="nodownload"
@@ -195,9 +209,10 @@ const CourseDetailPage = () => {
                   onLoadedMetadata={handleLoadedMetadata}
                   onError={(e) => {
                     console.error("Video error:", e);
+                    console.error("Video URL:", getFullVideoUrl(selectedLesson.video_url));
                   }}
                 >
-                  Your browser does not support the video tag.
+                  Таны браузер видео дэмжихгүй байна.
                 </video>
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-white">
@@ -207,7 +222,7 @@ const CourseDetailPage = () => {
                       className="mx-auto mb-4 opacity-50 md:w-16 md:h-16"
                     />
                     <p className="text-sm md:text-lg">
-                      Select a lesson to start learning
+                      Хичээл сонгож суралцаж эхлээрэй
                     </p>
                   </div>
                 </div>
@@ -224,7 +239,7 @@ const CourseDetailPage = () => {
                   {isCompleted(selectedLesson.id) && (
                     <span className="flex items-center gap-1 text-green-600 text-sm whitespace-nowrap">
                       <CheckCircle size={18} />
-                      Completed
+                      Дууссан
                     </span>
                   )}
                 </div>
@@ -240,7 +255,7 @@ const CourseDetailPage = () => {
                   </div>
                   <div className="flex items-center gap-1">
                     <BookOpen size={16} />
-                    <span>Lesson {selectedLesson.lesson_order}</span>
+                    <span>{selectedLesson.lesson_order}-р хичээл</span>
                   </div>
                   {getProgress(selectedLesson.id) > 0 && (
                     <div className="flex items-center gap-2">
@@ -260,7 +275,7 @@ const CourseDetailPage = () => {
                 {/* Lesson Text Content */}
                 {selectedLesson.text && (
                   <div className="mt-6 pt-6 border-t border-gray-200">
-                    <h3 className="text-lg font-semibold mb-3">Lesson Notes</h3>
+                    <h3 className="text-lg font-semibold mb-3">Хичээлийн тэмдэглэл</h3>
                     <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap">
                       {selectedLesson.text}
                     </div>
@@ -272,10 +287,10 @@ const CourseDetailPage = () => {
             {/* Course Overview */}
             <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
               <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-3 md:mb-4">
-                About this course
+                Сургалтын тухай
               </h3>
               <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">
-                {course.description || "No description available."}
+                {course.description || "Тайлбар байхгүй байна."}
               </p>
 
               <div className="grid grid-cols-2 gap-3 md:gap-4">
@@ -285,7 +300,7 @@ const CourseDetailPage = () => {
                     {visibleLessons.length}
                   </div>
                   <div className="text-xs md:text-sm text-gray-600">
-                    Lessons
+                    Хичээл
                   </div>
                 </div>
                 <div className="text-center p-3 md:p-4 bg-green-50 rounded-lg">
@@ -294,15 +309,15 @@ const CourseDetailPage = () => {
                     {totalFormatted}
                   </div>
                   <div className="text-xs md:text-sm text-gray-600">
-                    Duration
+                    Хугацаа
                   </div>
                 </div>
                 <div className="text-center p-3 md:p-4 bg-purple-50 rounded-lg">
                   <User className="mx-auto mb-2 text-purple-600" size={20} />
                   <div className="text-xs md:text-sm font-medium text-gray-900 truncate px-1">
-                    {course.user_name || "Instructor"}
+                    {course.user_name || "Багш"}
                   </div>
-                  <div className="text-xs text-gray-600">Teacher</div>
+                  <div className="text-xs text-gray-600">Багш</div>
                 </div>
                 <div className="text-center p-3 md:p-4 bg-orange-50 rounded-lg">
                   <BookOpen
@@ -310,9 +325,9 @@ const CourseDetailPage = () => {
                     size={20}
                   />
                   <div className="text-xs md:text-sm font-medium text-gray-900 truncate px-1">
-                    {course.subject_name || "Subject"}
+                    {course.subject_name || "Сэдэв"}
                   </div>
-                  <div className="text-xs text-gray-600">Category</div>
+                  <div className="text-xs text-gray-600">Ангилал</div>
                 </div>
               </div>
             </div>
@@ -323,10 +338,10 @@ const CourseDetailPage = () => {
             <div className="bg-white rounded-lg shadow-sm sticky top-6">
               <div className="p-4 border-b border-gray-200">
                 <h3 className="text-lg font-bold text-gray-900">
-                  Course Content
+                  Хичээлүүд
                 </h3>
                 <p className="text-sm text-gray-600 mt-1">
-                  {visibleLessons.length} lessons • {totalFormatted}
+                  {visibleLessons.length} хичээл • {totalFormatted}
                 </p>
               </div>
 
@@ -334,7 +349,7 @@ const CourseDetailPage = () => {
                 {visibleLessons.length === 0 ? (
                   <div className="p-6 text-center text-gray-500">
                     <BookOpen size={48} className="mx-auto mb-3 opacity-30" />
-                    <p>No lessons available yet</p>
+                    <p>Одоогоор хичээл байхгүй байна</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-100">
@@ -364,10 +379,10 @@ const CourseDetailPage = () => {
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <div>
                 <h3 className="text-lg font-bold text-gray-900">
-                  Course Content
+                  Хичээлүүд
                 </h3>
                 <p className="text-sm text-gray-600">
-                  {visibleLessons.length} lessons • {totalFormatted}
+                  {visibleLessons.length} хичээл • {totalFormatted}
                 </p>
               </div>
               <button
@@ -484,12 +499,12 @@ const LessonItem = ({
 
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs text-gray-400">
-              Lesson {lesson.lesson_order}
+              {lesson.lesson_order}-р хичээл
             </span>
             {lesson.published && (
               <span className="text-xs text-green-600 flex items-center gap-1">
                 <CheckCircle size={12} />
-                Published
+                Нийтлэгдсэн
               </span>
             )}
           </div>
