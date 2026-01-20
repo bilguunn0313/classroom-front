@@ -11,13 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Settings,
-  Plus,
-  Pencil,
-  Trash2,
-  Eye,
-} from "lucide-react";
+import { Settings, Plus, Pencil, Trash2, Eye } from "lucide-react";
 import { Lesson } from "@/types/schema.types";
 import { lessonAPI } from "@/lib/lesson";
 import { toast } from "sonner";
@@ -151,7 +145,7 @@ export function ManageLessonsDialog({
                     </div>
 
                     {/* Actions */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 group-hover:opacity-100 transition-opacity">
                       <CreateEditLessonDialog
                         courseId={courseId}
                         lesson={lesson}
@@ -159,7 +153,7 @@ export function ManageLessonsDialog({
                           onLessonsUpdate();
                         }}
                         trigger={
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" title="Засах">
                             <Pencil className="h-4 w-4" />
                           </Button>
                         }
@@ -169,6 +163,7 @@ export function ManageLessonsDialog({
                         <Button
                           variant="ghost"
                           size="sm"
+                          title="Нийтлэх"
                           onClick={() => handlePublish(lesson)}
                         >
                           <Eye className="h-4 w-4" />
@@ -178,6 +173,7 @@ export function ManageLessonsDialog({
                       <Button
                         variant="ghost"
                         size="sm"
+                        title="Устгах"
                         onClick={() => setDeleteId(lesson.id)}
                       >
                         <Trash2 className="h-4 w-4 text-red-500" />
@@ -187,7 +183,6 @@ export function ManageLessonsDialog({
                 ))}
               </div>
             )}
-
           </div>
         </DialogContent>
       </Dialog>
@@ -201,7 +196,8 @@ export function ManageLessonsDialog({
           <AlertDialogHeader>
             <AlertDialogTitle>Хичээл устгах уу?</AlertDialogTitle>
             <AlertDialogDescription>
-              Энэ үйлдлийг буцаах боломжгүй. Хичээл болон түүний бүх өгөгдөл бүрмөсөн устгагдана.
+              Энэ үйлдлийг буцаах боломжгүй. Хичээл болон түүний бүх өгөгдөл
+              бүрмөсөн устгагдана.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

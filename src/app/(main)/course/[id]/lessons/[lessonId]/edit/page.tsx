@@ -69,7 +69,7 @@ export default function CreateEditLessonPage() {
           try {
             const response = await fetch(
               `/api/pdf-materials/lesson/${lessonId}`,
-              { credentials: "include" }
+              { credentials: "include" },
             );
             if (response.ok) {
               const result = await response.json();
@@ -278,7 +278,7 @@ export default function CreateEditLessonPage() {
                 </div>
 
                 {/* PDF Materials - Only show when editing */}
-                {isEdit && lessonId && (
+                {lessonId && (
                   <div className="border-t pt-6">
                     <PdfUploadZone
                       lessonId={lessonId}

@@ -246,6 +246,7 @@ export function DraggableLessonList({
                     <Button
                       size="sm"
                       variant="outline"
+                      title="Хичээл засах"
                       onClick={(e) => {
                         e.stopPropagation();
                         onEditLesson(lesson.id);
@@ -259,6 +260,7 @@ export function DraggableLessonList({
                       <Button
                         size="sm"
                         variant="outline"
+                        title="Хичээл нийтлэх"
                         onClick={(e) => {
                           e.stopPropagation();
                           onTogglePublish(lesson);
@@ -272,6 +274,7 @@ export function DraggableLessonList({
                     <Button
                       size="sm"
                       variant="outline"
+                      title="Хичээл устгах"
                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       onClick={(e) => {
                         e.stopPropagation();

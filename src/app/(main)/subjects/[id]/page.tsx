@@ -46,9 +46,9 @@ export default function SubjectCoursesPage() {
 
         // Filter only published courses for students
         const allCourses = coursesResult.data || coursesResult;
-        const publishedCourses = (Array.isArray(allCourses) ? allCourses : []).filter(
-          (course: Course) => course.published
-        );
+        const publishedCourses = (
+          Array.isArray(allCourses) ? allCourses : []
+        ).filter((course: Course) => course.published);
         setCourses(publishedCourses);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -90,9 +90,6 @@ export default function SubjectCoursesPage() {
                 {subject?.description && (
                   <p className="text-gray-600">{subject.description}</p>
                 )}
-                <p className="text-sm text-gray-500 mt-2">
-                  {courses.length} сургалт
-                </p>
               </div>
 
               {courses.length === 0 ? (

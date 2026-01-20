@@ -52,26 +52,27 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white">
+    <header className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 shadow-md border-b border-blue-900">
       {/* NAV BAR */}
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+      <div className="container mx-auto px-4 ">
+        <div className="flex items-center justify-between h-16 md:h-18">
           {/* Logo - LEFT */}
-          <div className="text-xl sm:text-2xl font-bold">
+          <div className="text-xl sm:text-2xl font-bold cursor-pointer">
             <img
               src="/cosmo-logo.png"
               alt="Logo"
-              className="w-[120px] cursor-pointer"
+              className="w-[140px] cursor-pointer"
               onClick={() => router.push(`/course`)}
             />
           </div>
 
           {/* Desktop Navigation - RIGHT */}
-          <nav className="hidden lg:flex items-center gap-6">
+          <nav className="hidden lg:flex items-center gap-8 ">
             {/* Subjects Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger className="focus:outline-none">
-                <div className="flex items-center gap-1 hover:text-blue-200 transition-colors cursor-pointer">
+                <div className="flex items-center gap-1 text-white hover:text-blue-200 transition-colors cursor-pointer font-medium ">
+                  <BookOpen size={18} />
                   <span>Сэдвүүд</span>
                   <ChevronDown size={16} />
                 </div>
@@ -95,7 +96,7 @@ const Header = () => {
                     <DropdownMenuItem
                       key={subject.id}
                       onClick={() => handleSubjectClick(subject.id)}
-                      className="cursor-pointer"
+                      className="cursor-pointer border-b border-gray-100 last:border-0 hover:bg-blue-50"
                     >
                       <div className="flex flex-col">
                         <span className="font-medium">{subject.title}</span>
@@ -115,16 +116,20 @@ const Header = () => {
               // User Menu
               <DropdownMenu>
                 <DropdownMenuTrigger className="focus:outline-none">
-                  <div className="flex items-center gap-2 cursor-pointer">
-                    <Avatar className="h-9 w-9 border-2 border-white">
+                  <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+                    <Avatar className="h-10 w-10 border-2 border-white ring-2 ring-blue-400/50">
                       <AvatarImage src={user?.avatar_url} />
-                      <AvatarFallback className="bg-blue-500 text-white">
+                      <AvatarFallback className="bg-gradient-to-br from-blue-400 to-blue-600 text-white font-semibold">
                         {user?.name ? getInitials(user.name) : "U"}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm font-medium hidden xl:block">
+                    <span className="text-sm font-medium text-white hidden xl:block">
                       {user?.name}
                     </span>
+                    <ChevronDown
+                      size={16}
+                      className="text-white hidden xl:block"
+                    />
                   </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
@@ -137,10 +142,7 @@ const Header = () => {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => router.push("/profile")}>
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </DropdownMenuItem>
+
                   <DropdownMenuItem onClick={() => router.push("/my-courses")}>
                     <BookOpen className="mr-2 h-4 w-4" />
                     <span>Миний сургалтууд</span>
@@ -167,7 +169,7 @@ const Header = () => {
               // Login Button
               <button
                 onClick={() => router.push("/login")}
-                className="bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100 transition-colors"
+                className="bg-white text-blue-700 px-6 py-2.5 rounded-lg font-medium hover:bg-blue-50 transition-all shadow-md hover:shadow-lg"
               >
                 Нэвтрэх | Бүртгүүлэх
               </button>
@@ -176,7 +178,7 @@ const Header = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className="lg:hidden"
+            className="lg:hidden p-2 rounded-lg hover:bg-blue-500/50 transition-colors text-white"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -196,15 +198,18 @@ const Header = () => {
 
       {/* MOBILE NAVIGATION */}
       {isMenuOpen && (
-        <div className="lg:hidden border-t border-blue-500/40">
+        <div className="lg:hidden border-t border-blue-500/40 bg-blue-700">
           <nav className="container mx-auto px-4 py-4 flex flex-col gap-3">
             {/* Mobile Subjects Accordion */}
-            <div>
+            <div className="bg-blue-600 rounded-lg p-3">
               <button
                 onClick={() => setShowSubjectsDropdown(!showSubjectsDropdown)}
-                className="flex items-center justify-between w-full hover:text-blue-200 transition-colors py-2"
+                className="flex items-center justify-between w-full text-white hover:text-blue-200 transition-colors font-medium"
               >
-                <span>Сэдвүүд</span>
+                <div className="flex items-center gap-2">
+                  <BookOpen size={18} />
+                  <span>Сэдвүүд</span>
+                </div>
                 <ChevronDown
                   size={18}
                   className={`transition-transform ${
@@ -213,13 +218,13 @@ const Header = () => {
                 />
               </button>
               {showSubjectsDropdown && (
-                <div className="ml-4 mt-2 space-y-2 max-h-64 overflow-y-auto">
+                <div className="mt-3 space-y-2 max-h-64 overflow-y-auto">
                   {subjectsLoading ? (
-                    <div className="text-sm text-gray-300 py-2">
+                    <div className="text-sm text-blue-200 py-2">
                       Loading subjects...
                     </div>
                   ) : subjects.length === 0 ? (
-                    <div className="text-sm text-gray-300 py-2">
+                    <div className="text-sm text-blue-200 py-2">
                       No subjects available
                     </div>
                   ) : (
@@ -227,13 +232,13 @@ const Header = () => {
                       <button
                         key={subject.id}
                         onClick={() => handleSubjectClick(subject.id)}
-                        className="block w-full text-left py-2 px-3 rounded hover:bg-blue-500/30 transition-colors"
+                        className="block w-full text-left py-2 px-3 rounded-lg hover:bg-blue-500/50 transition-colors border border-blue-400/50"
                       >
-                        <div className="font-medium text-sm">
+                        <div className="font-medium text-sm text-white">
                           {subject.title}
                         </div>
                         {subject.description && (
-                          <div className="text-xs opacity-80 line-clamp-1 mt-0.5">
+                          <div className="text-xs text-blue-200 line-clamp-1 mt-0.5">
                             {subject.description}
                           </div>
                         )}
@@ -246,55 +251,63 @@ const Header = () => {
 
             {isAuthenticated ? (
               <>
-                <div className="border-t border-blue-500/40 pt-3 mt-2">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Avatar className="h-10 w-10 border-2 border-white">
+                <div className="bg-blue-600 rounded-lg p-4">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Avatar className="h-12 w-12 border-2 border-white">
                       <AvatarImage src={user?.avatar_url} />
-                      <AvatarFallback className="bg-blue-500 text-white">
+                      <AvatarFallback className="bg-gradient-to-br from-blue-400 to-blue-500 text-white">
                         {user?.name ? getInitials(user.name) : "U"}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
-                      <span className="font-medium">{user?.name}</span>
-                      <span className="text-xs opacity-80">{user?.email}</span>
+                      <span className="font-semibold text-white">
+                        {user?.name}
+                      </span>
+                      <span className="text-xs text-blue-200">
+                        {user?.email}
+                      </span>
                     </div>
                   </div>
+
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => router.push("/profile")}
+                      className="flex items-center gap-3 text-white hover:bg-blue-500/50 transition-colors py-2 px-3 rounded-lg w-full"
+                    >
+                      <User size={18} />
+                      <span>Profile</span>
+                    </button>
+                    <button
+                      onClick={() => router.push("/my-courses")}
+                      className="flex items-center gap-3 text-white hover:bg-blue-500/50 transition-colors py-2 px-3 rounded-lg w-full"
+                    >
+                      <BookOpen size={18} />
+                      <span>Миний сургалтууд</span>
+                    </button>
+                    {user?.role === "admin" && (
+                      <button
+                        onClick={() => router.push("/admin/dashboard")}
+                        className="flex items-center gap-3 text-white hover:bg-blue-500/50 transition-colors py-2 px-3 rounded-lg w-full"
+                      >
+                        <Settings size={18} />
+                        <span>Dashboard</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <button
-                  onClick={() => router.push("/profile")}
-                  className="flex items-center gap-2 hover:text-blue-200 transition-colors py-2"
-                >
-                  <User size={18} />
-                  <span>Profile</span>
-                </button>
-                <button
-                  onClick={() => router.push("/my-courses")}
-                  className="flex items-center gap-2 hover:text-blue-200 transition-colors py-2"
-                >
-                  <BookOpen size={18} />
-                  <span>Миний сургалтууд</span>
-                </button>
-                {user?.role === "admin" && (
-                  <button
-                    onClick={() => router.push("/admin/dashboard")}
-                    className="flex items-center gap-2 hover:text-blue-200 transition-colors py-2"
-                  >
-                    <Settings size={18} />
-                    <span>Dashboard</span>
-                  </button>
-                )}
+
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors mt-2"
+                  className="flex items-center justify-center gap-2 bg-red-500 text-white px-4 py-2.5 rounded-lg hover:bg-red-600 transition-colors font-medium w-full"
                 >
                   <LogOut size={18} />
-                  <span>Logout</span>
+                  <span>Гарах</span>
                 </button>
               </>
             ) : (
               <button
                 onClick={() => router.push("/login")}
-                className="bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100 transition-colors w-full"
+                className="bg-white text-blue-700 px-4 py-2.5 rounded-lg hover:bg-blue-50 transition-colors font-medium w-full"
               >
                 Нэвтрэх | Бүртгүүлэх
               </button>

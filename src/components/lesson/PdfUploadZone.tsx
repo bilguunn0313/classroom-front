@@ -161,6 +161,20 @@ export function PdfUploadZone({
     return `${mb.toFixed(2)} MB`;
   };
 
+  // Helper function to get full PDF URL
+  const getFullPdfUrl = (fileUrl: string) => {
+    if (!fileUrl) return "";
+
+    // If URL is already absolute (starts with http/https), return as is
+    if (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) {
+      return fileUrl;
+    }
+
+    // Otherwise, prepend the API base URL
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+    return `${apiUrl}${fileUrl.startsWith("/") ? "" : "/"}${fileUrl}`;
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -239,27 +253,28 @@ export function PdfUploadZone({
         </div>
       )}
 
-      {/* Drag & Drop Upload Zone */}
-      <div
-        className={`
-          border-2 border-dashed rounded-lg p-8 text-center transition-colors
-          ${
-            dragActive
-              ? "border-blue-500 bg-blue-50"
-              : "border-gray-300 bg-gray-50"
-          }
-          ${
-            uploading
-              ? "opacity-50 pointer-events-none"
-              : "cursor-pointer hover:border-gray-400"
-          }
-        `}
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
-      >
+      {/* File Upload Button */}
+      <div className="space-y-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="w-full h-24 border-2 border-dashed hover:border-blue-500 hover:bg-blue-50"
+        >
+          {uploading ? (
+            <>
+              <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+              PDF хуулж байна...
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-2">
+              <Upload className="h-8 w-8 text-blue-600" />
+              <span className="font-medium">PDF файл сонгох</span>
+              <span className="text-xs text-gray-500">Зөвхөн PDF файл (MAX 10MB)</span>
+            </div>
+          )}
+        </Button>
         <input
           ref={fileInputRef}
           type="file"
@@ -267,21 +282,6 @@ export function PdfUploadZone({
           onChange={(e) => handleFileUpload(e.target.files)}
           className="hidden"
         />
-
-        {uploading ? (
-          <>
-            <Loader2 className="mx-auto h-12 w-12 text-blue-600 animate-spin mb-3" />
-            <p className="text-sm text-gray-600">PDF хуулж байна...</p>
-          </>
-        ) : (
-          <>
-            <Upload className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-            <p className="text-sm text-gray-600 mb-1">
-              Дарж файл сонгох эсвэл чирж оруулах
-            </p>
-            <p className="text-xs text-gray-500">Зөвхөн PDF файл (MAX 10MB)</p>
-          </>
-        )}
       </div>
 
       {/* Materials List */}
@@ -314,7 +314,7 @@ export function PdfUploadZone({
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={() => window.open(material.file_url, "_blank")}
+                    onClick={() => window.open(getFullPdfUrl(material.file_url), "_blank")}
                   >
                     <Download className="h-3 w-3" />
                   </Button>

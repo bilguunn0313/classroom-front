@@ -6,8 +6,6 @@ import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import {
-  Play,
-  Lock,
   CheckCircle,
   Clock,
   BookOpen,
@@ -15,6 +13,8 @@ import {
   ArrowLeft,
   PlayCircle,
   X,
+  FileText,
+  Download,
 } from "lucide-react";
 
 // Hooks
@@ -28,12 +28,25 @@ import { useUserContext } from "@/lib/userProvider";
 // Components
 import { ManageLessonsDialog } from "@/components/lesson/ManageLessonsDialog";
 import { Lesson } from "@/types/schema.types";
+import { pdfAPI } from "@/lib/pdf";
+import { useSubjectWithCourse } from "@/hooks/useSubjectWithCourse";
+
+interface PdfMaterial {
+  id: number;
+  lesson_id: number;
+  title: string;
+  file_url: string;
+  file_size: number | null;
+  uploaded_at: string;
+}
 
 const CourseDetailPage = () => {
   const params = useParams();
   const router = useRouter();
   const { user } = useUserContext();
   const courseId = Number(params.id);
+
+  const { data } = useSubjectWithCourse();
 
   // Data hooks
   const {
@@ -86,6 +99,8 @@ const CourseDetailPage = () => {
 
   // UI state
   const [showLessonList, setShowLessonList] = useState(false);
+  const [pdfMaterials, setPdfMaterials] = useState<PdfMaterial[]>([]);
+  const [loadingPdfs, setLoadingPdfs] = useState(false);
 
   // Seek to last position when lesson changes
   useEffect(() => {
@@ -97,6 +112,29 @@ const CourseDetailPage = () => {
     }
   }, [selectedLesson?.id, getLastPosition]);
 
+  // Fetch PDF materials when lesson changes
+  useEffect(() => {
+    const fetchPdfMaterials = async () => {
+      if (!selectedLesson) {
+        setPdfMaterials([]);
+        return;
+      }
+
+      setLoadingPdfs(true);
+      try {
+        const result = await pdfAPI.getByLesson(selectedLesson.id);
+        setPdfMaterials(result.data || []);
+      } catch (error) {
+        console.error("Failed to load PDF materials:", error);
+        setPdfMaterials([]);
+      } finally {
+        setLoadingPdfs(false);
+      }
+    };
+
+    fetchPdfMaterials();
+  }, [selectedLesson?.id]);
+
   const handleLessonSelect = (lesson: Lesson) => {
     selectLesson(lesson);
     setShowLessonList(false);
@@ -106,9 +144,7 @@ const CourseDetailPage = () => {
   const isOwner = user?.id === course?.user_id || user?.role === "admin";
 
   // Filter lessons - owners see all, others see only published
-  const visibleLessons = isOwner
-    ? lessons
-    : lessons.filter((l) => l.published);
+  const visibleLessons = isOwner ? lessons : lessons.filter((l) => l.published);
 
   // Helper function to get full video URL
   const getFullVideoUrl = (videoUrl: string | null) => {
@@ -122,6 +158,27 @@ const CourseDetailPage = () => {
     // Otherwise, prepend the API base URL
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
     return `${apiUrl}${videoUrl.startsWith("/") ? "" : "/"}${videoUrl}`;
+  };
+
+  // Helper function to get full PDF URL
+  const getFullPdfUrl = (fileUrl: string) => {
+    if (!fileUrl) return "";
+
+    // If URL is already absolute (starts with http/https), return as is
+    if (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) {
+      return fileUrl;
+    }
+
+    // Otherwise, prepend the API base URL
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+    return `${apiUrl}${fileUrl.startsWith("/") ? "" : "/"}${fileUrl}`;
+  };
+
+  // Format file size
+  const formatFileSize = (bytes: number | null) => {
+    if (!bytes) return "Үл мэдэгдэх хэмжээ";
+    const mb = bytes / (1024 * 1024);
+    return `${mb.toFixed(2)} MB`;
   };
 
   if (loading) {
@@ -201,7 +258,7 @@ const CourseDetailPage = () => {
               {selectedLesson?.video_url ? (
                 <video
                   ref={videoRef}
-                  src={getFullVideoUrl(selectedLesson.video_url)}
+                  src={getFullVideoUrl(selectedLesson.video_url) || ""}
                   controls
                   className="w-full h-full"
                   controlsList="nodownload"
@@ -209,7 +266,10 @@ const CourseDetailPage = () => {
                   onLoadedMetadata={handleLoadedMetadata}
                   onError={(e) => {
                     console.error("Video error:", e);
-                    console.error("Video URL:", getFullVideoUrl(selectedLesson.video_url));
+                    console.error(
+                      "Video URL:",
+                      getFullVideoUrl(selectedLesson.video_url),
+                    );
                   }}
                 >
                   Таны браузер видео дэмжихгүй байна.
@@ -232,6 +292,14 @@ const CourseDetailPage = () => {
             {/* Current Lesson Info */}
             {selectedLesson && (
               <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold">
+                    {selectedLesson.lesson_order}
+                  </div>
+                  <span className="text-sm font-medium text-gray-500">
+                    Хичээл
+                  </span>
+                </div>
                 <div className="flex items-start justify-between gap-4 mb-2">
                   <h2 className="text-xl md:text-2xl font-bold text-gray-900">
                     {selectedLesson.title}
@@ -253,10 +321,6 @@ const CourseDetailPage = () => {
                     <Clock size={16} />
                     <span>{formatDuration(selectedLesson.video_duration)}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <BookOpen size={16} />
-                    <span>{selectedLesson.lesson_order}-р хичээл</span>
-                  </div>
                   {getProgress(selectedLesson.id) > 0 && (
                     <div className="flex items-center gap-2">
                       <div className="w-20 bg-gray-200 rounded-full h-2">
@@ -275,10 +339,63 @@ const CourseDetailPage = () => {
                 {/* Lesson Text Content */}
                 {selectedLesson.text && (
                   <div className="mt-6 pt-6 border-t border-gray-200">
-                    <h3 className="text-lg font-semibold mb-3">Хичээлийн тэмдэглэл</h3>
+                    <h3 className="text-lg font-semibold mb-3">
+                      Хичээлийн тэмдэглэл
+                    </h3>
                     <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap">
                       {selectedLesson.text}
                     </div>
+                  </div>
+                )}
+
+                {/* PDF Materials */}
+                {(pdfMaterials.length > 0 || loadingPdfs) && (
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      PDF Материалууд
+                    </h3>
+                    {loadingPdfs ? (
+                      <div className="flex justify-center py-4">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {pdfMaterials.map((material) => (
+                          <div
+                            key={material.id}
+                            className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                          >
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <FileText className="h-5 w-5 text-red-600 flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900 truncate">
+                                  {material.title}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {formatFileSize(material.file_size)} •{" "}
+                                  {new Date(
+                                    material.uploaded_at,
+                                  ).toLocaleDateString("mn-MN")}
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() =>
+                                window.open(
+                                  getFullPdfUrl(material.file_url),
+                                  "_blank",
+                                )
+                              }
+                              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                            >
+                              <Download className="h-4 w-4" />
+                              <span>Татах</span>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -299,9 +416,7 @@ const CourseDetailPage = () => {
                   <div className="text-xl md:text-2xl font-bold text-gray-900">
                     {visibleLessons.length}
                   </div>
-                  <div className="text-xs md:text-sm text-gray-600">
-                    Хичээл
-                  </div>
+                  <div className="text-xs md:text-sm text-gray-600">Хичээл</div>
                 </div>
                 <div className="text-center p-3 md:p-4 bg-green-50 rounded-lg">
                   <Clock className="mx-auto mb-2 text-green-600" size={20} />
@@ -315,7 +430,7 @@ const CourseDetailPage = () => {
                 <div className="text-center p-3 md:p-4 bg-purple-50 rounded-lg">
                   <User className="mx-auto mb-2 text-purple-600" size={20} />
                   <div className="text-xs md:text-sm font-medium text-gray-900 truncate px-1">
-                    {course.user_name || "Багш"}
+                    {user?.name || "Багш"}
                   </div>
                   <div className="text-xs text-gray-600">Багш</div>
                 </div>
@@ -325,9 +440,9 @@ const CourseDetailPage = () => {
                     size={20}
                   />
                   <div className="text-xs md:text-sm font-medium text-gray-900 truncate px-1">
-                    {course.subject_name || "Сэдэв"}
+                    {data[0]?.subject?.title}
                   </div>
-                  <div className="text-xs text-gray-600">Ангилал</div>
+                  <div className="text-xs text-gray-600">Сэдэв</div>
                 </div>
               </div>
             </div>
@@ -337,9 +452,7 @@ const CourseDetailPage = () => {
           <div className="hidden lg:block lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm sticky top-6">
               <div className="p-4 border-b border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900">
-                  Хичээлүүд
-                </h3>
+                <h3 className="text-lg font-bold text-gray-900">Хичээлүүд</h3>
                 <p className="text-sm text-gray-600 mt-1">
                   {visibleLessons.length} хичээл • {totalFormatted}
                 </p>
@@ -378,9 +491,7 @@ const CourseDetailPage = () => {
           <div className="absolute inset-x-0 bottom-0 bg-white rounded-t-2xl max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <div>
-                <h3 className="text-lg font-bold text-gray-900">
-                  Хичээлүүд
-                </h3>
+                <h3 className="text-lg font-bold text-gray-900">Хичээлүүд</h3>
                 <p className="text-sm text-gray-600">
                   {visibleLessons.length} хичээл • {totalFormatted}
                 </p>
@@ -443,26 +554,17 @@ const LessonItem = ({
       }`}
     >
       <div className="flex items-start gap-3">
+        {/* Lesson Number Badge */}
         <div
-          className={`mt-1 flex-shrink-0 ${
+          className={`flex-shrink-0 w-10 h-10 flex items-center justify-center font-bold text-base ${
             isSelected
               ? "text-blue-600"
               : isCompleted
-              ? "text-green-600"
-              : "text-gray-400"
+                ? "text-green-600"
+                : "text-gray-600"
           }`}
         >
-          {isCompleted ? (
-            <CheckCircle size={20} className="fill-current" />
-          ) : lesson.video_url ? (
-            isSelected ? (
-              <PlayCircle size={20} className="fill-current" />
-            ) : (
-              <Play size={20} />
-            )
-          ) : (
-            <Lock size={20} />
-          )}
+          {lesson.lesson_order}.
         </div>
 
         <div className="flex-1 min-w-0">
@@ -498,9 +600,6 @@ const LessonItem = ({
           )}
 
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-gray-400">
-              {lesson.lesson_order}-р хичээл
-            </span>
             {lesson.published && (
               <span className="text-xs text-green-600 flex items-center gap-1">
                 <CheckCircle size={12} />

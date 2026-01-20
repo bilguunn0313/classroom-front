@@ -130,6 +130,7 @@ export default function MyCoursesPage() {
                       size="sm"
                       variant="secondary"
                       className="h-8 w-8 p-0"
+                      title="Засах"
                       onClick={(e) => {
                         e.stopPropagation();
                         router.push(`/course/${course.id}/edit`);
@@ -142,6 +143,7 @@ export default function MyCoursesPage() {
                       size="sm"
                       variant="destructive"
                       className="h-8 w-8 p-0"
+                      title="Устгах"
                       onClick={(e) => {
                         e.stopPropagation();
                         setDeleteId(course.id);
@@ -155,6 +157,7 @@ export default function MyCoursesPage() {
                         size="sm"
                         variant="outline"
                         className="h-8 w-8 p-0"
+                        title="Нийтлэх"
                         onClick={(e) => {
                           e.stopPropagation();
                           handlePublish(course.id);

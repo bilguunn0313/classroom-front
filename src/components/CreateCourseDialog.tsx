@@ -194,7 +194,11 @@ export function CreateCourseDialog({ onSuccess }: CreateCourseDialogProps) {
                 />
               </div>
 
-              <div className="space-y-2">
+              {/* THUMBNAIL FEATURE - COMMENTED OUT
+                  Uncomment this section if you want to allow users to upload custom thumbnails.
+                  Otherwise, the Card component will use beautiful dynamic gradients based on course ID.
+              */}
+              {/* <div className="space-y-2">
                 <Label htmlFor="thumbnailUrl">Зургийн URL</Label>
                 <Input
                   id="thumbnailUrl"
@@ -202,7 +206,7 @@ export function CreateCourseDialog({ onSuccess }: CreateCourseDialogProps) {
                   value={thumbnailUrl}
                   onChange={(e) => setThumbnailUrl(e.target.value)}
                 />
-              </div>
+              </div> */}
 
               <div className="flex justify-end gap-2">
                 <Button

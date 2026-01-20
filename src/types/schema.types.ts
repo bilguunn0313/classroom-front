@@ -13,6 +13,7 @@ export interface Course {
   subject_id: number;
   user_id: number;
   thumbnail_url: string;
+  views: number;
   published: boolean;
   created_at: string;
   updated_at?: string;

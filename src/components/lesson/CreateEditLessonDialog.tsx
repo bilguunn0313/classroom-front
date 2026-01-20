@@ -48,6 +48,7 @@ export function CreateEditLessonDialog({
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
+  const [pendingPdfFiles, setPendingPdfFiles] = useState<File[]>([]);
 
   const isEdit = !!lesson;
 
@@ -132,6 +133,38 @@ export function CreateEditLessonDialog({
     if (fileInput) fileInput.value = "";
   };
 
+  const handlePdfFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const pdfFiles = Array.from(files);
+    const validFiles: File[] = [];
+    const maxSize = 10 * 1024 * 1024; // 10MB
+
+    for (const file of pdfFiles) {
+      if (file.type !== "application/pdf") {
+        toast.error(`${file.name} нь PDF файл биш байна`);
+        continue;
+      }
+      if (file.size > maxSize) {
+        toast.error(`${file.name} нь 10MB-аас их байна`);
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    if (validFiles.length > 0) {
+      setPendingPdfFiles([...pendingPdfFiles, ...validFiles]);
+      toast.success(`${validFiles.length} PDF файл нэмэгдлээ`);
+    }
+
+    e.target.value = "";
+  };
+
+  const handleRemovePendingPdf = (index: number) => {
+    setPendingPdfFiles(pendingPdfFiles.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -182,6 +215,21 @@ export function CreateEditLessonDialog({
         }
       }
 
+      // Upload pending PDF files if any
+      if (pendingPdfFiles.length > 0 && lessonId) {
+        setUploading(true);
+        try {
+          for (const pdfFile of pendingPdfFiles) {
+            await pdfAPI.uploadFile(lessonId, pdfFile, pdfFile.name);
+          }
+          toast.success(`${pendingPdfFiles.length} PDF файл амжилттай хуулагдлаа!`);
+        } catch (error) {
+          toast.error("PDF файл хуулахад алдаа гарлаа");
+        } finally {
+          setUploading(false);
+        }
+      }
+
       setOpen(false);
       onSuccess();
       resetForm();
@@ -205,10 +253,13 @@ export function CreateEditLessonDialog({
     setVideoFile(null);
     setUploadProgress(0);
     setUploading(false);
+    setPendingPdfFiles([]);
 
-    // Clear file input
-    const fileInput = document.getElementById("videoFile") as HTMLInputElement;
-    if (fileInput) fileInput.value = "";
+    // Clear file inputs
+    const videoInput = document.getElementById("videoFile") as HTMLInputElement;
+    if (videoInput) videoInput.value = "";
+    const pdfInput = document.getElementById("pdfFiles") as HTMLInputElement;
+    if (pdfInput) pdfInput.value = "";
   };
 
   return (
@@ -278,17 +329,26 @@ export function CreateEditLessonDialog({
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="videoFile">Видео файл (MAX 500MB)</Label>
-                <Input
-                  id="videoFile"
-                  type="file"
-                  accept="video/*"
-                  onChange={handleVideoFileChange}
-                  disabled={uploading}
-                />
-                <p className="text-sm text-gray-500">
-                  💡 Зөвлөгөө: Том видео файлыг HandBrake программ ашиглан 720p
-                  чанарт багасгаарай
-                </p>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById("videoFile")?.click()}
+                    disabled={uploading}
+                    className="w-full"
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    {videoFile ? "Өөр файл сонгох" : "Видео файл сонгох"}
+                  </Button>
+                  <input
+                    id="videoFile"
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoFileChange}
+                    disabled={uploading}
+                    className="hidden"
+                  />
+                </div>
               </div>
 
               {videoFile && (
@@ -338,8 +398,77 @@ export function CreateEditLessonDialog({
               )}
             </div>
           </div>
+          {/* PDF Upload Section for New Lessons */}
+          {!isEdit && (
+            <div className="border-t pt-6">
+              <h4 className="font-semibold mb-4">PDF Материал нэмэх (заавал биш)</h4>
+              <p className="text-sm text-gray-500 mb-3">
+                Хичээлд хавсаргах PDF материалаа сонгоно уу (MAX 10MB)
+              </p>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById("pdfFiles")?.click()}
+                    disabled={uploading}
+                    className="w-full"
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    PDF файл сонгох
+                  </Button>
+                  <input
+                    id="pdfFiles"
+                    type="file"
+                    accept="application/pdf"
+                    multiple
+                    onChange={handlePdfFilesChange}
+                    disabled={uploading}
+                    className="hidden"
+                  />
+                </div>
+
+                {pendingPdfFiles.length > 0 && (
+                  <div className="space-y-2">
+                    <Label>Сонгосон PDF файлууд ({pendingPdfFiles.length})</Label>
+                    {pendingPdfFiles.map((file, index) => (
+                      <div
+                        key={index}
+                        className="bg-blue-50 border border-blue-200 rounded-lg p-3"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Upload className="h-4 w-4 text-blue-600" />
+                            <div>
+                              <p className="text-sm font-medium text-blue-900">
+                                {file.name}
+                              </p>
+                              <p className="text-xs text-blue-700">
+                                {(file.size / (1024 * 1024)).toFixed(2)} MB
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemovePendingPdf(index)}
+                            disabled={uploading}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Text Content - Optional */}
-          <div className="border-t pt-6">
+          {/* <div className="border-t pt-6">
             <h4 className="font-semibold mb-4">
               Нэмэлт текст контент (заавал биш)
             </h4>
@@ -357,9 +486,10 @@ export function CreateEditLessonDialog({
                 rows={8}
               />
             </div>
-          </div>
+          </div> */}
 
-          {isEdit && lesson?.id && (
+          {/* PDF Upload Zone for Editing Lessons */}
+          {lesson?.id && (
             <div className="border-t pt-6">
               <PdfUploadZone
                 lessonId={lesson.id}
@@ -393,8 +523,7 @@ export function CreateEditLessonDialog({
           {!isEdit && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-800">
-                💡 <strong>Анхаар:</strong> Хичээл нь зөвхөн видео, зөвхөн
-                текст, эсвэл хоёуланд нь агуулгатай байж болно.
+                💡 <strong>Анхаар:</strong> Хичээл нь зөвхөн PDF, зөвхөн видео, эсвэл хоёуланд нь агуулгатай байж болно. Сонгосон файлууд хичээл үүсгэсний дараа автоматаар хуулагдана.
               </p>
             </div>
           )}

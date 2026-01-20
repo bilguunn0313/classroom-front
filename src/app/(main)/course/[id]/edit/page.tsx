@@ -196,7 +196,11 @@ export default function EditCoursePage() {
                   />
                 </div>
 
-                <div className="space-y-2">
+                {/* THUMBNAIL FEATURE - COMMENTED OUT
+                    Uncomment this section if you want to allow users to upload custom thumbnails.
+                    Otherwise, the Card component will use beautiful dynamic gradients based on course ID.
+                */}
+                {/* <div className="space-y-2">
                   <Label htmlFor="thumbnailUrl">Зургийн URL</Label>
                   <Input
                     id="thumbnailUrl"
@@ -216,7 +220,7 @@ export default function EditCoursePage() {
                       />
                     </div>
                   )}
-                </div>
+                </div> */}
 
                 <div className="flex justify-end gap-3 pt-4">
                   <Button

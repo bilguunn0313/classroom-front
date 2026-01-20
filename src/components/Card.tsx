@@ -1,5 +1,6 @@
+import { useUserContext } from "@/lib/userProvider";
 import { Course } from "@/types/schema.types";
-import { Play } from "lucide-react";
+import { BookOpen } from "lucide-react";
 
 interface CourseCardProps {
   course: Course;
@@ -7,13 +8,16 @@ interface CourseCardProps {
 }
 
 const CourseCard = ({ course, onClick }: CourseCardProps) => {
+  const { user } = useUserContext();
+
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+      className="group bg-white rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-gray-200"
     >
+      {/* Thumbnail */}
       <div className="relative">
-        <div className="w-full h-30 sm:h-40 bg-gradient-to-br from-blue-400 via-blue-500 to-blue-700 flex items-center justify-center">
+        <div className="w-full h-36 bg-gray-200 flex items-center justify-center">
           {course.thumbnail_url ? (
             <img
               src={course.thumbnail_url}
@@ -21,32 +25,44 @@ const CourseCard = ({ course, onClick }: CourseCardProps) => {
               className="w-full h-full object-cover"
             />
           ) : (
-            <Play size={38} className="text-white opacity-80" />
+            <BookOpen size={40} className="text-gray-400" />
           )}
         </div>
       </div>
 
-      <div className="p-3 sm:p-3">
-        <h3 className="font-bold text-base sm:text-lg mb-3 h-12 sm:h-8 overflow-hidden leading-tight">
+      {/* Content */}
+      <div className="p-3">
+        {/* Title */}
+        <h3 className="font-bold text-base mb-1 line-clamp-2 leading-snug text-gray-900">
           {course.title}
         </h3>
 
-        <div className="space-y-2 text-xs sm:text-sm text-gray-600 mb-4">
+        {/* Description */}
+        {course.description && (
+          <div>
+            <p className="text-xs text-gray-600 mb-2 line-clamp-2 leading-relaxed">
+              {course.description}
+            </p>
+            <div className="border-b border-gray-300 mb-2"></div>
+          </div>
+        )}
+
+        {/* Instructor */}
+        <p className="text-xs text-gray-800 mb-2">{user?.name || "Багш"}</p>
+
+        {/* Subject Tag */}
+        {course.subject_name && (
           <div className="flex items-center gap-2">
-            <span>{course.description}</span>
+            <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+              {course.subject_name}
+            </span>
+            {course.published && (
+              <span className="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs">
+                Active
+              </span>
+            )}
           </div>
-          <div className="flex items-center gap-2 mt-4">
-            <span className="font-bold">{course?.user_name}</span>
-          </div>
-          {/* <div className="flex items-center gap-2">
-            <Eye size={14} className="flex-shrink-0" />
-            <span>{course.views.toLocaleString()} харсан</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Users size={14} className="flex-shrink-0" />
-            <span>{course.students} сурагчид</span>
-          </div> */}
-        </div>
+        )}
       </div>
     </div>
   );
