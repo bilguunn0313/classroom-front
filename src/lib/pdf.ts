@@ -26,21 +26,6 @@ export const pdfAPI = {
     return res.data;
   },
 
-  // Add PDF by URL
-  addByUrl: async (
-    lessonId: number,
-    title: string,
-    fileUrl: string,
-    fileSize?: number | null,
-  ) => {
-    const res = await api.post(`/pdf-materials/lesson/${lessonId}`, {
-      title,
-      fileUrl,
-      fileSize: fileSize || null,
-    });
-    return res.data;
-  },
-
   // Delete PDF material
   delete: async (id: number) => {
     const res = await api.delete(`/pdf/${id}`);

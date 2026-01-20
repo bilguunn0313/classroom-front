@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Upload, FileText, X, Download, Trash2, Loader2 } from "lucide-react";
+import { Upload, FileText, Download, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { pdfAPI } from "@/lib/pdf";
 
@@ -31,12 +29,6 @@ export function PdfUploadZone({
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [dragActive, setDragActive] = useState(false);
-
-  // Manual URL input
-  const [showUrlInput, setShowUrlInput] = useState(false);
-  const [urlTitle, setUrlTitle] = useState("");
-  const [urlLink, setUrlLink] = useState("");
-  const [addingUrl, setAddingUrl] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -77,42 +69,6 @@ export function PdfUploadZone({
       toast.error("PDF хуулахад алдаа гарлаа");
     } finally {
       setUploading(false);
-    }
-  };
-
-  // Handle URL-based PDF addition
-  const handleAddUrl = async () => {
-    if (!urlTitle.trim() || !urlLink.trim()) {
-      toast.error("Гарчиг болон URL заавал оруулна уу");
-      return;
-    }
-
-    // Validate URL
-    try {
-      new URL(urlLink);
-    } catch {
-      toast.error("Буруу URL хаяг");
-      return;
-    }
-
-    setAddingUrl(true);
-
-    try {
-      const result = await pdfAPI.addByUrl(lessonId, urlTitle, urlLink, null);
-      const newMaterial = result.data;
-
-      onMaterialsUpdate([...materials, newMaterial]);
-      toast.success("PDF амжилттай нэмэгдлээ");
-
-      // Reset form
-      setUrlTitle("");
-      setUrlLink("");
-      setShowUrlInput(false);
-    } catch (error) {
-      console.error("Add URL error:", error);
-      toast.error("PDF нэмэхэд алдаа гарлаа");
-    } finally {
-      setAddingUrl(false);
     }
   };
 
@@ -179,79 +135,21 @@ export function PdfUploadZone({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">PDF Материалууд</h3>
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setShowUrlInput(!showUrlInput)}
-          >
-            <FileText className="mr-2 h-4 w-4" />
-            URL нэмэх
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-          >
-            {uploading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Upload className="mr-2 h-4 w-4" />
-            )}
-            Файл оруулах
-          </Button>
-        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+        >
+          {uploading ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Upload className="mr-2 h-4 w-4" />
+          )}
+          Файл оруулах
+        </Button>
       </div>
-
-      {/* URL Input Form */}
-      {showUrlInput && (
-        <div className="border border-gray-200 rounded-lg p-4 space-y-3 bg-gray-50">
-          <div className="space-y-2">
-            <Label>PDF Гарчиг</Label>
-            <Input
-              placeholder="жишээ нь: JavaScript Reference Guide"
-              value={urlTitle}
-              onChange={(e) => setUrlTitle(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>PDF URL</Label>
-            <Input
-              placeholder="https://example.com/document.pdf"
-              value={urlLink}
-              onChange={(e) => setUrlLink(e.target.value)}
-            />
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setShowUrlInput(false);
-                setUrlTitle("");
-                setUrlLink("");
-              }}
-            >
-              Цуцлах
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              onClick={handleAddUrl}
-              disabled={addingUrl}
-            >
-              {addingUrl ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
-              Нэмэх
-            </Button>
-          </div>
-        </div>
-      )}
 
       {/* File Upload Button */}
       <div className="space-y-4">
@@ -271,7 +169,9 @@ export function PdfUploadZone({
             <div className="flex flex-col items-center gap-2">
               <Upload className="h-8 w-8 text-blue-600" />
               <span className="font-medium">PDF файл сонгох</span>
-              <span className="text-xs text-gray-500">Зөвхөн PDF файл (MAX 10MB)</span>
+              <span className="text-xs text-gray-500">
+                Зөвхөн PDF файл (MAX 10MB)
+              </span>
             </div>
           )}
         </Button>
@@ -314,7 +214,9 @@ export function PdfUploadZone({
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={() => window.open(getFullPdfUrl(material.file_url), "_blank")}
+                    onClick={() =>
+                      window.open(getFullPdfUrl(material.file_url), "_blank")
+                    }
                   >
                     <Download className="h-3 w-3" />
                   </Button>
