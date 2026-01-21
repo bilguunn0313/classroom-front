@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "sonner";
-import UserContextProvider from "@/lib/userProvider";
+import Providers from "@/components/Providers";
 
 export const metadata: Metadata = {
   title: "Classroom",
@@ -16,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <UserContextProvider>
+        <Providers>
           {children}
           <Toaster
             position="top-center"
@@ -32,7 +32,7 @@ export default function RootLayout({
               },
             }}
           />
-        </UserContextProvider>
+        </Providers>
       </body>
     </html>
   );

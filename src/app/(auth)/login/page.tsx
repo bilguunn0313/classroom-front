@@ -37,12 +37,6 @@ export default function LoginPage() {
 
       const response = await authAPI.login(data.email, data.password);
 
-      console.log("📦 [LOGIN PAGE] Response received:", {
-        success: response.success,
-        hasToken: !!response.data?.token,
-        hasUser: !!response.data?.user,
-      });
-
       if (!response.success) {
         console.error("❌ [LOGIN PAGE] Response not successful");
         throw new Error(response.message || "Login failed");
@@ -66,7 +60,6 @@ export default function LoginPage() {
       // Test the token immediately
       try {
         const testResponse = await authAPI.verify();
-        console.log("✅ [LOGIN PAGE] Token test successful:", testResponse);
       } catch (testError) {
         console.error("❌ [LOGIN PAGE] Token test FAILED:", testError);
         console.error("⚠️ [LOGIN PAGE] This means the token doesn't work!");

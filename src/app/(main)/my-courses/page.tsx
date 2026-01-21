@@ -37,7 +37,6 @@ export default function MyCoursesPage() {
     try {
       setLoading(true);
       const data = await courseAPI.getByUser(user.id);
-      console.log("API RESPONSE:", data);
       setCourses(data.data);
     } catch (error: any) {
       console.error("Failed to fetch courses:", error);

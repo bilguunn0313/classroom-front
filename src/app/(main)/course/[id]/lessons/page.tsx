@@ -48,8 +48,8 @@ export default function ManageLessonsPage() {
         setCourse(courseData);
         setLessons(
           lessonsData.sort(
-            (a: Lesson, b: Lesson) => a.lesson_order - b.lesson_order
-          )
+            (a: Lesson, b: Lesson) => a.lesson_order - b.lesson_order,
+          ),
         );
       } catch (error) {
         toast.error("Failed to load course data");
@@ -73,8 +73,8 @@ export default function ManageLessonsPage() {
       const lessonsData = await lessonAPI.getByCourse(courseId);
       setLessons(
         lessonsData.sort(
-          (a: Lesson, b: Lesson) => a.lesson_order - b.lesson_order
-        )
+          (a: Lesson, b: Lesson) => a.lesson_order - b.lesson_order,
+        ),
       );
     } catch (error) {
       toast.error("Failed to refresh lessons");
@@ -101,7 +101,9 @@ export default function ManageLessonsPage() {
       }
       await lessonAPI.publish(lesson.id);
       setLessons(
-        lessons.map((l) => (l.id === lesson.id ? { ...l, published: true } : l))
+        lessons.map((l) =>
+          l.id === lesson.id ? { ...l, published: true } : l,
+        ),
       );
       toast.success("Lesson published successfully");
     } catch (error) {
@@ -197,7 +199,9 @@ export default function ManageLessonsPage() {
                     courseId={courseId}
                     onLessonsReorder={handleLessonsReorder}
                     onEditLesson={(lessonId) =>
-                      router.push(`/course/${courseId}/lessons/${lessonId}/edit`)
+                      router.push(
+                        `/course/${courseId}/lessons/${lessonId}/edit`,
+                      )
                     }
                     onDeleteLesson={handleDeleteLesson}
                     onTogglePublish={handleTogglePublish}

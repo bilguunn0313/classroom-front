@@ -8,17 +8,6 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Debug logging
-api.interceptors.request.use((config) => {
-  console.log("🌐 API Request:", {
-    method: config.method?.toUpperCase(),
-    url: config.url,
-    baseURL: config.baseURL,
-    fullURL: `${config.baseURL}${config.url}`,
-  });
-  return config;
-});
-
 let isRedirecting = false;
 
 // Request interceptor - Add token to all requests
@@ -34,7 +23,7 @@ api.interceptors.request.use(
   },
   (error: AxiosError) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response interceptor - Handle errors
@@ -69,7 +58,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

@@ -39,8 +39,6 @@ export function useCourse(courseId: number): UseCourseReturn {
       // Backend might return { success, data } or just the course object
       const courseData = response?.data || response;
 
-      console.log("Course data loaded:", courseData); // Debug log
-
       if (!courseData || !courseData.id) {
         throw new Error("Invalid course data received");
       }
