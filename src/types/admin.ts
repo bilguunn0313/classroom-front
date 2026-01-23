@@ -24,7 +24,7 @@ export interface AdminCourse {
   subject_id: number;
   subject_name: string;
   user_id: number;
-  teacher_name: string;
+  user_name: string;
   thumbnail_url: string | null;
   published: boolean;
   created_at: string;

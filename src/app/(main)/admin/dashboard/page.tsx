@@ -129,7 +129,7 @@ export default function AdminDashboardPage() {
                 <div>
                   <p className="font-medium text-gray-900">{course.title}</p>
                   <p className="text-sm text-gray-500">
-                    {course.subject_name} • {course.teacher_name}
+                    {course.subject_name} • {course.user_name}
                   </p>
                 </div>
                 <span

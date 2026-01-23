@@ -1,4 +1,5 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import { useUserContext } from "../../../lib/userProvider";
 import { authAPI } from "../../../lib/auth";
@@ -6,11 +7,27 @@ import { AxiosError } from "axios";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Input } from "@/components/form/Input";
-import { Button } from "@/components/form/Button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 const loginSchema = z.object({
-  email: z.email("Invalid email address"),
+  email: z.string().email("Invalid email address"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -20,13 +37,12 @@ export default function LoginPage() {
   const router = useRouter();
   const { setUser } = useUserContext();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    setError,
-  } = useForm<LoginFormData>({
+  const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
 
   const onSubmit = async (data: LoginFormData) => {
@@ -73,60 +89,95 @@ export default function LoginPage() {
         console.error("Response data:", err.response?.data);
         console.error("Request URL:", err.config?.url);
 
-        setError("root", {
+        form.setError("root", {
           message: err.response?.data?.message || "Login failed",
         });
       } else if (err instanceof Error) {
         console.error("Error message:", err.message);
-        setError("root", { message: err.message });
+        form.setError("root", { message: err.message });
       } else {
         console.error("Unknown error type");
-        setError("root", { message: "Something went wrong" });
+        form.setError("root", { message: "Something went wrong" });
       }
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full space-y-8 rounded-lg border border-gray-200 shadow-sm p-8">
-        <div>
-          <h2 className="text-center text-3xl font-bold text-gray-900">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl text-center font-bold">
             Cosmo Training
-          </h2>
-        </div>
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          {errors.root && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {errors.root.message}
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <Input
-              id="email"
-              type="email"
-              label="Имэйл"
-              autoComplete="email"
-              error={errors.email?.message}
-              {...register("email")}
-            />
-
-            <Input
-              id="password"
-              type="password"
-              label="Нууц үг"
-              autoComplete="current-password"
-              error={errors.password?.message}
-              {...register("password")}
-            />
-          </div>
-
-          <Button type="submit" loading={isSubmitting}>
+          </CardTitle>
+          <CardDescription className="text-center">
             Нэвтрэх
-          </Button>
-        </form>
-      </div>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {form.formState.errors.root && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                  {form.formState.errors.root.message}
+                </div>
+              )}
+
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Имэйл</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="email@example.com"
+                        autoComplete="email"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Нууц үг</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        autoComplete="current-password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Нэвтэрч байна...
+                  </>
+                ) : (
+                  "Нэвтрэх"
+                )}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +36,7 @@ export function CreateEditLessonDialog({
   onSuccess,
   trigger,
 }: CreateEditLessonDialogProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -207,6 +209,9 @@ export function CreateEditLessonDialog({
             setUploadProgress(progress);
           });
           toast.success("Видео амжилттай хуулагдлаа!");
+
+          // Refresh the page to update the UI
+          router.refresh();
         } catch (error) {
           toast.error("Видео хуулахад алдаа гарлаа");
         } finally {
@@ -223,6 +228,9 @@ export function CreateEditLessonDialog({
             await pdfAPI.uploadFile(lessonId, pdfFile, pdfFile.name);
           }
           toast.success(`${pendingPdfFiles.length} PDF файл амжилттай хуулагдлаа!`);
+
+          // Refresh the page to update the UI
+          router.refresh();
         } catch (error) {
           toast.error("PDF файл хуулахад алдаа гарлаа");
         } finally {

@@ -16,7 +16,7 @@ interface EnrolledCourse {
   description: string | null;
   thumbnail_url: string | null;
   subject_name: string;
-  teacher_name: string;
+  user_name: string;
   enrolled_at: string;
 }
 
@@ -122,7 +122,7 @@ export default function MyLearningPage() {
                       <div className="flex items-center justify-between text-sm text-gray-500 border-t pt-3">
                         <div className="flex items-center gap-1">
                           <User size={14} />
-                          <span className="truncate">{course.teacher_name}</span>
+                          <span className="truncate">{course.user_name}</span>
                         </div>
                         <ArrowRight size={16} className="text-blue-600" />
                       </div>

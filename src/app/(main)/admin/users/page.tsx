@@ -1,19 +1,32 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { adminAPI } from "@/lib/admin";
 import { AdminUser, PaginationData } from "@/types/admin";
 import SearchBar from "@/components/admin/SearchBar";
 import FilterPanel, { FilterOption } from "@/components/admin/FilterPanel";
 import DataTable, { Column } from "@/components/admin/DataTable";
 import Pagination from "@/components/admin/Pagination";
+import { EditUserDialog } from "@/components/admin/EditUserDialog";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { Plus, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function AdminUsersPage() {
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+
+  // Dialog states
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["admin-users", page, search, roleFilter],
@@ -22,7 +35,8 @@ export default function AdminUsersPage() {
         page,
         limit: 10,
         search: search || undefined,
-        role: roleFilter !== "all" ? (roleFilter as "admin" | "user") : undefined,
+        role:
+          roleFilter !== "all" ? (roleFilter as "admin" | "user") : undefined,
       });
       return response;
     },
@@ -45,6 +59,45 @@ export default function AdminUsersPage() {
     setRoleFilter("all");
     setSearch("");
     setPage(1);
+  };
+
+  const handleCreate = async (data: any) => {
+    try {
+      await adminAPI.createUser(data);
+      toast.success("User created successfully");
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to create user");
+      throw error;
+    }
+  };
+
+  const handleEdit = async (id: number, data: any) => {
+    try {
+      await adminAPI.updateUser(id, data);
+      toast.success("User updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to update user");
+      throw error;
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedUser) return;
+
+    try {
+      setIsDeleting(true);
+      await adminAPI.deleteUser(selectedUser.id);
+      toast.success("User deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      setDeleteDialogOpen(false);
+      setSelectedUser(null);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to delete user");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const activeFilterCount = (roleFilter !== "all" ? 1 : 0) + (search ? 1 : 0);
@@ -82,15 +135,46 @@ export default function AdminUsersPage() {
       label: "Created At",
       render: (user) => format(new Date(user.created_at), "MMM dd, yyyy"),
     },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (user) => (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSelectedUser(user);
+              setEditDialogOpen(true);
+            }}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSelectedUser(user);
+              setDeleteDialogOpen(true);
+            }}
+            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
   ];
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-        <p className="text-gray-500 mt-1">
-          Manage and view all registered users
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
+          <p className="text-gray-500 mt-1">
+            Manage and view all registered users
+          </p>
+        </div>
       </div>
 
       {/* Search and Filters */}
@@ -100,7 +184,7 @@ export default function AdminUsersPage() {
             value={search}
             onChange={(value) => {
               setSearch(value);
-              setPage(1); // Reset to first page on search
+              setPage(1);
             }}
             placeholder="Search by name or email..."
           />
@@ -134,6 +218,30 @@ export default function AdminUsersPage() {
           onPageChange={setPage}
         />
       )}
+
+      {/* Dialogs */}
+
+      <EditUserDialog
+        isOpen={editDialogOpen}
+        onClose={() => {
+          setEditDialogOpen(false);
+          setSelectedUser(null);
+        }}
+        onSubmit={handleEdit}
+        user={selectedUser}
+      />
+
+      <DeleteConfirmDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setSelectedUser(null);
+        }}
+        onConfirm={handleDelete}
+        title="Delete User"
+        description={`Are you sure you want to delete user "${selectedUser?.name}"? This action cannot be undone.`}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

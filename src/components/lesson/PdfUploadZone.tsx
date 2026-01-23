@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Upload, FileText, Download, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -26,6 +27,7 @@ export function PdfUploadZone({
   materials,
   onMaterialsUpdate,
 }: PdfUploadZoneProps) {
+  const router = useRouter();
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [dragActive, setDragActive] = useState(false);
@@ -60,6 +62,9 @@ export function PdfUploadZone({
       onMaterialsUpdate([...materials, newMaterial]);
       toast.success("PDF амжилттай хуулагдлаа");
 
+      // Refresh the page to update the UI
+      router.refresh();
+
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -82,6 +87,9 @@ export function PdfUploadZone({
       await pdfAPI.delete(materialId);
       onMaterialsUpdate(materials.filter((m) => m.id !== materialId));
       toast.success("PDF амжилттай устгагдлаа");
+
+      // Refresh the page to update the UI
+      router.refresh();
     } catch (error) {
       console.error("Delete error:", error);
       toast.error("PDF устгахад алдаа гарлаа");

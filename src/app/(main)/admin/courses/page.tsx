@@ -1,19 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { adminAPI } from "@/lib/admin";
 import { AdminCourse, PaginationData } from "@/types/admin";
 import SearchBar from "@/components/admin/SearchBar";
 import FilterPanel, { FilterOption } from "@/components/admin/FilterPanel";
 import DataTable, { Column } from "@/components/admin/DataTable";
 import Pagination from "@/components/admin/Pagination";
+import { EditCourseDialog } from "@/components/admin/EditCourseDialog";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { Plus, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function AdminCoursesPage() {
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [publishedFilter, setPublishedFilter] = useState<string>("all");
+
+  // Dialog states
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<AdminCourse | null>(
+    null,
+  );
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["admin-courses", page, search, publishedFilter],
@@ -50,6 +65,45 @@ export default function AdminCoursesPage() {
     setPage(1);
   };
 
+  const handleCreate = async (data: any) => {
+    try {
+      await adminAPI.createCourse(data);
+      toast.success("Course created successfully");
+      queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to create course");
+      throw error;
+    }
+  };
+
+  const handleEdit = async (id: number, data: any) => {
+    try {
+      await adminAPI.updateCourse(id, data);
+      toast.success("Course updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to update course");
+      throw error;
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedCourse) return;
+
+    try {
+      setIsDeleting(true);
+      await adminAPI.deleteCourse(selectedCourse.id);
+      toast.success("Course deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
+      setDeleteDialogOpen(false);
+      setSelectedCourse(null);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to delete course");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const activeFilterCount =
     (publishedFilter !== "all" ? 1 : 0) + (search ? 1 : 0);
 
@@ -77,8 +131,8 @@ export default function AdminCoursesPage() {
       label: "Subject",
     },
     {
-      key: "teacher_name",
-      label: "Teacher",
+      key: "user_name",
+      label: "Instructor",
     },
     {
       key: "published",
@@ -100,13 +154,46 @@ export default function AdminCoursesPage() {
       label: "Created At",
       render: (course) => format(new Date(course.created_at), "MMM dd, yyyy"),
     },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (course) => (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSelectedCourse(course);
+              setEditDialogOpen(true);
+            }}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSelectedCourse(course);
+              setDeleteDialogOpen(true);
+            }}
+            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
   ];
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Course Management</h1>
-        <p className="text-gray-500 mt-1">Manage and view all courses</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Course Management
+          </h1>
+          <p className="text-gray-500 mt-1">Manage and view all courses</p>
+        </div>
       </div>
 
       {/* Search and Filters */}
@@ -150,6 +237,30 @@ export default function AdminCoursesPage() {
           onPageChange={setPage}
         />
       )}
+
+      {/* Dialogs */}
+
+      <EditCourseDialog
+        isOpen={editDialogOpen}
+        onClose={() => {
+          setEditDialogOpen(false);
+          setSelectedCourse(null);
+        }}
+        onSubmit={handleEdit}
+        course={selectedCourse}
+      />
+
+      <DeleteConfirmDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setSelectedCourse(null);
+        }}
+        onConfirm={handleDelete}
+        title="Delete Course"
+        description={`Are you sure you want to delete course "${selectedCourse?.title}"? This action cannot be undone.`}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

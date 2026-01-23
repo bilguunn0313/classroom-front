@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { adminAPI } from "@/lib/admin";
 import { AdminLesson, PaginationData } from "@/types/admin";
 import SearchBar from "@/components/admin/SearchBar";
@@ -9,12 +9,23 @@ import FilterPanel, { FilterOption } from "@/components/admin/FilterPanel";
 import DataTable, { Column } from "@/components/admin/DataTable";
 import Pagination from "@/components/admin/Pagination";
 import { format } from "date-fns";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Plus, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { EditLessonDialog } from "@/components/admin/EditLessonDialog";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 
 export default function AdminLessonsPage() {
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [publishedFilter, setPublishedFilter] = useState<string>("all");
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedLesson, setSelectedLesson] = useState<AdminLesson | null>(
+    null,
+  );
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["admin-lessons", page, search, publishedFilter],
@@ -53,6 +64,32 @@ export default function AdminLessonsPage() {
 
   const activeFilterCount =
     (publishedFilter !== "all" ? 1 : 0) + (search ? 1 : 0);
+
+  const handleCreate = () => {
+    setCreateDialogOpen(true);
+  };
+
+  const handleEdit = (lesson: AdminLesson) => {
+    setSelectedLesson(lesson);
+    setEditDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!selectedLesson) return;
+
+    setIsDeleting(true);
+    try {
+      await adminAPI.deleteLesson(selectedLesson.id);
+      toast.success("Lesson deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["admin-lessons"] });
+      setDeleteDialogOpen(false);
+      setSelectedLesson(null);
+    } catch (error) {
+      toast.error("Failed to delete lesson");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const columns: Column<AdminLesson>[] = [
     {
@@ -119,13 +156,42 @@ export default function AdminLessonsPage() {
       label: "Created At",
       render: (lesson) => format(new Date(lesson.created_at), "MMM dd, yyyy"),
     },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (lesson) => (
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleEdit(lesson)}
+            className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
+            title="Edit lesson"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => {
+              setSelectedLesson(lesson);
+              setDeleteDialogOpen(true);
+            }}
+            className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
+            title="Delete lesson"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      ),
+    },
   ];
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Lesson Management</h1>
-        <p className="text-gray-500 mt-1">Manage and view all lessons</p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Lesson Management
+          </h1>
+          <p className="text-gray-500 mt-1">Manage and view all lessons</p>
+        </div>
       </div>
 
       {/* Search and Filters */}
@@ -169,6 +235,33 @@ export default function AdminLessonsPage() {
           onPageChange={setPage}
         />
       )}
+
+      <EditLessonDialog
+        isOpen={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+        lesson={
+          selectedLesson
+            ? {
+                ...selectedLesson,
+                lesson_order: selectedLesson.order,
+                description: selectedLesson.description ?? undefined,
+                video_url: selectedLesson.video_url ?? undefined,
+              }
+            : null
+        }
+        onSubmit={async (data) => {
+          await queryClient.invalidateQueries({ queryKey: ["admin-lessons"] });
+        }}
+      />
+
+      <DeleteConfirmDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete Lesson"
+        description={`Are you sure you want to delete "${selectedLesson?.title}"? This action cannot be undone.`}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }
