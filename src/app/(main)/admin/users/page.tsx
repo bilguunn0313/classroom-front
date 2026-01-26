@@ -61,17 +61,6 @@ export default function AdminUsersPage() {
     setPage(1);
   };
 
-  const handleCreate = async (data: any) => {
-    try {
-      await adminAPI.createUser(data);
-      toast.success("User created successfully");
-      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to create user");
-      throw error;
-    }
-  };
-
   const handleEdit = async (id: number, data: any) => {
     try {
       await adminAPI.updateUser(id, data);

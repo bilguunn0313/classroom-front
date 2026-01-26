@@ -9,7 +9,7 @@ import FilterPanel, { FilterOption } from "@/components/admin/FilterPanel";
 import DataTable, { Column } from "@/components/admin/DataTable";
 import Pagination from "@/components/admin/Pagination";
 import { format } from "date-fns";
-import { ExternalLink, Plus, Pencil, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { EditLessonDialog } from "@/components/admin/EditLessonDialog";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
@@ -102,35 +102,12 @@ export default function AdminLessonsPage() {
       render: (lesson) => (
         <div>
           <p className="font-medium text-gray-900">{lesson.title}</p>
-          {lesson.description && (
-            <p className="text-xs text-gray-500 truncate max-w-xs">
-              {lesson.description}
-            </p>
-          )}
         </div>
       ),
     },
     {
       key: "course_title",
       label: "Course",
-    },
-    {
-      key: "video_url",
-      label: "Video",
-      render: (lesson) =>
-        lesson.video_url ? (
-          <a
-            href={lesson.video_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
-          >
-            <ExternalLink className="w-3 h-3" />
-            <span className="text-xs">View</span>
-          </a>
-        ) : (
-          <span className="text-gray-400 text-xs">No video</span>
-        ),
     },
     {
       key: "order",
@@ -161,13 +138,13 @@ export default function AdminLessonsPage() {
       label: "Actions",
       render: (lesson) => (
         <div className="flex gap-2">
-          <button
+          {/* <button
             onClick={() => handleEdit(lesson)}
             className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
             title="Edit lesson"
           >
             <Pencil className="w-4 h-4" />
-          </button>
+          </button> */}
           <button
             onClick={() => {
               setSelectedLesson(lesson);

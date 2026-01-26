@@ -27,7 +27,7 @@ export const adminAPI = {
     return res.data;
   },
   updateUser: async (id: number, data: any) => {
-    const res = await api.put(`/admin/users/${id}`, data);
+    const res = await api.patch(`/admin/users/${id}/role`, data);
     return res.data;
   },
   deleteUser: async (id: number) => {

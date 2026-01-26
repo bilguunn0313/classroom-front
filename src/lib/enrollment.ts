@@ -30,4 +30,10 @@ export const enrollmentAPI = {
     const res = await api.get(`/enrollment/course/${courseId}/students`);
     return res.data;
   },
+
+  // Get all students with progress in a course (for course creators)
+  getCourseStudentsWithProgress: async (courseId: number) => {
+    const res = await api.get(`/enrollment/course/${courseId}/students-progress`);
+    return res.data;
+  },
 };

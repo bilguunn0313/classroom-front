@@ -45,7 +45,7 @@ type FormValues = z.infer<typeof formSchema>;
 interface Course {
   id: number;
   title: string;
-  description?: string;
+  description?: string | null;
   subject_id: number;
   instructor_name?: string;
   published: boolean;

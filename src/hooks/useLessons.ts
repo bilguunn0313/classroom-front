@@ -18,7 +18,7 @@ interface useLessonsReturn {
   }) => Promise<Lesson | null>;
   updateLesson: (
     id: number,
-    data: { title: string; description?: string | null; lessonOrder: number }
+    data: { title: string; description?: string | null; lessonOrder: number },
   ) => Promise<Lesson | null>;
   deleteLesson: (id: number) => Promise<void>;
   publishLesson: (id: number) => Promise<void>;
@@ -41,7 +41,7 @@ export function useLessons(courseId: number): useLessonsReturn {
       const lessonsData = response?.data || response || [];
 
       const sorted = (Array.isArray(lessonsData) ? lessonsData : []).sort(
-        (a: Lesson, b: Lesson) => a.lesson_order - b.lesson_order
+        (a: Lesson, b: Lesson) => a.lesson_order - b.lesson_order,
       );
       setLessons(sorted);
 
@@ -86,7 +86,7 @@ export function useLessons(courseId: number): useLessonsReturn {
       try {
         const updated = await lessonAPI.update(id, data);
         setLessons((prev) =>
-          prev.map((l) => (l.id === id ? { ...l, ...updated } : l))
+          prev.map((l) => (l.id === id ? { ...l, ...updated } : l)),
         );
         if (selectedLesson?.id === id) {
           setSelectedLesson({ ...selectedLesson, ...updated });
@@ -98,7 +98,7 @@ export function useLessons(courseId: number): useLessonsReturn {
         throw err;
       }
     },
-    [selectedLesson]
+    [selectedLesson],
   );
 
   const deleteLesson = useCallback(async (id: number) => {
@@ -111,7 +111,7 @@ export function useLessons(courseId: number): useLessonsReturn {
     try {
       await lessonAPI.publish(id);
       setLessons((prev) =>
-        prev.map((l) => (l.id === id ? { ...l, published: true } : l))
+        prev.map((l) => (l.id === id ? { ...l, published: true } : l)),
       );
       toast.success("Хичээл амжилттай нийтлэгдлээ");
     } catch (err: any) {

@@ -15,6 +15,7 @@ import {
   X,
   FileText,
   Download,
+  Lock,
 } from "lucide-react";
 
 // Hooks
@@ -27,9 +28,12 @@ import { useUserContext } from "@/lib/userProvider";
 
 // Components
 import { ManageLessonsDialog } from "@/components/lesson/ManageLessonsDialog";
+import { EnrollCourseDialog } from "@/components/EnrollCourseDialog";
+import { Button } from "@/components/ui/button";
 import { Lesson } from "@/types/schema.types";
 import { pdfAPI } from "@/lib/pdf";
 import { useSubjectWithCourse } from "@/hooks/useSubjectWithCourse";
+import { enrollmentAPI } from "@/lib/enrollment";
 
 interface PdfMaterial {
   id: number;
@@ -102,6 +106,37 @@ const CourseDetailPage = () => {
   const [pdfMaterials, setPdfMaterials] = useState<PdfMaterial[]>([]);
   const [loadingPdfs, setLoadingPdfs] = useState(false);
 
+  // Enrollment state
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [enrollmentLoading, setEnrollmentLoading] = useState(true);
+  const [showEnrollDialog, setShowEnrollDialog] = useState(false);
+
+  // Check enrollment status
+  useEffect(() => {
+    const checkEnrollment = async () => {
+      if (!user?.id || !courseId) {
+        setEnrollmentLoading(false);
+        return;
+      }
+
+      try {
+        const response = await enrollmentAPI.checkStatus(courseId);
+        setIsEnrolled(response.data?.enrolled || false);
+      } catch (error) {
+        console.error("Failed to check enrollment:", error);
+        setIsEnrolled(false);
+      } finally {
+        setEnrollmentLoading(false);
+      }
+    };
+
+    checkEnrollment();
+  }, [user?.id, courseId]);
+
+  const handleEnrollSuccess = () => {
+    setIsEnrolled(true);
+  };
+
   // Seek to last position when lesson changes
   useEffect(() => {
     if (videoRef.current && selectedLesson) {
@@ -142,6 +177,7 @@ const CourseDetailPage = () => {
 
   const loading = courseLoading || lessonsLoading;
   const isOwner = user?.id === course?.user_id || user?.role === "admin";
+  const canAccessContent = isOwner || isEnrolled;
 
   // Filter lessons - owners see all, others see only published
   const visibleLessons = isOwner ? lessons : lessons.filter((l) => l.published);
@@ -250,12 +286,49 @@ const CourseDetailPage = () => {
           </button>
         </div>
 
+        {/* Enrollment Banner - Show if not enrolled and not owner */}
+        {!enrollmentLoading && !canAccessContent && (
+          <div className="mb-6 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold mb-1">
+                  Энэ сургалтанд бүртгүүлэх
+                </h2>
+                <p className="text-blue-100">
+                  Бүртгүүлснээр та бүх хичээлүүдэд хандах боломжтой болно
+                </p>
+              </div>
+              <Button
+                onClick={() => setShowEnrollDialog(true)}
+                className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-6"
+              >
+                Бүртгүүлэх
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Left: Video Player & Course Info */}
           <div className="lg:col-span-2 space-y-4 md:space-y-6">
             {/* Video Player */}
             <div className="bg-black rounded-lg overflow-hidden aspect-video">
-              {selectedLesson?.video_url ? (
+              {!canAccessContent ? (
+                <div className="w-full h-full flex items-center justify-center text-white bg-gray-900">
+                  <div className="text-center px-4">
+                    <Lock
+                      size={48}
+                      className="mx-auto mb-4 opacity-50 md:w-16 md:h-16"
+                    />
+                    <p className="text-lg md:text-xl font-semibold mb-2">
+                      Хичээлүүд түгжигдсэн
+                    </p>
+                    <p className="text-sm md:text-base text-gray-400">
+                      Хичээлүүдийг үзэхийн тулд сургалтанд бүртгүүлнэ үү
+                    </p>
+                  </div>
+                </div>
+              ) : selectedLesson?.video_url ? (
                 <video
                   ref={videoRef}
                   src={getFullVideoUrl(selectedLesson.video_url) || ""}
@@ -524,6 +597,21 @@ const CourseDetailPage = () => {
       )}
 
       <Footer />
+
+      {/* Enroll Dialog */}
+      <EnrollCourseDialog
+        isOpen={showEnrollDialog}
+        onClose={() => setShowEnrollDialog(false)}
+        onSuccess={handleEnrollSuccess}
+        course={{
+          id: courseId,
+          title: course?.title || "",
+          description: course?.description,
+          instructor_name: user?.name,
+          lesson_count: visibleLessons.length,
+          total_duration: totalFormatted,
+        }}
+      />
     </div>
   );
 };

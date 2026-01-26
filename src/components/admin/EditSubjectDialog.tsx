@@ -34,7 +34,7 @@ type FormValues = z.infer<typeof formSchema>;
 interface Subject {
   id: number;
   title: string;
-  description?: string;
+  description?: string | null;
 }
 
 interface EditSubjectDialogProps {
