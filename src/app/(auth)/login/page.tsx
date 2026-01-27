@@ -11,7 +11,7 @@ import { LoginForm } from "@/components/LoginForm";
 import Image from "next/image";
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.email("Invalid email address"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -87,36 +87,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-6 md:p-10 bg-white ">
-        <div className="flex justify-center gap-2 md:justify-start ">
-          <a href="#" className="flex items-center gap-2 font-medium">
-            <div className="flex size-10 items-center justify-center">
-              <Image
-                src="/cosmo-logo.png"
-                alt="Cosmo Training"
-                width={40}
-                height={40}
-                className="object-contain"
-              />
-            </div>
-            Cosmo Training
-          </a>
-        </div>
-        <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-xs">
-            <LoginForm form={form} onSubmit={onSubmit} />
-          </div>
-        </div>
-      </div>
-      <div className="relative hidden bg-[#2488C7] lg:block">
-        <Image
-          src="/cosmo-logo.png"
-          alt="Cosmo Training"
-          fill
-          className="object-contain p-20 w-1"
-          priority
-        />
+    <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm md:max-w-4xl">
+        <LoginForm form={form} onSubmit={onSubmit} />
       </div>
     </div>
   );
