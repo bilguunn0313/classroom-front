@@ -182,7 +182,7 @@ const Header = () => {
                 onClick={() => router.push("/login")}
                 className="bg-white text-blue-700 px-6 py-2.5 rounded-lg font-medium hover:bg-blue-50 transition-all shadow-md hover:shadow-lg"
               >
-                Нэвтрэх | Бүртгүүлэх
+                Нэвтрэх |
               </button>
             )}
           </nav>

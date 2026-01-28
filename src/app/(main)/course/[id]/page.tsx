@@ -292,17 +292,17 @@ const CourseDetailPage = () => {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h2 className="text-xl font-bold mb-1">
-                  Энэ сургалтанд бүртгүүлэх
+                  Энэ сургалтанд хамрагдах
                 </h2>
                 <p className="text-blue-100">
-                  Бүртгүүлснээр та бүх хичээлүүдэд хандах боломжтой болно
+                  Хамрагдсанаар та бүх хичээлүүдэд хандах боломжтой болно
                 </p>
               </div>
               <Button
                 onClick={() => setShowEnrollDialog(true)}
                 className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-6"
               >
-                Бүртгүүлэх
+                Хамрагдах
               </Button>
             </div>
           </div>

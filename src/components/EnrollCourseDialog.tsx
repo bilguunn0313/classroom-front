@@ -44,8 +44,7 @@ export function EnrollCourseDialog({
       onSuccess();
       onClose();
     } catch (error: any) {
-      const message =
-        error.response?.data?.message || "Бүртгэхэд алдаа гарлаа";
+      const message = error.response?.data?.message || "Бүртгэхэд алдаа гарлаа";
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -56,9 +55,9 @@ export function EnrollCourseDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Сургалтанд бүртгүүлэх</DialogTitle>
+          <DialogTitle>Сургалтанд хамрагдах</DialogTitle>
           <DialogDescription>
-            Та энэ сургалтанд бүртгүүлэхдээ итгэлтэй байна уу?
+            Та энэ сургалтанд хамрагдахдаа итгэлтэй байна уу?
           </DialogDescription>
         </DialogHeader>
 
@@ -91,7 +90,7 @@ export function EnrollCourseDialog({
           </div>
 
           <p className="text-sm text-gray-500">
-            Бүртгүүлсний дараа та энэ сургалтын бүх хичээлүүдэд хандах боломжтой
+            Хамрагдсаны дараа та энэ сургалтын бүх хичээлүүдэд хандах боломжтой
             болно.
           </p>
         </div>
@@ -104,10 +103,10 @@ export function EnrollCourseDialog({
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Бүртгэж байна...
+                Уншиж байна...
               </>
             ) : (
-              "Бүртгүүлэх"
+              "Хамрагдах"
             )}
           </Button>
         </DialogFooter>
