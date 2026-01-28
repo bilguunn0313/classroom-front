@@ -1,4 +1,4 @@
-import { Facebook, Mail, Phone, MapPin, GraduationCap } from "lucide-react";
+import { Facebook, Mail, MapPin, GraduationCap } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -12,11 +12,11 @@ const Footer = () => {
               <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
                 <GraduationCap size={24} />
               </div>
-              <h3 className="font-bold text-xl">Cosmo Learning</h3>
+              <h3 className="font-bold text-xl">Cosmo Training</h3>
             </div>
             <p className="text-sm text-slate-300 leading-relaxed">
-              Онлайн сургалтын орчин үеийн платформ. Хүссэн газраасаа, хүссэн
-              цагтаа суралцаарай.
+              Онлайн сургалтын платформ. Хүссэн газраасаа, хүссэн цагтаа
+              суралцаарай.
             </p>
           </div>
 
@@ -31,7 +31,7 @@ const Footer = () => {
                   size={18}
                   className="flex-shrink-0 mt-0.5 text-blue-400"
                 />
-                <span>info@cosmolearning.mn</span>
+                <span>training@cosmo.mn</span>
               </li>
 
               <li className="flex items-start gap-3 text-sm text-slate-300">
@@ -85,10 +85,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-slate-700 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-slate-400">© 2024 Cosmo Learning.</p>
-            <p className="text-sm text-slate-400">
-              Онлайн видео сургалтын платформ 🎓
-            </p>
+            <p className="text-sm text-slate-400">© 2026 Cosmo Training.</p>
           </div>
         </div>
       </div>

@@ -219,9 +219,9 @@ const CourseDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 flex flex-col">
         <Header />
-        <div className="container mx-auto px-4 py-12 flex justify-center items-center min-h-[60vh]">
+        <div className="container mx-auto px-4 py-12 flex justify-center items-center min-h-[60vh] flex-grow">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-600">Сургалт ачааллаж байна...</p>
@@ -234,9 +234,9 @@ const CourseDetailPage = () => {
 
   if (courseError || !course) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 flex flex-col">
         <Header />
-        <div className="container mx-auto px-4 py-12">
+        <div className="container mx-auto px-4 py-12 flex-grow">
           <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg max-w-2xl mx-auto">
             <p className="font-semibold">Алдаа</p>
             <p>{courseError || "Сургалт олдсонгүй"}</p>
@@ -248,10 +248,10 @@ const CourseDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
 
-      <main className="container mx-auto px-4 py-4 md:py-6">
+      <main className="container mx-auto px-4 py-4 md:py-6 flex-grow">
         {/* Back Button & Management */}
         <div className="flex items-center justify-between mb-4">
           <button

@@ -68,10 +68,10 @@ export default function AdminCoursesPage() {
   const handleCreate = async (data: any) => {
     try {
       await adminAPI.createCourse(data);
-      toast.success("Course created successfully");
+      toast.success("Сургалт амжилттай үүслээ");
       queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to create course");
+      toast.error(error.response?.data?.message || "Сургалт үүсгэхэд алдаа гарлаа");
       throw error;
     }
   };
@@ -79,10 +79,10 @@ export default function AdminCoursesPage() {
   const handleEdit = async (id: number, data: any) => {
     try {
       await adminAPI.updateCourse(id, data);
-      toast.success("Course updated successfully");
+      toast.success("Сургалт амжилттай шинэчлэгдлээ");
       queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to update course");
+      toast.error(error.response?.data?.message || "Сургалт шинэчлэхэд алдаа гарлаа");
       throw error;
     }
   };
@@ -93,12 +93,12 @@ export default function AdminCoursesPage() {
     try {
       setIsDeleting(true);
       await adminAPI.deleteCourse(selectedCourse.id);
-      toast.success("Course deleted successfully");
+      toast.success("Сургалт амжилттай устгагдлаа");
       queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
       setDeleteDialogOpen(false);
       setSelectedCourse(null);
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to delete course");
+      toast.error(error.response?.data?.message || "Сургалт устгахад алдаа гарлаа");
     } finally {
       setIsDeleting(false);
     }

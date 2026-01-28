@@ -103,9 +103,9 @@ export function DraggableLessonList({
         courseId,
         updatedLessons.map((l) => l.id)
       );
-      toast.success("Lessons reordered successfully");
+      toast.success("Хичээлүүдийн дараалал амжилттай солигдлоо");
     } catch (error) {
-      toast.error("Failed to save lesson order");
+      toast.error("Хичээлүүдийн дарааллыг хадгалахад алдаа гарлаа");
       // Revert on error
       onLessonsReorder(lessons);
     } finally {

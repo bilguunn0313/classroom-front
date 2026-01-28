@@ -80,12 +80,12 @@ export default function AdminLessonsPage() {
     setIsDeleting(true);
     try {
       await adminAPI.deleteLesson(selectedLesson.id);
-      toast.success("Lesson deleted successfully");
+      toast.success("Хичээл амжилттай устгагдлаа");
       queryClient.invalidateQueries({ queryKey: ["admin-lessons"] });
       setDeleteDialogOpen(false);
       setSelectedLesson(null);
     } catch (error) {
-      toast.error("Failed to delete lesson");
+      toast.error("Хичээл устгахад алдаа гарлаа");
     } finally {
       setIsDeleting(false);
     }

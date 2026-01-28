@@ -46,14 +46,14 @@ export default function EditCoursePage() {
 
         // Check if we got valid course data
         if (!course || !course.title) {
-          toast.error("Course not found or invalid data");
+          toast.error("Сургалт олдсонгүй эсвэл буруу мэдээлэл");
           router.push("/my-courses");
           return;
         }
 
         // Check if user owns this course
         // if (course.user_id !== user?.id && user?.role !== "admin") {
-        //   toast.error("You don't have permission to edit this course");
+        //   toast.error("Та энэ сургалтыг засах эрхгүй байна");
         //   router.push("/my-courses");
         //   return;
         // }
@@ -67,11 +67,11 @@ export default function EditCoursePage() {
 
         // Handle specific error cases
         if (error.response?.status === 403 || error.response?.status === 401) {
-          toast.error("You don't have permission to edit this course");
+          toast.error("Та энэ сургалтыг засах эрхгүй байна");
         } else if (error.response?.status === 404) {
-          toast.error("Course not found");
+          toast.error("Сургалт олдсонгүй");
         } else {
-          toast.error(error.response?.data?.message || "Failed to load course");
+          toast.error(error.response?.data?.message || "Сургалт ачаалахад алдаа гарлаа");
         }
 
         router.push("/my-courses");
@@ -89,11 +89,11 @@ export default function EditCoursePage() {
     e.preventDefault();
 
     if (!courseTitle.trim()) {
-      toast.error("Course title is required");
+      toast.error("Сургалтын нэр заавал оруулна уу");
       return;
     }
     if (!selectedSubjectId) {
-      toast.error("Please select a subject");
+      toast.error("Сэдэв сонгоно уу");
       return;
     }
 
@@ -106,10 +106,10 @@ export default function EditCoursePage() {
         userId: user!.id,
         thumbnailUrl: thumbnailUrl || null,
       });
-      toast.success("Course updated successfully!");
+      toast.success("Сургалт амжилттай шинэчлэгдлээ!");
       router.push("/my-courses");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to update course");
+      toast.error(error.response?.data?.message || "Сургалт шинэчлэхэд алдаа гарлаа");
     } finally {
       setSaving(false);
     }
@@ -118,9 +118,9 @@ export default function EditCoursePage() {
   if (loading) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
           <Header />
-          <div className="container mx-auto px-4 py-12 flex justify-center">
+          <div className="container mx-auto px-4 py-12 flex justify-center flex-grow">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
           <Footer />
@@ -131,10 +131,10 @@ export default function EditCoursePage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
         <Header />
 
-        <main className="container mx-auto px-4 py-12">
+        <main className="container mx-auto px-4 py-12 flex-grow">
           <div className="max-w-3xl mx-auto">
             <Button
               variant="ghost"

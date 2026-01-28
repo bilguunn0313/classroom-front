@@ -40,7 +40,7 @@ export default function ManageLessonsPage() {
         ]);
 
         if (courseData.user_id !== user?.id && user?.role !== "admin") {
-          toast.error("You don't have permission to manage this course");
+          toast.error("Та энэ сургалтыг удирдах эрхгүй байна");
           router.push("/my-courses");
           return;
         }
@@ -52,7 +52,7 @@ export default function ManageLessonsPage() {
           ),
         );
       } catch (error) {
-        toast.error("Failed to load course data");
+        toast.error("Сургалтын мэдээлэл ачаалахад алдаа гарлаа");
         router.push("/my-courses");
       } finally {
         setLoading(false);
@@ -77,7 +77,7 @@ export default function ManageLessonsPage() {
         ),
       );
     } catch (error) {
-      toast.error("Failed to refresh lessons");
+      toast.error("Хичээл шинэчлэхэд алдаа гарлаа");
     }
   };
 
@@ -87,16 +87,16 @@ export default function ManageLessonsPage() {
     try {
       await lessonAPI.delete(lessonId);
       setLessons(lessons.filter((l) => l.id !== lessonId));
-      toast.success("Lesson deleted successfully");
+      toast.success("Хичээл амжилттай устгагдлаа");
     } catch (error) {
-      toast.error("Failed to delete lesson");
+      toast.error("Хичээл устгахад алдаа гарлаа");
     }
   };
 
   const handleTogglePublish = async (lesson: Lesson) => {
     try {
       if (lesson.published) {
-        toast.error("Cannot unpublish lessons yet");
+        toast.error("Нийтлэгдсэн хичээлийг буцааж хаах боломжгүй");
         return;
       }
       await lessonAPI.publish(lesson.id);
@@ -105,9 +105,9 @@ export default function ManageLessonsPage() {
           l.id === lesson.id ? { ...l, published: true } : l,
         ),
       );
-      toast.success("Lesson published successfully");
+      toast.success("Хичээл амжилттай нийтлэгдлээ");
     } catch (error) {
-      toast.error("Failed to publish lesson");
+      toast.error("Хичээл нийтлэхэд алдаа гарлаа");
     }
   };
 
@@ -121,9 +121,9 @@ export default function ManageLessonsPage() {
   if (loading) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
           <Header />
-          <div className="container mx-auto px-4 py-12 flex justify-center">
+          <div className="container mx-auto px-4 py-12 flex justify-center flex-grow">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
           <Footer />
@@ -134,10 +134,10 @@ export default function ManageLessonsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
         <Header />
 
-        <main className="container mx-auto px-4 py-12">
+        <main className="container mx-auto px-4 py-12 flex-grow">
           <div className="max-w-5xl mx-auto">
             <Button
               variant="ghost"

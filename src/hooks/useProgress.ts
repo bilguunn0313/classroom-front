@@ -94,10 +94,10 @@ export function useProgress(courseId: number): UseProgressReturn {
         return newMap;
       });
 
-      toast.success("Lesson marked as complete!");
+      toast.success("Хичээл дууссан гэж тэмдэглэгдлээ!");
     } catch (error) {
       console.error("Failed to mark complete:", error);
-      toast.error("Failed to update progress");
+      toast.error("Явцыг шинэчлэхэд алдаа гарлаа");
     }
   }, []);
 

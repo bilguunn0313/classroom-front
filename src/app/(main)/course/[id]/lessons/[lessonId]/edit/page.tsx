@@ -51,7 +51,7 @@ export default function CreateEditLessonPage() {
       try {
         const course = await courseAPI.getById(courseId);
         if (course.user_id !== user?.id && user?.role !== "admin") {
-          toast.error("You don't have permission");
+          toast.error("Танд эрх хүрэхгүй байна");
           router.push("/my-courses");
           return;
         }
@@ -83,7 +83,7 @@ export default function CreateEditLessonPage() {
           setLessonOrder((lessons.length + 1).toString());
         }
       } catch (error) {
-        toast.error("Failed to load data");
+        toast.error("Мэдээлэл ачаалахад алдаа гарлаа");
         router.push("/my-courses");
       } finally {
         setLoading(false);
@@ -99,12 +99,12 @@ export default function CreateEditLessonPage() {
     e.preventDefault();
 
     if (!title.trim()) {
-      toast.error("Lesson title is required");
+      toast.error("Хичээлийн нэр заавал оруулна уу");
       return;
     }
 
     if (!videoUrl.trim() && !text.trim()) {
-      toast.error("Please provide either a video URL or text content");
+      toast.error("Видео URL эсвэл текст агуулга оруулна уу");
       return;
     }
 
@@ -122,15 +122,15 @@ export default function CreateEditLessonPage() {
 
       if (isEdit && lessonId) {
         await lessonAPI.update(lessonId, data);
-        toast.success("Lesson updated successfully!");
+        toast.success("Хичээл амжилттай шинэчлэгдлээ!");
       } else {
         await lessonAPI.create(data);
-        toast.success("Lesson created successfully!");
+        toast.success("Хичээл амжилттай үүслээ!");
       }
 
       router.push(`/course/${courseId}/lessons`);
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to save lesson");
+      toast.error(error.response?.data?.message || "Хичээл хадгалахад алдаа гарлаа");
     } finally {
       setSaving(false);
     }
@@ -139,9 +139,9 @@ export default function CreateEditLessonPage() {
   if (loading) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
           <Header />
-          <div className="container mx-auto px-4 py-12 flex justify-center">
+          <div className="container mx-auto px-4 py-12 flex justify-center flex-grow">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
           <Footer />
@@ -152,10 +152,10 @@ export default function CreateEditLessonPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
         <Header />
 
-        <main className="container mx-auto px-4 py-12">
+        <main className="container mx-auto px-4 py-12 flex-grow">
           <div className="max-w-4xl mx-auto">
             <Button
               variant="ghost"
@@ -234,7 +234,7 @@ export default function CreateEditLessonPage() {
                             src={videoUrl}
                             controls
                             className="w-full h-full"
-                            onError={() => toast.error("Invalid video URL")}
+                            onError={() => toast.error("Видео URL буруу байна")}
                           >
                             Your browser does not support the video tag.
                           </video>

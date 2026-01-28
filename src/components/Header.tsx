@@ -83,6 +83,17 @@ const Header = () => {
               >
                 <DropdownMenuLabel>Сургалтын сэдвүүд</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => {
+                    router.push("/subjects");
+                    setShowSubjectsDropdown(false);
+                  }}
+                  className="cursor-pointer bg-blue-50 hover:bg-blue-100 font-semibold text-blue-700"
+                >
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  <span>Бүх сэдвүүд үзэх</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 {subjectsLoading ? (
                   <div className="px-2 py-3 text-sm text-gray-500">
                     Loading subjects...
@@ -219,6 +230,19 @@ const Header = () => {
               </button>
               {showSubjectsDropdown && (
                 <div className="mt-3 space-y-2 max-h-64 overflow-y-auto">
+                  <button
+                    onClick={() => {
+                      router.push("/subjects");
+                      setShowSubjectsDropdown(false);
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left py-3 px-3 rounded-lg bg-white text-blue-700 hover:bg-blue-50 transition-colors font-semibold border-2 border-white mb-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <BookOpen size={18} />
+                      <span>Бүх сэдвүүд үзэх</span>
+                    </div>
+                  </button>
                   {subjectsLoading ? (
                     <div className="text-sm text-blue-200 py-2">
                       Loading subjects...
@@ -270,13 +294,6 @@ const Header = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <button
-                      onClick={() => router.push("/profile")}
-                      className="flex items-center gap-3 text-white hover:bg-blue-500/50 transition-colors py-2 px-3 rounded-lg w-full"
-                    >
-                      <User size={18} />
-                      <span>Profile</span>
-                    </button>
                     <button
                       onClick={() => router.push("/my-courses")}
                       className="flex items-center gap-3 text-white hover:bg-blue-500/50 transition-colors py-2 px-3 rounded-lg w-full"

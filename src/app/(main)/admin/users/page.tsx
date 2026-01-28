@@ -64,10 +64,10 @@ export default function AdminUsersPage() {
   const handleEdit = async (id: number, data: any) => {
     try {
       await adminAPI.updateUser(id, data);
-      toast.success("User updated successfully");
+      toast.success("Хэрэглэгч амжилттай шинэчлэгдлээ");
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to update user");
+      toast.error(error.response?.data?.message || "Хэрэглэгч шинэчлэхэд алдаа гарлаа");
       throw error;
     }
   };
@@ -78,12 +78,12 @@ export default function AdminUsersPage() {
     try {
       setIsDeleting(true);
       await adminAPI.deleteUser(selectedUser.id);
-      toast.success("User deleted successfully");
+      toast.success("Хэрэглэгч амжилттай устгагдлаа");
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       setDeleteDialogOpen(false);
       setSelectedUser(null);
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to delete user");
+      toast.error(error.response?.data?.message || "Хэрэглэгч устгахад алдаа гарлаа");
     } finally {
       setIsDeleting(false);
     }

@@ -62,7 +62,7 @@ export function CreateCourseDialog({ onSuccess }: CreateCourseDialogProps) {
   const handleCreateSubject = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!subjectTitle.trim()) {
-      toast.error("Subject title is required");
+      toast.error("Сэдвийн нэр заавал оруулна уу");
       return;
     }
 
@@ -72,13 +72,13 @@ export function CreateCourseDialog({ onSuccess }: CreateCourseDialogProps) {
         title: subjectTitle,
         description: subjectDescription || null,
       });
-      toast.success("Subject created successfully!");
+      toast.success("Сэдэв амжилттай үүслээ!");
       await refetch();
       setSubjectTitle("");
       setSubjectDescription("");
       setActiveTab("course");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to create subject");
+      toast.error(error.response?.data?.message || "Сэдэв үүсгэхэд алдаа гарлаа");
     } finally {
       setLoading(false);
     }
@@ -87,15 +87,15 @@ export function CreateCourseDialog({ onSuccess }: CreateCourseDialogProps) {
   const handleCreateCourse = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!courseTitle.trim()) {
-      toast.error("Course title is required");
+      toast.error("Сургалтын нэр заавал оруулна уу");
       return;
     }
     if (!selectedSubjectId) {
-      toast.error("Please select a subject");
+      toast.error("Сэдэв сонгоно уу");
       return;
     }
     if (!user?.id) {
-      toast.error("User not authenticated");
+      toast.error("Хэрэглэгч нэвтрээгүй байна");
       return;
     }
 
@@ -108,12 +108,12 @@ export function CreateCourseDialog({ onSuccess }: CreateCourseDialogProps) {
         userId: user.id,
         thumbnailUrl: thumbnailUrl || null,
       });
-      toast.success("Course created successfully!");
+      toast.success("Сургалт амжилттай үүслээ!");
       resetForms();
       setOpen(false);
       onSuccess?.();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to create course");
+      toast.error(error.response?.data?.message || "Сургалт үүсгэхэд алдаа гарлаа");
     } finally {
       setLoading(false);
     }

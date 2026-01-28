@@ -43,10 +43,10 @@ export default function AdminSubjectsPage() {
   const handleCreate = async (data: any) => {
     try {
       await adminAPI.createSubject(data);
-      toast.success("Subject created successfully");
+      toast.success("Сэдэв амжилттай үүслээ");
       queryClient.invalidateQueries({ queryKey: ["admin-subjects"] });
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to create subject");
+      toast.error(error.response?.data?.message || "Сэдэв үүсгэхэд алдаа гарлаа");
       throw error;
     }
   };
@@ -54,10 +54,10 @@ export default function AdminSubjectsPage() {
   const handleEdit = async (id: number, data: any) => {
     try {
       await adminAPI.updateSubject(id, data);
-      toast.success("Subject updated successfully");
+      toast.success("Сэдэв амжилттай шинэчлэгдлээ");
       queryClient.invalidateQueries({ queryKey: ["admin-subjects"] });
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to update subject");
+      toast.error(error.response?.data?.message || "Сэдэв шинэчлэхэд алдаа гарлаа");
       throw error;
     }
   };
@@ -68,12 +68,12 @@ export default function AdminSubjectsPage() {
     try {
       setIsDeleting(true);
       await adminAPI.deleteSubject(selectedSubject.id);
-      toast.success("Subject deleted successfully");
+      toast.success("Сэдэв амжилттай устгагдлаа");
       queryClient.invalidateQueries({ queryKey: ["admin-subjects"] });
       setDeleteDialogOpen(false);
       setSelectedSubject(null);
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to delete subject");
+      toast.error(error.response?.data?.message || "Сэдэв устгахад алдаа гарлаа");
     } finally {
       setIsDeleting(false);
     }
