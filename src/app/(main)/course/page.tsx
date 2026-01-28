@@ -12,9 +12,9 @@ const App = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
         <Header />
-        <div className="container mx-auto px-4 py-12 flex justify-center">
+        <div className="container mx-auto px-4 py-12 flex justify-center flex-grow">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
         <Footer />
@@ -24,9 +24,9 @@ const App = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
         <Header />
-        <div className="container mx-auto px-4 py-12">
+        <div className="container mx-auto px-4 py-12 flex-grow">
           <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
             {error}
           </div>
@@ -37,9 +37,9 @@ const App = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
       <Header />
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 py-12 flex-grow">
         {data.map(({ subject, course }) => (
           <section key={subject.id} className="mb-12">
             <h2 className="text-3xl font-bold mb-6">{subject.title}</h2>
