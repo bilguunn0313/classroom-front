@@ -6,6 +6,7 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
+  FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
@@ -27,7 +28,7 @@ export function LoginForm({ form, onSubmit, className }: LoginFormProps) {
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Нэвтрэх</h1>
                 <p className="text-muted-foreground text-balance">
-                  Байгууллагын имэйл хаягаар нэвтэрнэ үү
+                  odooERP-ын эрхээр нэвтэрнэ үү!
                 </p>
               </div>
 
@@ -65,7 +66,7 @@ export function LoginForm({ form, onSubmit, className }: LoginFormProps) {
               <Field>
                 <Button
                   type="submit"
-                  className="w-full"
+                  className="w-full bg-[#1a4799]"
                   disabled={form.formState.isSubmitting}
                 >
                   {form.formState.isSubmitting ? (
@@ -78,9 +79,20 @@ export function LoginForm({ form, onSubmit, className }: LoginFormProps) {
                   )}
                 </Button>
               </Field>
+              <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
+                Хэрэв
+              </FieldSeparator>
+              <Field>
+                <div className="items-center text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Нэвтрэх нэр, нууц үгээ мэдэхгүй байгаа бол хүний нөөц-д
+                    хандана уу.
+                  </p>
+                </div>
+              </Field>
             </FieldGroup>
           </form>
-          <div className=" relative hidden md:flex items-center justify-center p-10 bg-[#171717] ">
+          <div className=" relative hidden md:flex items-center justify-center p-10 bg-[#1a4799]">
             <img
               src="/cosmo-logo.png"
               alt="Logo"

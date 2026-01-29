@@ -52,7 +52,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-linear-to-r from-blue-600 via-blue-700 to-blue-800 shadow-md border-b border-blue-900">
+    <header className="bg-linear-to-r from-blue-400 via-blue-500 to-blue-600 shadow-md border-b border-blue-900">
       {/* NAV BAR */}
       <div className="container mx-auto px-4 ">
         <div className="flex items-center justify-between h-16 md:h-18">

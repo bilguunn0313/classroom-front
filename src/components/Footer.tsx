@@ -2,7 +2,7 @@ import { Facebook, Mail, MapPin, GraduationCap } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
+    <footer className="bg-gradient-to-br from-slate-700 via-blue-700 to-slate-700 text-white">
       <div className="container mx-auto px-4">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 py-12">
