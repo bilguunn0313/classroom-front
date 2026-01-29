@@ -27,6 +27,7 @@ import { subjectAPI } from "@/lib/subject";
 import { courseAPI } from "@/lib/course";
 import { useUserContext } from "@/lib/userProvider";
 import { toast } from "sonner";
+import { ImageUpload } from "@/components/ImageUpload";
 
 interface CreateCourseDialogProps {
   onSuccess?: () => void;
@@ -78,7 +79,9 @@ export function CreateCourseDialog({ onSuccess }: CreateCourseDialogProps) {
       setSubjectDescription("");
       setActiveTab("course");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Сэдэв үүсгэхэд алдаа гарлаа");
+      toast.error(
+        error.response?.data?.message || "Сэдэв үүсгэхэд алдаа гарлаа",
+      );
     } finally {
       setLoading(false);
     }
@@ -113,7 +116,9 @@ export function CreateCourseDialog({ onSuccess }: CreateCourseDialogProps) {
       setOpen(false);
       onSuccess?.();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Сургалт үүсгэхэд алдаа гарлаа");
+      toast.error(
+        error.response?.data?.message || "Сургалт үүсгэхэд алдаа гарлаа",
+      );
     } finally {
       setLoading(false);
     }
@@ -194,19 +199,11 @@ export function CreateCourseDialog({ onSuccess }: CreateCourseDialogProps) {
                 />
               </div>
 
-              {/* THUMBNAIL FEATURE - COMMENTED OUT
-                  Uncomment this section if you want to allow users to upload custom thumbnails.
-                  Otherwise, the Card component will use beautiful dynamic gradients based on course ID.
-              */}
-              {/* <div className="space-y-2">
-                <Label htmlFor="thumbnailUrl">Зургийн URL</Label>
-                <Input
-                  id="thumbnailUrl"
-                  placeholder="https://example.com/image.jpg"
-                  value={thumbnailUrl}
-                  onChange={(e) => setThumbnailUrl(e.target.value)}
-                />
-              </div> */}
+              <ImageUpload
+                label="Сургалтын зураг"
+                value={thumbnailUrl}
+                onChange={setThumbnailUrl}
+              />
 
               <div className="flex justify-end gap-2">
                 <Button

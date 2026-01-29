@@ -10,6 +10,18 @@ interface CourseCardProps {
 const CourseCard = ({ course, onClick }: CourseCardProps) => {
   const { user } = useUserContext();
 
+  // Helper to get full URL (handles both relative and absolute URLs)
+  const getFullUrl = (url: string) => {
+    if (!url) return "";
+    // If already a full URL, return as-is
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      return url;
+    }
+    // If relative path, prepend backend URL
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+    return `${backendUrl}${url}`;
+  };
+
   return (
     <div
       onClick={onClick}
@@ -17,15 +29,15 @@ const CourseCard = ({ course, onClick }: CourseCardProps) => {
     >
       {/* Thumbnail */}
       <div className="relative">
-        <div className="w-full h-36 bg-gray-200 flex items-center justify-center">
+        <div className="w-full aspect-video bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center overflow-hidden">
           {course.thumbnail_url ? (
             <img
-              src={course.thumbnail_url}
+              src={getFullUrl(course.thumbnail_url)}
               alt={course.title}
               className="w-full h-full object-cover"
             />
           ) : (
-            <BookOpen size={40} className="text-gray-400" />
+            <BookOpen size={48} className="text-white opacity-50" />
           )}
         </div>
       </div>

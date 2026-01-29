@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
+import { ImageUpload } from "@/components/ImageUpload";
 
 export default function EditCoursePage() {
   const router = useRouter();
@@ -71,7 +72,9 @@ export default function EditCoursePage() {
         } else if (error.response?.status === 404) {
           toast.error("Сургалт олдсонгүй");
         } else {
-          toast.error(error.response?.data?.message || "Сургалт ачаалахад алдаа гарлаа");
+          toast.error(
+            error.response?.data?.message || "Сургалт ачаалахад алдаа гарлаа",
+          );
         }
 
         router.push("/my-courses");
@@ -109,7 +112,9 @@ export default function EditCoursePage() {
       toast.success("Сургалт амжилттай шинэчлэгдлээ!");
       router.push("/my-courses");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Сургалт шинэчлэхэд алдаа гарлаа");
+      toast.error(
+        error.response?.data?.message || "Сургалт шинэчлэхэд алдаа гарлаа",
+      );
     } finally {
       setSaving(false);
     }
@@ -196,31 +201,11 @@ export default function EditCoursePage() {
                   />
                 </div>
 
-                {/* THUMBNAIL FEATURE - COMMENTED OUT
-                    Uncomment this section if you want to allow users to upload custom thumbnails.
-                    Otherwise, the Card component will use beautiful dynamic gradients based on course ID.
-                */}
-                {/* <div className="space-y-2">
-                  <Label htmlFor="thumbnailUrl">Зургийн URL</Label>
-                  <Input
-                    id="thumbnailUrl"
-                    placeholder="https://example.com/image.jpg"
-                    value={thumbnailUrl}
-                    onChange={(e) => setThumbnailUrl(e.target.value)}
-                  />
-                  {thumbnailUrl && (
-                    <div className="mt-2">
-                      <img
-                        src={thumbnailUrl}
-                        alt="Thumbnail preview"
-                        className="w-full max-w-md h-48 object-cover rounded-lg"
-                        onError={(e) => {
-                          e.currentTarget.src = "/placeholder-course.jpg";
-                        }}
-                      />
-                    </div>
-                  )}
-                </div> */}
+                <ImageUpload
+                  label="Сургалтын зураг"
+                  value={thumbnailUrl}
+                  onChange={setThumbnailUrl}
+                />
 
                 <div className="flex justify-end gap-3 pt-4">
                   <Button

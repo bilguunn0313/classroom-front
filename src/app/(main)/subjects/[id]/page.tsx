@@ -33,6 +33,16 @@ export default function SubjectCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Helper to get full URL (handles both relative and absolute URLs)
+  const getFullUrl = (url: string) => {
+    if (!url) return "";
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      return url;
+    }
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+    return `${backendUrl}${url}`;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -113,7 +123,7 @@ export default function SubjectCoursesPage() {
                       <div className="aspect-video bg-gradient-to-br from-blue-500 to-purple-600 relative overflow-hidden">
                         {course.thumbnail_url ? (
                           <img
-                            src={course.thumbnail_url}
+                            src={getFullUrl(course.thumbnail_url)}
                             alt={course.title}
                             className="w-full h-full object-cover"
                           />
