@@ -33,7 +33,7 @@ export const lessonAPI = {
       videoDuration?: number | null;
       text?: string | null;
       lessonOrder: number;
-    }
+    },
   ) => {
     const res = await api.patch(`/lesson/update/${id}`, data);
     return res.data;
@@ -42,7 +42,7 @@ export const lessonAPI = {
   uploadVideo: async (
     id: number,
     file: File,
-    onProgress?: (progress: number) => void
+    onProgress?: (progress: number) => void,
   ) => {
     const formData = new FormData();
     formData.append("video", file);
@@ -51,11 +51,11 @@ export const lessonAPI = {
       headers: {
         "Content-Type": "multipart/form-data",
       },
-      timeout: 900000, // 15 minutes for large video uploads
+      timeout: 1800000, // 15 minutes for large video uploads
       onUploadProgress: (progressEvent) => {
         if (progressEvent.total && onProgress) {
           const progress = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
+            (progressEvent.loaded * 100) / progressEvent.total,
           );
           onProgress(progress);
         }
