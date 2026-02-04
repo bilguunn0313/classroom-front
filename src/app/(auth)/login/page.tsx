@@ -11,7 +11,7 @@ import { LoginForm } from "@/components/LoginForm";
 import Image from "next/image";
 
 const loginSchema = z.object({
-  email: z.email("Invalid email address"),
+  email: z.string().min(1, "Username or email is required"),
   password: z.string().min(1, "Password is required"),
 });
 
