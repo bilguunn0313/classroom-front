@@ -22,6 +22,7 @@ export const pdfAPI = {
       headers: {
         "Content-Type": "multipart/form-data",
       },
+      timeout: 300000, // 5 minutes for PDF uploads
     });
     return res.data;
   },
