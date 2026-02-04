@@ -212,8 +212,20 @@ export function CreateEditLessonDialog({
 
           // Refresh the page to update the UI
           router.refresh();
-        } catch (error) {
-          toast.error("Видео хуулахад алдаа гарлаа");
+        } catch (error: any) {
+          console.error("Video upload error:", error);
+          const errorMsg = error.response?.data?.message || error.message || "Видео хуулахад алдаа гарлаа";
+          const statusCode = error.response?.status;
+
+          if (statusCode === 413) {
+            toast.error("Файлын хэмжээ хэтэрсэн байна (MAX 500MB)");
+          } else if (statusCode === 504 || statusCode === 502) {
+            toast.error("Сервер хугацаа хэтэрсэн (timeout). Nginx тохиргоо шалгана уу.");
+          } else if (error.code === 'ECONNABORTED') {
+            toast.error("Холболт тасарсан. Интернэт холболтоо шалгана уу.");
+          } else {
+            toast.error(`Алдаа: ${errorMsg}`);
+          }
         } finally {
           setUploading(false);
           setUploadProgress(0);
