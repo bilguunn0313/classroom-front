@@ -51,7 +51,7 @@ export const lessonAPI = {
       headers: {
         "Content-Type": "multipart/form-data",
       },
-      timeout: 1800000, // 15 minutes for large video uploads
+      timeout: 3600000, // 1 hour for large video uploads
       onUploadProgress: (progressEvent) => {
         if (progressEvent.total && onProgress) {
           const progress = Math.round(

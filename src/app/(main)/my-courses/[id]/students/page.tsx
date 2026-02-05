@@ -41,13 +41,14 @@ export default function CourseStudentsPage() {
   const { data: studentsData, isLoading: studentsLoading } = useQuery({
     queryKey: ["course-students-progress", courseId],
     queryFn: async () => {
-      const response = await enrollmentAPI.getCourseStudentsWithProgress(courseId);
+      const response =
+        await enrollmentAPI.getCourseStudentsWithProgress(courseId);
       return response;
     },
   });
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+    return new Date(dateString).toLocaleDateString("mn-MN", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -80,7 +81,7 @@ export default function CourseStudentsPage() {
           className="mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to My Courses
+          Буцах
         </Button>
 
         <div className="flex items-start justify-between">
@@ -93,7 +94,7 @@ export default function CourseStudentsPage() {
           <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-lg">
             <Users className="w-5 h-5 text-blue-600" />
             <span className="text-lg font-semibold text-blue-600">
-              {enrollmentCount} Students
+              {enrollmentCount} Сурагч
             </span>
           </div>
         </div>
@@ -102,20 +103,18 @@ export default function CourseStudentsPage() {
       {/* Students Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Enrolled Students</CardTitle>
+          <CardTitle>Элссэн сурагчид</CardTitle>
           <CardDescription>
-            View all students enrolled in this course and their progress
+            Энэ сургалтад элсэгсэн бүх сурагчдын явцыг харах
           </CardDescription>
         </CardHeader>
         <CardContent>
           {students.length === 0 ? (
             <div className="text-center py-12">
               <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">
-                No students enrolled yet
-              </p>
+              <p className="text-gray-500 text-lg">Сурагч элсээгүй байна</p>
               <p className="text-gray-400 text-sm mt-2">
-                Students will appear here once they enroll in your course
+                Сурагчид элссэний дараа харагдах болно
               </p>
             </div>
           ) : (
@@ -123,11 +122,11 @@ export default function CourseStudentsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Student Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Enrolled On</TableHead>
-                    <TableHead>Progress</TableHead>
-                    <TableHead className="text-right">Completion</TableHead>
+                    <TableHead>Нэр</TableHead>
+                    <TableHead>Имэйл</TableHead>
+                    <TableHead>Элсэх огноо</TableHead>
+                    <TableHead>Явц</TableHead>
+                    <TableHead className="text-right">Гүйцэтгэл</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -155,7 +154,7 @@ export default function CourseStudentsPage() {
                       </TableCell>
                       <TableCell className="text-right text-gray-600">
                         {student.completed_lessons} / {student.total_lessons}{" "}
-                        lessons
+                        Хичээлүүд
                       </TableCell>
                     </TableRow>
                   ))}
