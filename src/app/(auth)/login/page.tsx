@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUserContext } from "../../../lib/userProvider";
 import { authAPI } from "../../../lib/auth";
@@ -19,7 +20,13 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setUser } = useUserContext();
+  const { setUser, loading, isAuthenticated } = useUserContext();
+
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      router.replace("/course");
+    }
+  }, [loading, isAuthenticated, router]);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
