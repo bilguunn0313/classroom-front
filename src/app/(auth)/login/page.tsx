@@ -9,7 +9,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { LoginForm } from "@/components/LoginForm";
-import Image from "next/image";
 
 const loginSchema = z.object({
   email: z.string().min(1, "Username or email is required"),
@@ -45,49 +44,26 @@ export default function LoginPage() {
       const response = await authAPI.login(data.email, data.password);
 
       if (!response.success) {
-        console.error("❌ [LOGIN PAGE] Response not successful");
         throw new Error(response.message || "Login failed");
       }
 
-      // Store token
+      // Store token and user
       localStorage.setItem("token", response.data.token);
-
-      // Verify token was stored
-      const storedToken = localStorage.getItem("token");
-
-      // Store user
       localStorage.setItem("currentUser", JSON.stringify(response.data.user));
-
-      // Verify user was stored
-      const storedUser = localStorage.getItem("currentUser");
 
       // Update context
       setUser(response.data.user);
-
-      // Test the token immediately
-      try {
-        const testResponse = await authAPI.verify();
-      } catch (testError) {
-        console.error("❌ [LOGIN PAGE] Token test FAILED:", testError);
-        console.error("⚠️ [LOGIN PAGE] This means the token doesn't work!");
-      }
 
       // Use replace to prevent back button issues
       router.replace("/course");
     } catch (err) {
       if (err instanceof AxiosError) {
-        console.error("Status:", err.response?.status);
-        console.error("Response data:", err.response?.data);
-        console.error("Request URL:", err.config?.url);
-
         form.setError("root", {
           message: err.response?.data?.message || "Login failed",
         });
       } else if (err instanceof Error) {
-        console.error("Error message:", err.message);
         form.setError("root", { message: err.message });
       } else {
-        console.error("Unknown error type");
         form.setError("root", { message: "Something went wrong" });
       }
     }

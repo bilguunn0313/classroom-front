@@ -34,10 +34,13 @@ export default function ManageLessonsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [courseData, lessonsData] = await Promise.all([
+        const [courseResponse, lessonsResponse] = await Promise.all([
           courseAPI.getById(courseId),
           lessonAPI.getByCourse(courseId),
         ]);
+
+        const courseData = courseResponse?.data || courseResponse;
+        const lessonsArray = lessonsResponse?.data || lessonsResponse;
 
         if (courseData.user_id !== user?.id && user?.role !== "admin") {
           toast.error("Та энэ сургалтыг удирдах эрхгүй байна");
@@ -47,7 +50,7 @@ export default function ManageLessonsPage() {
 
         setCourse(courseData);
         setLessons(
-          lessonsData.sort(
+          lessonsArray.sort(
             (a: Lesson, b: Lesson) => a.lesson_order - b.lesson_order,
           ),
         );

@@ -1,6 +1,10 @@
 import api from "./axios";
 
 export const courseAPI = {
+  getAllPublished: async () => {
+    const res = await api.get("/course/published");
+    return res.data;
+  },
   getBySubject: async (subjectId: number) => {
     const res = await api.get(`/course/subject/${subjectId}`);
     return res.data;

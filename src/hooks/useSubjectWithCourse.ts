@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 interface SubjectWithCourse {
   subject: Subject;
   course: Course[];
+  publishedCourses: Course[];
 }
 
 export function useSubjectWithCourse() {
@@ -22,38 +23,33 @@ export function useSubjectWithCourse() {
       setLoading(true);
       setError(null);
 
-      const subjectResponse = await subjectAPI.getAll();
+      // 2 parallel calls instead of 1+N
+      const [subjectResponse, coursesResponse] = await Promise.all([
+        subjectAPI.getAll(),
+        courseAPI.getAllPublished(),
+      ]);
 
       if (!subjectResponse.success) {
         throw new Error("failed to fetch subjects");
       }
 
-      const data = await Promise.all(
-        subjectResponse.data.map(async (subject: Subject) => {
-          try {
-            const courseResponse = await courseAPI.getBySubject(subject.id);
-            const publishedCourses = courseResponse.data.filter(
-              (c: Course) => c.published === true
-            );
-            return {
-              subject,
-              course: courseResponse.success ? courseResponse.data : [],
-              publishedCourses,
-            };
-          } catch (error) {
-            console.error(
-              `Error fetching courses for subject ${subject.id}:`,
-              error
-            );
-            return {
-              subject,
-              course: [],
-            };
-          }
-        })
+      const subjects: Subject[] = subjectResponse.data;
+      const allCourses: Course[] = coursesResponse.data || [];
+
+      // Group courses by subject_id on the frontend
+      const subjectsWithCourses: SubjectWithCourse[] = subjects.map(
+        (subject) => {
+          const courses = allCourses.filter(
+            (c) => c.subject_id === subject.id
+          );
+          const publishedCourses = courses.filter((c) => c.published);
+          return { subject, course: courses, publishedCourses };
+        }
       );
 
-      const filtered = data.filter((item) => item.course?.length > 0);
+      const filtered = subjectsWithCourses.filter(
+        (item) => item.course.length > 0
+      );
 
       setData(filtered);
     } catch (error) {

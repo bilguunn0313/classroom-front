@@ -8,7 +8,6 @@ import { CreateCourseDialog } from "@/components/CreateCourseDialog";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useUserContext } from "@/lib/userProvider";
 import { courseAPI } from "@/lib/course";
-import { enrollmentAPI } from "@/lib/enrollment";
 import { Course } from "@/types/schema.types";
 import { Pencil, Trash2, Eye, Users, BookOpen, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -51,25 +50,8 @@ export default function MyCoursesPage() {
       const data = await courseAPI.getByUser(user.id);
       const coursesData: CourseWithEnrollment[] = data.data || [];
 
-      // Fetch enrollment count for each course
-      const coursesWithEnrollment = await Promise.all(
-        coursesData.map(async (course) => {
-          try {
-            const enrollmentData = await enrollmentAPI.getCourseStudents(
-              course.id,
-            );
-            return {
-              ...course,
-              enrollment_count: enrollmentData.count || 0,
-            };
-          } catch {
-            return { ...course, enrollment_count: 0 };
-          }
-        }),
-      );
-
-      setCourses(coursesWithEnrollment);
-      setFilteredCourses(coursesWithEnrollment);
+      setCourses(coursesData);
+      setFilteredCourses(coursesData);
     } catch (error: any) {
       console.error("Failed to fetch courses:", error);
       if (error.response?.status !== 404) {

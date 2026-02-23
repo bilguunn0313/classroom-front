@@ -1,7 +1,6 @@
 "use client";
 
 import { UserType } from "@/types/types";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import {
   useEffect,
@@ -20,13 +19,7 @@ type UserProviderType = {
   isAuthenticated: boolean;
 };
 
-const UserContext = createContext<UserProviderType>({
-  user: null,
-  setUser: () => {},
-  loading: true,
-  logout: () => {},
-  isAuthenticated: false,
-});
+const UserContext = createContext<UserProviderType | undefined>(undefined);
 
 export default function UserContextProvider({
   children,

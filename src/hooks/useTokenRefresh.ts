@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from "react";
 import { useUserContext } from "../lib/userProvider";
 import { authAPI } from "../lib/auth";
-import jwt from "jsonwebtoken";
+import { jwtDecode } from "jwt-decode";
 
 interface DecodedToken {
   exp: number;
@@ -21,7 +21,7 @@ export function useTokenRefresh() {
       if (!token) return;
 
       // Decode token to check expiration (without verifying)
-      const decoded = jwt.decode(token) as DecodedToken;
+      const decoded = jwtDecode<DecodedToken>(token);
 
       if (!decoded || !decoded.exp) return;
 
