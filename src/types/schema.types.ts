@@ -35,3 +35,25 @@ export interface Lesson {
   updated_at?: string;
   text: string | null;
 }
+
+export interface MenuItem {
+  id: number;
+  daily_menu_id: number;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  item_type: "meal_1" | "meal_2" | "drink";
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DailyMenu {
+  id: number;
+  menu_date: string;
+  created_by: number;
+  created_by_name?: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  items: MenuItem[];
+}

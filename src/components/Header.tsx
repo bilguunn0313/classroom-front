@@ -8,6 +8,7 @@ import {
   Settings,
   ChevronDown,
   BookOpen,
+  Hamburger,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -157,6 +158,10 @@ const Header = () => {
                   <DropdownMenuItem onClick={() => router.push("/my-courses")}>
                     <BookOpen className="mr-2 h-4 w-4" />
                     <span>Миний сургалтууд</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push("/menu")}>
+                    <Hamburger className="mr-2 h-4 w-4" />
+                    <span>Хоолны цэс</span>
                   </DropdownMenuItem>
                   {user?.role === "admin" && (
                     <DropdownMenuItem
