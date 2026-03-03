@@ -7,7 +7,7 @@ import { useEffect } from "react";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: "admin" | "user";
+  requiredRole?: string | string[];
 }
 
 export function ProtectedRoute({
@@ -16,6 +16,14 @@ export function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { user, loading, isAuthenticated } = useUserContext();
   const router = useRouter();
+
+  const hasRole = () => {
+    if (!requiredRole || !user) return true;
+    if (Array.isArray(requiredRole)) {
+      return requiredRole.includes(user.role);
+    }
+    return user.role === requiredRole;
+  };
 
   useEffect(() => {
     // Wait for loading to finish
@@ -28,7 +36,7 @@ export function ProtectedRoute({
     }
 
     // If role is required and user doesn't have it
-    if (requiredRole && user?.role !== requiredRole) {
+    if (requiredRole && !hasRole()) {
       router.push("/unauthorized");
     }
   }, [loading, isAuthenticated, user, requiredRole, router]);
@@ -51,7 +59,7 @@ export function ProtectedRoute({
   }
 
   // Don't render if role required and user doesn't have it
-  if (requiredRole && user?.role !== requiredRole) {
+  if (requiredRole && !hasRole()) {
     return null;
   }
 

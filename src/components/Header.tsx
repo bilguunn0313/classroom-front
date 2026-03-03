@@ -163,6 +163,14 @@ const Header = () => {
                     <Hamburger className="mr-2 h-4 w-4" />
                     <span>Хоолны цэс</span>
                   </DropdownMenuItem>
+                  {(user?.role === "admin" || user?.role === "chief") && (
+                    <DropdownMenuItem
+                      onClick={() => router.push("/menu/manage")}
+                    >
+                      <Hamburger className="mr-2 h-4 w-4" />
+                      <span>Цэс удирдах</span>
+                    </DropdownMenuItem>
+                  )}
                   {user?.role === "admin" && (
                     <DropdownMenuItem
                       onClick={() => router.push("/admin/dashboard")}
@@ -306,6 +314,18 @@ const Header = () => {
                       <BookOpen size={18} />
                       <span>Миний сургалтууд</span>
                     </button>
+                    {(user?.role === "admin" || user?.role === "chief") && (
+                      <button
+                        onClick={() => {
+                          router.push("/menu/manage");
+                          setIsMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 text-white hover:bg-blue-500/50 transition-colors py-2 px-3 rounded-lg w-full"
+                      >
+                        <Hamburger size={18} />
+                        <span>Цэс удирдах</span>
+                      </button>
+                    )}
                     {user?.role === "admin" && (
                       <button
                         onClick={() => router.push("/admin/dashboard")}

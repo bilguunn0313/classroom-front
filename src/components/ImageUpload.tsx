@@ -106,9 +106,9 @@ export function ImageUpload({ value, onChange, label = "Зураг" }: ImageUplo
       return;
     }
 
-    // Validate file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Зургийн хэмжээ 5MB-аас бага байх ёстой");
+    // Validate file size (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Зургийн хэмжээ 10MB-аас бага байх ёстой");
       return;
     }
 
@@ -209,7 +209,7 @@ export function ImageUpload({ value, onChange, label = "Зураг" }: ImageUplo
                     alt="Preview"
                     className="max-w-full max-h-48 rounded-lg object-cover"
                     onError={(e) => {
-                      e.currentTarget.src = "/placeholder-course.jpg";
+                      e.currentTarget.style.display = "none";
                     }}
                   />
                   <Button
@@ -275,7 +275,7 @@ export function ImageUpload({ value, onChange, label = "Зураг" }: ImageUplo
                 alt="Preview"
                 className="max-w-full max-h-48 rounded-lg object-cover"
                 onError={(e) => {
-                  e.currentTarget.src = "/placeholder-course.jpg";
+                  e.currentTarget.style.display = "none";
                 }}
               />
               <Button

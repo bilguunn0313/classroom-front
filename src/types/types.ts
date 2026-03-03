@@ -12,6 +12,6 @@ export interface UserType {
   id: number;
   name: string;
   email: string;
-  role: "user" | "admin";
+  role: "user" | "admin" | "chief";
   avatar_url?: string;
 }

@@ -43,6 +43,8 @@ export interface MenuItem {
   description: string | null;
   image_url: string | null;
   item_type: "meal_1" | "meal_2" | "drink";
+  ingredients: string | null;
+  calories: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -56,4 +58,24 @@ export interface DailyMenu {
   created_at: string;
   updated_at: string;
   items: MenuItem[];
+}
+
+export interface MenuResponse {
+  id: number;
+  daily_menu_id: number;
+  user_id: number;
+  will_attend: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MenuResponseWithUser extends MenuResponse {
+  user_name: string;
+  user_email: string;
+}
+
+export interface MenuResponseSummary {
+  total: number;
+  attending: number;
+  not_attending: number;
 }
