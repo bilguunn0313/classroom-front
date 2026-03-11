@@ -12,7 +12,7 @@ export interface AdminUser {
   odoo_id: number;
   email: string;
   name: string;
-  role: "user" | "admin";
+  role: "user" | "admin" | "chief" | "supervisor";
   created_at: string;
   updated_at: string;
 }
@@ -93,7 +93,7 @@ export interface UsersParams {
   page?: number;
   limit?: number;
   search?: string;
-  role?: "admin" | "user";
+  role?: "admin" | "user" | "chief" | "supervisor";
 }
 
 export interface CoursesParams {

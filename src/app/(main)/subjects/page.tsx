@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { BookOpen, ArrowRight } from "lucide-react";
+import { BookOpen, ArrowRight, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { subjectAPI } from "@/lib/subject";
 
@@ -42,6 +42,14 @@ export default function SubjectsPage() {
 
       <main className="container mx-auto px-4 py-12 flex-grow">
         <div className="max-w-6xl mx-auto">
+          <button
+            onClick={() => router.push('/course')}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-6"
+          >
+            <ArrowLeft size={20} />
+            <span>Сургалтууд</span>
+          </button>
+
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-2">
               Бүх сэдвүүд

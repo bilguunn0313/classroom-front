@@ -255,11 +255,11 @@ const CourseDetailPage = () => {
         {/* Back Button & Management */}
         <div className="flex items-center justify-between mb-4">
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push('/course')}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
           >
             <ArrowLeft size={20} />
-            <span className="text-sm md:text-base">Буцах</span>
+            <span className="text-sm md:text-base">Сургалтууд</span>
           </button>
 
           {/* Show Manage button if owner */}

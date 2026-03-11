@@ -36,7 +36,7 @@ export default function AdminUsersPage() {
         limit: 10,
         search: search || undefined,
         role:
-          roleFilter !== "all" ? (roleFilter as "admin" | "user") : undefined,
+          roleFilter !== "all" ? (roleFilter as "admin" | "user" | "chief" | "supervisor") : undefined,
       });
       return response;
     },
@@ -49,6 +49,8 @@ export default function AdminUsersPage() {
       options: [
         { label: "Admin", value: "admin" },
         { label: "User", value: "user" },
+        { label: "Chief", value: "chief" },
+        { label: "Supervisor", value: "supervisor" },
       ],
       onChange: setRoleFilter,
       currentValue: roleFilter,
@@ -112,6 +114,10 @@ export default function AdminUsersPage() {
           className={`px-2 py-1 text-xs font-medium rounded ${
             user.role === "admin"
               ? "bg-purple-100 text-purple-800"
+              : user.role === "chief"
+              ? "bg-blue-100 text-blue-800"
+              : user.role === "supervisor"
+              ? "bg-cyan-100 text-cyan-800"
               : "bg-gray-100 text-gray-800"
           }`}
         >

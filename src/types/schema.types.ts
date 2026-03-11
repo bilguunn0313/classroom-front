@@ -79,3 +79,14 @@ export interface MenuResponseSummary {
   attending: number;
   not_attending: number;
 }
+
+export interface TemperatureRecord {
+  id: number;
+  record_date: string;
+  temperature: number;
+  recorded_by: number;
+  recorded_by_name?: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}

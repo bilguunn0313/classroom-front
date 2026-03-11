@@ -15,12 +15,16 @@ import {
   Coffee,
   CookingPot,
   Loader2,
+  Thermometer,
+  Settings,
+  ClipboardList,
 } from "lucide-react";
 
 const ROLE_LABEL: Record<string, string> = {
   user: "Хэрэглэгч",
   admin: "Админ",
   chief: "Менежер",
+  supervisor: "Хянагч",
 };
 
 const ITEM_TYPE_META: Record<
@@ -112,7 +116,7 @@ export default function HomePage() {
           </div>
 
           {/* ── Navigation Cards ───────────────────────────────────────── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
             <Link
               href="/course"
               className="group rounded-lg border bg-card p-6 hover:border-blue-200 hover:shadow-sm transition-all duration-200"
@@ -144,7 +148,63 @@ export default function HomePage() {
                 Өдрийн хоолны цэс харах, хариу өгөх
               </p>
             </Link>
+
+            <Link
+              href="/temperature"
+              className="group rounded-lg border bg-card p-6 hover:border-cyan-200 hover:shadow-sm transition-all duration-200"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-10 h-10 rounded-lg bg-cyan-50 flex items-center justify-center">
+                  <Thermometer className="h-5 w-5 text-cyan-600" />
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+              </div>
+              <h2 className="font-semibold text-sm mb-1">Температур</h2>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Агуулахын температурын бүртгэл харах
+              </p>
+            </Link>
           </div>
+
+          {/* ── Role-specific shortcuts ────────────────────────────────── */}
+          {(user?.role === "admin" || user?.role === "chief") && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+              {user?.role === "admin" && (
+                <Link
+                  href="/admin/dashboard"
+                  className="group rounded-lg border bg-card p-6 hover:border-purple-200 hover:shadow-sm transition-all duration-200"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center">
+                      <Settings className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                  </div>
+                  <h2 className="font-semibold text-sm mb-1">Админ хэсэг</h2>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Хэрэглэгч, сургалт, хичээл удирдах
+                  </p>
+                </Link>
+              )}
+              {(user?.role === "admin" || user?.role === "chief") && (
+                <Link
+                  href="/menu/manage"
+                  className="group rounded-lg border bg-card p-6 hover:border-green-200 hover:shadow-sm transition-all duration-200"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
+                      <ClipboardList className="h-5 w-5 text-green-600" />
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                  </div>
+                  <h2 className="font-semibold text-sm mb-1">Цэс удирдах</h2>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Хоолны цэс нэмэх, засах, устгах
+                  </p>
+                </Link>
+              )}
+            </div>
+          )}
 
           {/* ── Today's Menu Preview ───────────────────────────────────── */}
           <section className="rounded-lg border bg-card">

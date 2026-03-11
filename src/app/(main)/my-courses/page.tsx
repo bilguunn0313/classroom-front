@@ -9,7 +9,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useUserContext } from "@/lib/userProvider";
 import { courseAPI } from "@/lib/course";
 import { Course } from "@/types/schema.types";
-import { Pencil, Trash2, Eye, Users, BookOpen, Plus } from "lucide-react";
+import { Pencil, Trash2, Eye, Users, BookOpen, Plus, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -205,6 +205,14 @@ export default function MyCoursesPage() {
 
         <main className="container mx-auto px-4 py-8 flex-grow">
           {/* Header */}
+          <button
+            onClick={() => router.push('/course')}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-4"
+          >
+            <ArrowLeft size={20} />
+            <span>Сургалтууд</span>
+          </button>
+
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">

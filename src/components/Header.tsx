@@ -64,7 +64,7 @@ const Header = () => {
               src="/cosmo-logo.png"
               alt="Logo"
               className="w-[140px] cursor-pointer"
-              onClick={() => router.push(`/course`)}
+              onClick={() => router.push(`/home`)}
             />
           </div>
 
