@@ -20,7 +20,9 @@ export function MenuRSVP({ menuId, menuDate }: MenuRSVPProps) {
   const handleRespond = async (willAttend: boolean) => {
     try {
       await respond(willAttend);
-      toast.success(willAttend ? "Идэх гэж бүртгэгдлээ" : "Идэхгүй гэж бүртгэгдлээ");
+      toast.success(
+        willAttend ? "Идэх гэж бүртгэгдлээ" : "Идэхгүй гэж бүртгэгдлээ",
+      );
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Алдаа гарлаа");
     }
@@ -69,7 +71,7 @@ export function MenuRSVP({ menuId, menuDate }: MenuRSVPProps) {
             ) : (
               <Check className="h-4 w-4" />
             )}
-            Идэх
+            Иднэ
           </button>
           <button
             onClick={() => handleRespond(false)}

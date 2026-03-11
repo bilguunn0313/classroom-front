@@ -9,6 +9,7 @@ import {
   ChevronDown,
   BookOpen,
   Hamburger,
+  UtensilsCrossed,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -122,6 +123,17 @@ const Header = () => {
                   ))
                 )}
               </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className="focus:outline-none"
+                onClick={() => router.push("/menu")}
+              >
+                <div className="flex items-center gap-1 text-white hover:text-blue-200 transition-colors cursor-pointer font-medium ">
+                  <UtensilsCrossed size={18} />
+                  <span>Хоолны цэс</span>
+                </div>
+              </DropdownMenuTrigger>
             </DropdownMenu>
 
             {isAuthenticated ? (

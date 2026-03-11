@@ -11,8 +11,8 @@ import { MenuItem } from "@/types/schema.types";
 import { UtensilsCrossed, Flame } from "lucide-react";
 
 const ITEM_TYPE_LABELS: Record<string, string> = {
-  meal_1: "Хоол 1",
-  meal_2: "Хоол 2",
+  meal_1: "1-р хоол",
+  meal_2: "2-р хоол",
   drink: "Уух зүйл",
 };
 
@@ -25,7 +25,10 @@ function MenuItemCard({ item }: { item: MenuItem }) {
   };
 
   const ingredientList = item.ingredients
-    ? item.ingredients.split(",").map((s) => s.trim()).filter(Boolean)
+    ? item.ingredients
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
     : [];
 
   return (
@@ -203,10 +206,7 @@ export default function MenuPage() {
             </div>
 
             {/* Animated content */}
-            <div
-              key={animKey}
-              className="animate-[fadeSlideIn_0.35s_ease-out]"
-            >
+            <div key={animKey} className="animate-[fadeSlideIn_0.35s_ease-out]">
               {dayLoading && (
                 <div className="text-center py-12 text-gray-400">
                   Уншиж байна...
@@ -234,8 +234,12 @@ export default function MenuPage() {
                       {(["meal_1", "meal_2", "drink"] as const).map(
                         (type, idx) => {
                           if (grouped[type].length === 0) return null;
-                          const prevTypes = (["meal_1", "meal_2", "drink"] as const).slice(0, idx);
-                          const hasPrev = prevTypes.some((t) => grouped[t].length > 0);
+                          const prevTypes = (
+                            ["meal_1", "meal_2", "drink"] as const
+                          ).slice(0, idx);
+                          const hasPrev = prevTypes.some(
+                            (t) => grouped[t].length > 0,
+                          );
                           return (
                             <section key={type}>
                               {hasPrev && (
@@ -251,7 +255,7 @@ export default function MenuPage() {
                               </div>
                             </section>
                           );
-                        }
+                        },
                       )}
                     </div>
                   </div>

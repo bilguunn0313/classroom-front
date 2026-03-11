@@ -23,7 +23,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      router.replace("/course");
+      router.replace("/home");
     }
   }, [loading, isAuthenticated, router]);
 
@@ -55,7 +55,7 @@ export default function LoginPage() {
       setUser(response.data.user);
 
       // Use replace to prevent back button issues
-      router.replace("/course");
+      router.replace("/home");
     } catch (err) {
       if (err instanceof AxiosError) {
         form.setError("root", {
