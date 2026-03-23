@@ -69,14 +69,14 @@ export default function HomePage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen bg-page-bg flex flex-col">
         {/* ── Main ─────────────────────────────────────────────────────── */}
         <main className="flex-1 container mx-auto px-6 py-10 max-w-5xl">
           {/* Greeting */}
           <div className="flex items-start justify-between mb-10 animate-fade-in">
             <div>
               <div className="flex items-center gap-2.5 mb-3">
-                <span className="text-[11px] font-medium text-blue-600 bg-blue-50 border border-blue-100 rounded-md px-2 py-0.5">
+                <span className="text-[11px] font-medium text-brand-600 bg-brand-50 border border-brand-100 rounded-md px-2 py-0.5">
                   {user ? (ROLE_LABEL[user.role] ?? "Хэрэглэгч") : ""}
                 </span>
                 <span className="text-[11px] text-muted-foreground">
@@ -88,7 +88,7 @@ export default function HomePage() {
               </h1>
               {enrolledCount !== null && enrolledCount > 0 && (
                 <p className="text-sm text-muted-foreground mt-1.5 flex items-center gap-1.5">
-                  <BookOpen className="h-3.5 w-3.5 text-blue-500" />
+                  <BookOpen className="h-3.5 w-3.5 text-brand-500" />
                   {enrolledCount} сургалтанд бүртгэлтэй
                 </p>
               )}
@@ -106,48 +106,48 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
             <Link
               href="/course"
-              className="group rounded-xl border bg-card p-9 hover:border-blue-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 animate-slide-up delay-100"
+              className="group rounded-xl border border-t-2 border-t-brand-400 bg-card p-9 hover:border-brand-200 hover:border-t-brand-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 animate-slide-up delay-100"
             >
               <div className="flex items-start justify-between mb-5">
-                <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                  <GraduationCap className="h-6 w-6 text-blue-600" />
+                <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                  <GraduationCap className="h-7 w-7 text-brand-600" />
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
               </div>
-              <h2 className="font-bold text-base mb-1.5">Сургалт</h2>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <h2 className="font-semibold text-lg">Сургалт</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed mt-1">
                 Видео хичээл үзэх, мэдлэгээ дээшлүүлэх
               </p>
             </Link>
 
             <Link
               href="/menu"
-              className="group rounded-xl border bg-card p-9 hover:border-orange-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 animate-slide-up delay-200"
+              className="group rounded-xl border border-t-2 border-t-orange-400 bg-card p-9 hover:border-orange-200 hover:border-t-orange-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 animate-slide-up delay-200"
             >
               <div className="flex items-start justify-between mb-5">
-                <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                  <UtensilsCrossed className="h-6 w-6 text-orange-500" />
+                <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                  <UtensilsCrossed className="h-7 w-7 text-orange-500" />
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
               </div>
-              <h2 className="font-bold text-base mb-1.5">Хоолны цэс</h2>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <h2 className="font-semibold text-lg">Хоолны цэс</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed mt-1">
                 Өдрийн хоолны цэс харах, хариу өгөх
               </p>
             </Link>
 
             <Link
               href="/temperature"
-              className="group rounded-xl border bg-card p-9 hover:border-cyan-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 animate-slide-up delay-300"
+              className="group rounded-xl border border-t-2 border-t-cyan-400 bg-card p-9 hover:border-cyan-200 hover:border-t-cyan-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 animate-slide-up delay-300"
             >
               <div className="flex items-start justify-between mb-5">
-                <div className="w-12 h-12 rounded-xl bg-cyan-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                  <Thermometer className="h-6 w-6 text-cyan-600" />
+                <div className="w-14 h-14 rounded-2xl bg-cyan-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                  <Thermometer className="h-7 w-7 text-cyan-600" />
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
               </div>
-              <h2 className="font-bold text-base mb-1.5">Температур</h2>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <h2 className="font-semibold text-lg">Температур</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed mt-1">
                 Агуулахын температурын бүртгэл харах
               </p>
             </Link>
@@ -155,16 +155,16 @@ export default function HomePage() {
             {user?.role === "admin" && (
               <Link
                 href="/admin/dashboard"
-                className="group rounded-xl border bg-card p-9 hover:border-purple-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 animate-slide-up delay-400"
+                className="group rounded-xl border border-t-2 border-t-purple-400 bg-card p-9 hover:border-purple-200 hover:border-t-purple-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 animate-slide-up delay-400"
               >
                 <div className="flex items-start justify-between mb-5">
-                  <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                    <Settings className="h-6 w-6 text-purple-600" />
+                  <div className="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                    <Settings className="h-7 w-7 text-purple-600" />
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
                 </div>
-                <h2 className="font-bold text-base mb-1.5">Админ хэсэг</h2>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <h2 className="font-semibold text-lg">Админ хэсэг</h2>
+                <p className="text-sm text-muted-foreground leading-relaxed mt-1">
                   Хэрэглэгч, сургалт, хичээл удирдах
                 </p>
               </Link>
@@ -173,16 +173,16 @@ export default function HomePage() {
             {(user?.role === "admin" || user?.role === "chief") && (
               <Link
                 href="/menu/manage"
-                className="group rounded-xl border bg-card p-9 hover:border-green-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 animate-slide-up delay-500"
+                className="group rounded-xl border border-t-2 border-t-green-400 bg-card p-9 hover:border-green-200 hover:border-t-green-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 animate-slide-up delay-500"
               >
                 <div className="flex items-start justify-between mb-5">
-                  <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                    <ClipboardList className="h-6 w-6 text-green-600" />
+                  <div className="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                    <ClipboardList className="h-7 w-7 text-green-600" />
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
                 </div>
-                <h2 className="font-bold text-base mb-1.5">Цэс удирдах</h2>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <h2 className="font-semibold text-lg">Цэс удирдах</h2>
+                <p className="text-sm text-muted-foreground leading-relaxed mt-1">
                   Хоолны цэс нэмэх, засах, устгах
                 </p>
               </Link>
@@ -192,7 +192,8 @@ export default function HomePage() {
         </main>
 
         {/* ── Footer ───────────────────────────────────────────────────── */}
-        <footer className="py-4 px-6 text-center text-xs text-muted-foreground border-t">
+        <footer className="py-4 px-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground border-t">
+          <GraduationCap className="h-3.5 w-3.5" />
           © {new Date().getFullYear()} Cosmo
         </footer>
       </div>

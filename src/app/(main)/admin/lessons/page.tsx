@@ -101,7 +101,7 @@ export default function AdminLessonsPage() {
       label: "Title",
       render: (lesson) => (
         <div>
-          <p className="font-medium text-gray-900">{lesson.title}</p>
+          <p className="font-medium text-foreground">{lesson.title}</p>
         </div>
       ),
     },
@@ -164,10 +164,10 @@ export default function AdminLessonsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">
             Lesson Management
           </h1>
-          <p className="text-gray-500 mt-1">Manage and view all lessons</p>
+          <p className="text-muted-foreground mt-1">Manage and view all lessons</p>
         </div>
       </div>
 

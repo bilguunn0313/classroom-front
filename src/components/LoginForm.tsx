@@ -66,7 +66,7 @@ export function LoginForm({ form, onSubmit, className }: LoginFormProps) {
               <Field>
                 <Button
                   type="submit"
-                  className="w-full bg-[#1a4799]"
+                  className="w-full"
                   disabled={form.formState.isSubmitting}
                 >
                   {form.formState.isSubmitting ? (
@@ -92,7 +92,7 @@ export function LoginForm({ form, onSubmit, className }: LoginFormProps) {
               </Field>
             </FieldGroup>
           </form>
-          <div className=" relative hidden md:flex items-center justify-center p-10 bg-[#1a4799]">
+          <div className="relative hidden md:flex items-center justify-center p-10 bg-brand-900">
             <img
               src="/cosmo-logo.png"
               alt="Logo"

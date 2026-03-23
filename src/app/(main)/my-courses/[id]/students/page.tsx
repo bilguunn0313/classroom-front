@@ -64,8 +64,8 @@ export default function CourseStudentsPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading students...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading students...</p>
         </div>
       </div>
     );
@@ -86,14 +86,14 @@ export default function CourseStudentsPage() {
 
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">
               {course?.title}
             </h1>
-            <p className="text-gray-600 mt-2">{course?.description}</p>
+            <p className="text-sm text-muted-foreground mt-2">{course?.description}</p>
           </div>
-          <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-lg">
-            <Users className="w-5 h-5 text-blue-600" />
-            <span className="text-lg font-semibold text-blue-600">
+          <div className="flex items-center gap-2 bg-brand-50 px-4 py-2 rounded-lg">
+            <Users className="w-5 h-5 text-brand-600" />
+            <span className="text-lg font-semibold text-brand-600">
               {enrollmentCount} Сурагч
             </span>
           </div>

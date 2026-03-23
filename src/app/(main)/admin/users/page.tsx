@@ -115,7 +115,7 @@ export default function AdminUsersPage() {
             user.role === "admin"
               ? "bg-purple-100 text-purple-800"
               : user.role === "chief"
-              ? "bg-blue-100 text-blue-800"
+              ? "bg-brand-100 text-brand-800"
               : user.role === "supervisor"
               ? "bg-cyan-100 text-cyan-800"
               : "bg-gray-100 text-gray-800"
@@ -165,8 +165,8 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">User Management</h1>
+          <p className="text-muted-foreground mt-1">
             Manage and view all registered users
           </p>
         </div>

@@ -14,17 +14,17 @@ export default function StatsCard({
   value,
   icon: Icon,
   subtitle,
-  iconBgColor = "bg-blue-100",
-  iconColor = "text-blue-600",
+  iconBgColor = "bg-brand-50",
+  iconColor = "text-brand-600",
 }: StatsCardProps) {
   return (
-    <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+    <div className="bg-card rounded-xl shadow-sm border border-border p-6">
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-          <p className="text-3xl font-bold text-gray-900">{value}</p>
+          <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
+          <p className="text-3xl font-bold text-foreground">{value}</p>
           {subtitle && (
-            <p className="text-xs text-gray-500 mt-1">{subtitle}</p>
+            <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
           )}
         </div>
         <div className={`${iconBgColor} ${iconColor} p-3 rounded-lg`}>

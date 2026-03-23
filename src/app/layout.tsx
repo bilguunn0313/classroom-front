@@ -12,8 +12,8 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "Онлайн Сургалт",
-  description: "Космо компаны дотоод сургалт",
+  title: "Космо ERP",
+  description: "Космо компаны дотоод вэб аппликейшн",
 };
 
 export default function RootLayout({

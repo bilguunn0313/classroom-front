@@ -117,9 +117,9 @@ export default function AdminCoursesPage() {
       label: "Title",
       render: (course) => (
         <div>
-          <p className="font-medium text-gray-900">{course.title}</p>
+          <p className="font-medium text-foreground">{course.title}</p>
           {course.description && (
-            <p className="text-xs text-gray-500 truncate max-w-xs">
+            <p className="text-xs text-muted-foreground truncate max-w-xs">
               {course.description}
             </p>
           )}
@@ -189,10 +189,10 @@ export default function AdminCoursesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">
             Course Management
           </h1>
-          <p className="text-gray-500 mt-1">Manage and view all courses</p>
+          <p className="text-muted-foreground mt-1">Manage and view all courses</p>
         </div>
       </div>
 

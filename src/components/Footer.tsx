@@ -2,14 +2,14 @@ import { Facebook, Mail, MapPin, GraduationCap } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="bg-gradient-to-br from-slate-700 via-blue-700 to-slate-700 text-white">
+    <footer className="bg-gradient-to-br from-slate-800 via-brand-900 to-slate-800 text-white">
       <div className="container mx-auto px-4">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 py-12">
           {/* About Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-brand-400 to-brand-600 rounded-lg flex items-center justify-center">
                 <GraduationCap size={24} />
               </div>
               <h3 className="font-bold text-xl">Cosmo Training</h3>
@@ -22,14 +22,14 @@ const Footer = () => {
 
           {/* Contact Info */}
           <div>
-            <h3 className="font-bold text-lg mb-4 text-blue-300">
+            <h3 className="font-bold text-lg mb-4 text-brand-100">
               Холбоо барих
             </h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-3 text-sm text-slate-300">
                 <Mail
                   size={18}
-                  className="flex-shrink-0 mt-0.5 text-blue-400"
+                  className="flex-shrink-0 mt-0.5 text-brand-100"
                 />
                 <span>training@cosmo.mn</span>
               </li>
@@ -38,7 +38,7 @@ const Footer = () => {
                 <a href="https://www.google.com/maps/place/Cosmo+Trade+LLC+office/@47.8975082,106.8569896,18.25z/data=!4m14!1m7!3m6!1s0x5d96932b7743aa4f:0x7eb07d8c6b75e385!2sCosmo+Trade+LLC+office!8m2!3d47.897692!4d106.858296!16s%2Fg%2F11gsbbv6wj!3m5!1s0x5d96932b7743aa4f:0x7eb07d8c6b75e385!8m2!3d47.897692!4d106.858296!16s%2Fg%2F11gsbbv6wj!5m1!1e1?entry=ttu&g_ep=EgoyMDI2MDExMy4wIKXMDSoASAFQAw%3D%3D">
                   <MapPin
                     size={18}
-                    className="flex-shrink-0 mt-0.5 text-blue-400 mb-2"
+                    className="flex-shrink-0 mt-0.5 text-brand-100 mb-2"
                   />
                   <span>
                     {" "}
@@ -52,7 +52,7 @@ const Footer = () => {
 
           {/* Social Media */}
           <div>
-            <h3 className="font-bold text-lg mb-4 text-blue-300">
+            <h3 className="font-bold text-lg mb-4 text-brand-100">
               Сошиал хаягууд
             </h3>
             <div className="space-y-3">
@@ -62,7 +62,7 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 text-sm text-slate-300 hover:text-white transition-all group"
               >
-                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center group-hover:bg-blue-500 transition-colors">
+                <div className="w-10 h-10 bg-brand-600 rounded-lg flex items-center justify-center group-hover:bg-brand-500 transition-colors">
                   <Facebook size={20} />
                 </div>
                 <span>Космо Трейд ХХК</span>
@@ -73,7 +73,7 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 text-sm text-slate-300 hover:text-white transition-all group"
               >
-                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center group-hover:bg-blue-500 transition-colors">
+                <div className="w-10 h-10 bg-brand-600 rounded-lg flex items-center justify-center group-hover:bg-brand-500 transition-colors">
                   <Facebook size={20} />
                 </div>
                 <span>Kangaroo Mongolia</span>

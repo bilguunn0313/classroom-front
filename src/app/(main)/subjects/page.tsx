@@ -37,36 +37,38 @@ export default function SubjectsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
+    <div className="min-h-screen bg-page-bg flex flex-col">
       <Header />
 
-      <main className="container mx-auto px-4 py-12 flex-grow">
+      <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-10 flex-grow">
         <div className="max-w-6xl mx-auto">
           <button
             onClick={() => router.push('/course')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-6"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
           >
             <ArrowLeft size={20} />
             <span>Сургалтууд</span>
           </button>
 
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl font-bold text-foreground tracking-tight mb-2">
               Бүх сэдвүүд
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Сонирхолтой сэдвээ сонгож сургалтуудыг үзээрэй
             </p>
           </div>
 
           {loading ? (
             <div className="flex justify-center items-center min-h-[300px]">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
           ) : subjects.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-md p-12 text-center">
-              <BookOpen className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <div className="bg-card rounded-xl border border-border shadow-sm p-12 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-brand-50 flex items-center justify-center mx-auto mb-4">
+                <BookOpen className="h-8 w-8 text-brand-500" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">
                 Одоогоор сэдэв байхгүй байна
               </h3>
             </div>
@@ -75,28 +77,28 @@ export default function SubjectsPage() {
               {subjects.map((subject) => (
                 <div
                   key={subject.id}
-                  className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer group"
+                  className="bg-card rounded-xl border border-border shadow-sm p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
                   onClick={() => router.push(`/subjects/${subject.id}`)}
                 >
                   <div className="flex items-start justify-between mb-4">
-                    <div className="p-3 bg-blue-100 rounded-lg">
-                      <BookOpen className="h-8 w-8 text-blue-600" />
+                    <div className="p-3 bg-brand-50 rounded-lg">
+                      <BookOpen className="h-8 w-8 text-brand-600" />
                     </div>
-                    <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                    <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-brand-600 transition-colors" />
                   </div>
 
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  <h3 className="text-xl font-bold text-foreground mb-2">
                     {subject.title}
                   </h3>
 
                   {subject.description && (
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
                       {subject.description}
                     </p>
                   )}
 
                   {subject.course_count !== undefined && (
-                    <div className="text-sm text-blue-600 font-medium">
+                    <div className="text-sm text-brand-600 font-medium">
                       {subject.course_count} сургалт
                     </div>
                   )}

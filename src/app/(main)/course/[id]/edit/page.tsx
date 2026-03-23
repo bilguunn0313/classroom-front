@@ -123,10 +123,10 @@ export default function EditCoursePage() {
   if (loading) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
+        <div className="min-h-screen bg-page-bg flex flex-col">
           <Header />
           <div className="container mx-auto px-4 py-12 flex justify-center flex-grow">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
           <Footer />
         </div>
@@ -136,10 +136,10 @@ export default function EditCoursePage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
+      <div className="min-h-screen bg-page-bg flex flex-col">
         <Header />
 
-        <main className="container mx-auto px-4 py-12 flex-grow">
+        <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-grow">
           <div className="max-w-3xl mx-auto">
             <Button
               variant="ghost"
@@ -150,8 +150,8 @@ export default function EditCoursePage() {
               Буцах
             </Button>
 
-            <div className="bg-white rounded-lg shadow-md p-6 md:p-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-6">
+            <div className="bg-card rounded-xl shadow-sm border border-border p-6 md:p-8">
+              <h1 className="text-2xl font-bold text-foreground tracking-tight mb-6">
                 Сургалт засах
               </h1>
 

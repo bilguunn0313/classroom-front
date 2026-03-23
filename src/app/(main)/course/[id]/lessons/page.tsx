@@ -124,10 +124,10 @@ export default function ManageLessonsPage() {
   if (loading) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
+        <div className="min-h-screen bg-page-bg flex flex-col">
           <Header />
           <div className="container mx-auto px-4 py-12 flex justify-center flex-grow">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
           <Footer />
         </div>
@@ -137,10 +137,10 @@ export default function ManageLessonsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
+      <div className="min-h-screen bg-page-bg flex flex-col">
         <Header />
 
-        <main className="container mx-auto px-4 py-12 flex-grow">
+        <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-grow">
           <div className="max-w-5xl mx-auto">
             <Button
               variant="ghost"
@@ -151,13 +151,13 @@ export default function ManageLessonsPage() {
               Буцах
             </Button>
 
-            <div className="bg-white rounded-lg shadow-md p-6 md:p-8">
+            <div className="bg-card rounded-xl shadow-sm border border-border p-6 md:p-8">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">
+                  <h1 className="text-2xl font-bold text-foreground tracking-tight">
                     Хичээлүүд
                   </h1>
-                  <p className="text-gray-600 mt-1">{course?.title}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{course?.title}</p>
                 </div>
                 <CreateEditLessonDialog
                   courseId={courseId}
@@ -190,8 +190,8 @@ export default function ManageLessonsPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                    <p className="text-sm text-blue-800">
+                  <div className="bg-brand-50 border border-brand-200 rounded-lg p-4 mb-4">
+                    <p className="text-sm text-brand-800">
                       💡 <strong>Зөвлөгөө:</strong> Хичээлүүдийг чирж дарааллыг
                       өөрчлөх боломжтой
                     </p>

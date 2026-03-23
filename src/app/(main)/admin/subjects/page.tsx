@@ -89,9 +89,9 @@ export default function AdminSubjectsPage() {
       label: "Title",
       render: (subject) => (
         <div>
-          <p className="font-medium text-gray-900">{subject.title}</p>
+          <p className="font-medium text-foreground">{subject.title}</p>
           {subject.description && (
-            <p className="text-xs text-gray-500 truncate max-w-md">
+            <p className="text-xs text-muted-foreground truncate max-w-md">
               {subject.description}
             </p>
           )}
@@ -102,7 +102,7 @@ export default function AdminSubjectsPage() {
       key: "course_count",
       label: "Courses",
       render: (subject) => (
-        <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+        <span className="px-2 py-1 text-xs font-medium bg-brand-100 text-brand-800 rounded">
           {subject.course_count}{" "}
           {subject.course_count === 1 ? "course" : "courses"}
         </span>
@@ -148,10 +148,10 @@ export default function AdminSubjectsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">
             Subject Management
           </h1>
-          <p className="text-gray-500 mt-1">Manage and view all subjects</p>
+          <p className="text-muted-foreground mt-1">Manage and view all subjects</p>
         </div>
       </div>
 

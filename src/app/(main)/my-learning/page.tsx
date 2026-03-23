@@ -56,36 +56,38 @@ export default function MyLearningPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
+      <div className="min-h-screen bg-page-bg flex flex-col">
         <Header />
 
-        <main className="container mx-auto px-4 py-12 flex-grow">
+        <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-10 flex-grow">
           <div className="max-w-6xl mx-auto">
             <div className="mb-8">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl font-bold text-foreground tracking-tight mb-2">
                 Миний суралцаж буй сургалтууд
               </h1>
-              <p className="text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Таны элссэн бүх сургалтууд энд харагдана
               </p>
             </div>
 
             {loading ? (
               <div className="flex justify-center items-center min-h-[300px]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
               </div>
             ) : courses.length === 0 ? (
-              <div className="bg-white rounded-lg shadow-md p-12 text-center">
-                <BookOpen className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <div className="bg-card rounded-xl border border-border shadow-sm p-12 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-brand-50 flex items-center justify-center mx-auto mb-4">
+                  <BookOpen className="h-8 w-8 text-brand-500" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">
                   Одоогоор элссэн сургалт байхгүй байна
                 </h3>
-                <p className="text-gray-600 mb-6">
-                  "Бүх сургалтууд" хэсгээс сонирхолтой сургалтаа олж элсээрэй
+                <p className="text-muted-foreground mb-6">
+                  &quot;Бүх сургалтууд&quot; хэсгээс сонирхолтой сургалтаа олж элсээрэй
                 </p>
                 <button
                   onClick={() => router.push("/")}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:opacity-90 transition-opacity"
                 >
                   Сургалт хайх
                 </button>
@@ -95,7 +97,7 @@ export default function MyLearningPage() {
                 {courses.map((course) => (
                   <div
                     key={course.id}
-                    className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                    className="bg-card rounded-xl border border-border shadow-sm overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
                     onClick={() => router.push(`/course/${course.id}`)}
                   >
                     <div className="aspect-video bg-gradient-to-br from-blue-500 to-purple-600 relative overflow-hidden">
@@ -114,27 +116,27 @@ export default function MyLearningPage() {
 
                     <div className="p-5">
                       <div className="mb-2">
-                        <span className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                        <span className="inline-block bg-brand-50 text-brand-600 text-xs font-medium px-2.5 py-0.5 rounded">
                           {course.subject_name}
                         </span>
                       </div>
 
-                      <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
+                      <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-2">
                         {course.title}
                       </h3>
 
                       {course.description && (
-                        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                           {course.description}
                         </p>
                       )}
 
-                      <div className="flex items-center justify-between text-sm text-gray-500 border-t pt-3">
+                      <div className="flex items-center justify-between text-sm text-muted-foreground border-t pt-3">
                         <div className="flex items-center gap-1">
                           <User size={14} />
                           <span className="truncate">{course.user_name}</span>
                         </div>
-                        <ArrowRight size={16} className="text-blue-600" />
+                        <ArrowRight size={16} className="text-brand-600" />
                       </div>
                     </div>
                   </div>

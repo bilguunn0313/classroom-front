@@ -189,7 +189,7 @@ function MenuManageContent() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
+      <div className="min-h-screen bg-page-bg flex flex-col">
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-gray-400">Уншиж байна...</div>
@@ -200,13 +200,13 @@ function MenuManageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
+    <div className="min-h-screen bg-page-bg flex flex-col">
       <Header />
 
       <main className="flex-1 container mx-auto px-4 py-6 sm:py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Цэс удирдах</h1>
-          <p className="text-gray-500 mt-1 text-sm">
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">Цэс удирдах</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Өдөр сонгоод цэс нэмэх, засах, хариулт харах
           </p>
         </div>
@@ -227,7 +227,7 @@ function MenuManageContent() {
           {/* Editor Panel */}
           <div className="space-y-5">
             {/* Date header */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center justify-between">
+            <div className="bg-card rounded-2xl shadow-sm border border-border p-5 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-gray-800">
                   {displayDate}
@@ -277,7 +277,7 @@ function MenuManageContent() {
             ) : (
               <>
                 {/* Notes */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Тэмдэглэл
                   </label>
@@ -285,7 +285,7 @@ function MenuManageContent() {
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Нэмэлт тэмдэглэл..."
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
                     rows={2}
                   />
                 </div>
@@ -299,7 +299,7 @@ function MenuManageContent() {
                   return (
                     <div
                       key={type}
-                      className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5"
+                      className="bg-card rounded-2xl shadow-sm border border-border p-5"
                     >
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-base font-semibold text-gray-700">
@@ -307,7 +307,7 @@ function MenuManageContent() {
                         </h3>
                         <button
                           onClick={() => handleAddItem(type)}
-                          className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded-lg transition-colors"
+                          className="flex items-center gap-1 text-sm text-brand-600 hover:text-brand-800 hover:bg-brand-50 px-2 py-1 rounded-lg transition-colors"
                         >
                           <Plus className="h-4 w-4" />
                           Нэмэх
@@ -343,7 +343,7 @@ function MenuManageContent() {
                                     handleItemChange(idx, "name", e.target.value)
                                   }
                                   placeholder="Хоолны нэр"
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                                 />
                               </div>
 
@@ -358,7 +358,7 @@ function MenuManageContent() {
                                     handleItemChange(idx, "description", e.target.value)
                                   }
                                   placeholder="Богино тайлбар..."
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                                 />
                               </div>
 
@@ -374,7 +374,7 @@ function MenuManageContent() {
                                       handleItemChange(idx, "ingredients", e.target.value)
                                     }
                                     placeholder="Үхрийн мах, төмс, лууван..."
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                                   />
                                   <p className="text-[11px] text-gray-300 mt-0.5">
                                     Таслалаар тусгаарлана
@@ -392,7 +392,7 @@ function MenuManageContent() {
                                     }
                                     placeholder="ккал"
                                     min={0}
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                                   />
                                 </div>
                               </div>
@@ -417,7 +417,7 @@ function MenuManageContent() {
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="w-full flex items-center justify-center gap-2 bg-blue-500 text-white py-3 rounded-xl font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-xl font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
                   {saving ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -429,7 +429,7 @@ function MenuManageContent() {
 
                 {/* Response Dashboard */}
                 {menu && (
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                  <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
                     <div className="flex items-center gap-2 mb-4">
                       <Users className="h-5 w-5 text-gray-600" />
                       <h3 className="text-base font-semibold text-gray-700">

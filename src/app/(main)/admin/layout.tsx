@@ -23,7 +23,7 @@ export default function AdminLayout({
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
           </header>
-          <main className="flex-1 p-8 bg-gray-50">{children}</main>
+          <main className="flex-1 p-8 bg-page-bg">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </ProtectedRoute>

@@ -12,10 +12,10 @@ const App = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
+      <div className="min-h-screen bg-page-bg flex flex-col">
         <Header />
         <div className="container mx-auto px-4 py-12 flex justify-center flex-grow">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
         <Footer />
       </div>
@@ -24,7 +24,7 @@ const App = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
+      <div className="min-h-screen bg-page-bg flex flex-col">
         <Header />
         <div className="container mx-auto px-4 py-12 flex-grow">
           <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
@@ -37,12 +37,12 @@ const App = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
+    <div className="min-h-screen bg-page-bg flex flex-col">
       <Header />
-      <main className="container mx-auto px-4 py-12 flex-grow">
+      <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-10 flex-grow">
         {data.map(({ subject, course }) => (
           <section key={subject.id} className="mb-12">
-            <h2 className="text-3xl font-bold mb-6">{subject.title}</h2>
+            <h2 className="text-2xl font-bold text-foreground tracking-tight mb-6">{subject.title}</h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {course.map((course) => (

@@ -18,12 +18,12 @@ export default function AdminDashboardPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, idx) => (
             <div
               key={idx}
-              className="bg-white rounded-lg shadow p-6 border border-gray-200 h-32 animate-pulse"
+              className="bg-card rounded-xl shadow-sm border border-border p-6 h-32 animate-pulse"
             >
               <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
               <div className="h-8 bg-gray-200 rounded w-1/3"></div>
@@ -37,7 +37,7 @@ export default function AdminDashboardPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-red-600">Failed to load dashboard data</p>
         </div>
@@ -47,7 +47,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -82,8 +82,8 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Recent Users */}
-      <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+        <h2 className="text-xl font-semibold text-foreground mb-4">
           Recent Users
         </h2>
         <div className="space-y-3">
@@ -94,8 +94,8 @@ export default function AdminDashboardPage() {
                 className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
               >
                 <div>
-                  <p className="font-medium text-gray-900">{user.name}</p>
-                  <p className="text-sm text-gray-500">{user.email}</p>
+                  <p className="font-medium text-foreground">{user.name}</p>
+                  <p className="text-sm text-muted-foreground">{user.email}</p>
                 </div>
                 <span
                   className={`px-2 py-1 text-xs font-medium rounded ${
@@ -109,14 +109,14 @@ export default function AdminDashboardPage() {
               </div>
             ))
           ) : (
-            <p className="text-gray-500 text-center py-4">No recent users</p>
+            <p className="text-muted-foreground text-center py-4">No recent users</p>
           )}
         </div>
       </div>
 
       {/* Recent Courses */}
-      <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+        <h2 className="text-xl font-semibold text-foreground mb-4">
           Recent Courses
         </h2>
         <div className="space-y-3">
@@ -127,8 +127,8 @@ export default function AdminDashboardPage() {
                 className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
               >
                 <div>
-                  <p className="font-medium text-gray-900">{course.title}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="font-medium text-foreground">{course.title}</p>
+                  <p className="text-sm text-muted-foreground">
                     {course.subject_name} • {course.user_name}
                   </p>
                 </div>
@@ -144,7 +144,7 @@ export default function AdminDashboardPage() {
               </div>
             ))
           ) : (
-            <p className="text-gray-500 text-center py-4">No recent courses</p>
+            <p className="text-muted-foreground text-center py-4">No recent courses</p>
           )}
         </div>
       </div>

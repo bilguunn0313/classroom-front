@@ -141,7 +141,7 @@ export default function MenuPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
+      <div className="min-h-screen bg-page-bg flex flex-col">
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-gray-400">Уншиж байна...</div>
@@ -152,13 +152,13 @@ export default function MenuPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
+    <div className="min-h-screen bg-page-bg flex flex-col">
       <Header />
 
       <main className="flex-1 container mx-auto px-4 py-6 sm:py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Хоолны цэс</h1>
-          <p className="text-gray-500 mt-1 text-sm">
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">Хоолны цэс</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Өдөр сонгож цэс болон хариу өгөх боломжтой
           </p>
         </div>
@@ -180,13 +180,13 @@ export default function MenuPage() {
           <div className="space-y-4">
             {/* Date + RSVP side by side */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center">
+              <div className="bg-card rounded-2xl shadow-sm border border-border p-4 flex items-center">
                 <div className="min-w-0">
                   <h2 className="text-base font-semibold text-gray-800 truncate">
                     {displayDate}
                   </h2>
                   {selectedDate === today && (
-                    <span className="inline-block mt-1 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                    <span className="inline-block mt-1 text-xs bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full font-medium">
                       Өнөөдөр
                     </span>
                   )}
@@ -199,7 +199,7 @@ export default function MenuPage() {
                   menuDate={menu.menu_date.split("T")[0]}
                 />
               ) : (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center justify-center">
+                <div className="bg-card rounded-2xl shadow-sm border border-border p-4 flex items-center justify-center">
                   <p className="text-sm text-gray-300">--</p>
                 </div>
               )}
@@ -214,22 +214,24 @@ export default function MenuPage() {
               )}
 
               {!dayLoading && !menu && (
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-                  <UtensilsCrossed className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-400">Энэ өдөр цэс байхгүй байна</p>
+                <div className="bg-card rounded-2xl border border-border shadow-sm p-8 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-brand-50 flex items-center justify-center mx-auto mb-3">
+                    <UtensilsCrossed className="h-8 w-8 text-brand-500" />
+                  </div>
+                  <p className="text-muted-foreground">Энэ өдөр цэс байхгүй байна</p>
                 </div>
               )}
 
               {menu && grouped && (
                 <>
                   {menu.notes && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-700 mb-4">
+                    <div className="bg-brand-50 border border-brand-200 rounded-xl px-4 py-3 text-sm text-brand-700 mb-4">
                       {menu.notes}
                     </div>
                   )}
 
                   {/* All meals in one unified card */}
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
+                  <div className="bg-card rounded-2xl shadow-sm border border-border p-5 sm:p-6">
                     <div className="space-y-6">
                       {(["meal_1", "meal_2", "drink"] as const).map(
                         (type, idx) => {

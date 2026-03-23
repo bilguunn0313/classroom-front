@@ -219,12 +219,12 @@ const CourseDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-page-bg flex flex-col">
         <Header />
         <div className="container mx-auto px-4 py-12 flex justify-center items-center min-h-[60vh] flex-grow">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Сургалт ачааллаж байна...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Сургалт ачааллаж байна...</p>
           </div>
         </div>
         <Footer />
@@ -234,7 +234,7 @@ const CourseDetailPage = () => {
 
   if (courseError || !course) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-page-bg flex flex-col">
         <Header />
         <div className="container mx-auto px-4 py-12 flex-grow">
           <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg max-w-2xl mx-auto">
@@ -248,7 +248,7 @@ const CourseDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-page-bg flex flex-col">
       <Header />
 
       <main className="container mx-auto px-4 py-4 md:py-6 flex-grow">
@@ -256,7 +256,7 @@ const CourseDetailPage = () => {
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => router.push('/course')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft size={20} />
             <span className="text-sm md:text-base">Сургалтууд</span>
@@ -277,7 +277,7 @@ const CourseDetailPage = () => {
         <div className="lg:hidden mb-4">
           <button
             onClick={() => setShowLessonList(true)}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg flex items-center justify-between hover:bg-blue-700 transition-colors"
+            className="w-full bg-primary text-primary-foreground py-3 px-4 rounded-lg flex items-center justify-between hover:opacity-90 transition-opacity"
           >
             <span className="font-medium">
               Хичээлүүд ({visibleLessons.length} хичээл)
@@ -364,9 +364,9 @@ const CourseDetailPage = () => {
 
             {/* Current Lesson Info */}
             {selectedLesson && (
-              <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
+              <div className="bg-card rounded-xl shadow-sm border border-border p-4 md:p-6">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold">
                     {selectedLesson.lesson_order}
                   </div>
                   <span className="text-sm font-medium text-gray-500">
@@ -374,7 +374,7 @@ const CourseDetailPage = () => {
                   </span>
                 </div>
                 <div className="flex items-start justify-between gap-4 mb-2">
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+                  <h2 className="text-xl md:text-2xl font-bold text-foreground">
                     {selectedLesson.title}
                   </h2>
                   {isCompleted(selectedLesson.id) && (
@@ -385,7 +385,7 @@ const CourseDetailPage = () => {
                   )}
                 </div>
                 {selectedLesson.description && (
-                  <p className="text-sm md:text-base text-gray-600 mb-4">
+                  <p className="text-sm md:text-base text-muted-foreground mb-4">
                     {selectedLesson.description}
                   </p>
                 )}
@@ -396,9 +396,9 @@ const CourseDetailPage = () => {
                   </div>
                   {getProgress(selectedLesson.id) > 0 && (
                     <div className="flex items-center gap-2">
-                      <div className="w-20 bg-gray-200 rounded-full h-2">
+                      <div className="w-20 bg-muted rounded-full h-2">
                         <div
-                          className="bg-blue-600 h-2 rounded-full transition-all"
+                          className="bg-primary h-2 rounded-full transition-all"
                           style={{
                             width: `${getProgress(selectedLesson.id)}%`,
                           }}
@@ -430,7 +430,7 @@ const CourseDetailPage = () => {
                     </h3>
                     {loadingPdfs ? (
                       <div className="flex justify-center py-4">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                       </div>
                     ) : (
                       <div className="space-y-2">
@@ -442,7 +442,7 @@ const CourseDetailPage = () => {
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                               <FileText className="h-5 w-5 text-red-600 flex-shrink-0" />
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900 truncate">
+                                <p className="text-sm font-medium text-foreground truncate">
                                   {material.title}
                                 </p>
                                 <p className="text-xs text-gray-500">
@@ -460,7 +460,7 @@ const CourseDetailPage = () => {
                                   "_blank",
                                 )
                               }
-                              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-brand-600 hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors cursor-pointer"
                             >
                               <Download className="h-4 w-4" />
                               <span>Үзэх</span>
@@ -475,34 +475,34 @@ const CourseDetailPage = () => {
             )}
 
             {/* Course Overview */}
-            <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
-              <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-3 md:mb-4">
+            <div className="bg-card rounded-xl shadow-sm border border-border p-4 md:p-6">
+              <h3 className="text-lg md:text-xl font-bold text-foreground mb-3 md:mb-4">
                 Сургалтын тухай
               </h3>
-              <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">
+              <p className="text-sm md:text-base text-muted-foreground mb-4 md:mb-6">
                 {course.description || "Тайлбар байхгүй байна."}
               </p>
 
               <div className="grid grid-cols-2 gap-3 md:gap-4">
-                <div className="text-center p-3 md:p-4 bg-blue-50 rounded-lg">
-                  <BookOpen className="mx-auto mb-2 text-blue-600" size={20} />
-                  <div className="text-xl md:text-2xl font-bold text-gray-900">
+                <div className="text-center p-3 md:p-4 bg-brand-50 rounded-lg">
+                  <BookOpen className="mx-auto mb-2 text-brand-600" size={20} />
+                  <div className="text-xl md:text-2xl font-bold text-foreground">
                     {visibleLessons.length}
                   </div>
-                  <div className="text-xs md:text-sm text-gray-600">Хичээл</div>
+                  <div className="text-xs md:text-sm text-muted-foreground">Хичээл</div>
                 </div>
                 <div className="text-center p-3 md:p-4 bg-green-50 rounded-lg">
                   <Clock className="mx-auto mb-2 text-green-600" size={20} />
-                  <div className="text-xl md:text-2xl font-bold text-gray-900">
+                  <div className="text-xl md:text-2xl font-bold text-foreground">
                     {totalFormatted}
                   </div>
-                  <div className="text-xs md:text-sm text-gray-600">
+                  <div className="text-xs md:text-sm text-muted-foreground">
                     Хугацаа
                   </div>
                 </div>
                 <div className="text-center p-3 md:p-4 bg-purple-50 rounded-lg">
                   <User className="mx-auto mb-2 text-purple-600" size={20} />
-                  <div className="text-xs md:text-sm font-medium text-gray-900 truncate px-1">
+                  <div className="text-xs md:text-sm font-medium text-foreground truncate px-1">
                     {user?.name || "Багш"}
                   </div>
                   <div className="text-xs text-gray-600">Багш</div>
@@ -512,7 +512,7 @@ const CourseDetailPage = () => {
                     className="mx-auto mb-2 text-orange-600"
                     size={20}
                   />
-                  <div className="text-xs md:text-sm font-medium text-gray-900 truncate px-1">
+                  <div className="text-xs md:text-sm font-medium text-foreground truncate px-1">
                     {data[0]?.subject?.title}
                   </div>
                   <div className="text-xs text-gray-600">Сэдэв</div>
@@ -523,10 +523,10 @@ const CourseDetailPage = () => {
 
           {/* Desktop: Lessons List (Sidebar) */}
           <div className="hidden lg:block lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm sticky top-6">
+            <div className="bg-card rounded-xl shadow-sm border border-border sticky top-6">
               <div className="p-4 border-b border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900">Хичээлүүд</h3>
-                <p className="text-sm text-gray-600 mt-1">
+                <h3 className="text-lg font-bold text-foreground">Хичээлүүд</h3>
+                <p className="text-sm text-muted-foreground mt-1">
                   {visibleLessons.length} хичээл • {totalFormatted}
                 </p>
               </div>
@@ -564,8 +564,8 @@ const CourseDetailPage = () => {
           <div className="absolute inset-x-0 bottom-0 bg-white rounded-t-2xl max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Хичээлүүд</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="text-lg font-bold text-foreground">Хичээлүүд</h3>
+                <p className="text-sm text-muted-foreground">
                   {visibleLessons.length} хичээл • {totalFormatted}
                 </p>
               </div>
@@ -638,7 +638,7 @@ const LessonItem = ({
     <button
       onClick={onClick}
       className={`w-full p-4 text-left transition-colors hover:bg-gray-50 ${
-        isSelected ? "bg-blue-50 border-l-4 border-blue-600" : ""
+        isSelected ? "bg-brand-50 border-l-4 border-primary" : ""
       }`}
     >
       <div className="flex items-start gap-3">
@@ -646,10 +646,10 @@ const LessonItem = ({
         <div
           className={`flex-shrink-0 w-10 h-10 flex items-center justify-center font-bold text-base ${
             isSelected
-              ? "text-blue-600"
+              ? "text-brand-600"
               : isCompleted
                 ? "text-green-600"
-                : "text-gray-600"
+                : "text-muted-foreground"
           }`}
         >
           {lesson.lesson_order}.
@@ -659,7 +659,7 @@ const LessonItem = ({
           <div className="flex items-start justify-between gap-2 mb-1">
             <h4
               className={`font-medium text-sm line-clamp-2 ${
-                isSelected ? "text-blue-600" : "text-gray-900"
+                isSelected ? "text-brand-600" : "text-foreground"
               }`}
             >
               {lesson.title}
@@ -678,9 +678,9 @@ const LessonItem = ({
           {/* Progress Bar */}
           {progress > 0 && progress < 100 && (
             <div className="mb-2">
-              <div className="w-full bg-gray-200 rounded-full h-1.5">
+              <div className="w-full bg-muted rounded-full h-1.5">
                 <div
-                  className="bg-blue-600 h-1.5 rounded-full transition-all"
+                  className="bg-primary h-1.5 rounded-full transition-all"
                   style={{ width: `${progress}%` }}
                 />
               </div>

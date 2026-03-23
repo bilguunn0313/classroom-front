@@ -106,10 +106,10 @@ export default function MyCoursesPage() {
             onClick={() => router.push(`/course/${course.id}`)}
             className="cursor-pointer"
           >
-            <p className="font-medium text-gray-900">{course.title}</p>
+            <p className="font-medium text-foreground">{course.title}</p>
           </Button>
           {course.description && (
-            <p className="text-xs text-gray-500 truncate max-w-xs">
+            <p className="text-xs text-muted-foreground truncate max-w-xs">
               {course.description}
             </p>
           )}
@@ -200,14 +200,14 @@ export default function MyCoursesPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-page-bg flex flex-col">
         <Header />
 
-        <main className="container mx-auto px-4 py-8 flex-grow">
+        <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-10 flex-grow">
           {/* Header */}
           <button
             onClick={() => router.push('/course')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-4"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"
           >
             <ArrowLeft size={20} />
             <span>Сургалтууд</span>
@@ -215,10 +215,10 @@ export default function MyCoursesPage() {
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-foreground tracking-tight">
                 Миний сургалтууд
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 Таны бүтээсэн сургалтуудыг удирдах
               </p>
             </div>
@@ -227,45 +227,45 @@ export default function MyCoursesPage() {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-card rounded-xl shadow-sm border border-border p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <BookOpen className="h-5 w-5 text-blue-600" />
+                <div className="p-2 bg-brand-50 rounded-lg">
+                  <BookOpen className="h-5 w-5 text-brand-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-foreground">
                     {courses.length}
                   </p>
-                  <p className="text-sm text-gray-500">Нийт сургалт</p>
+                  <p className="text-sm text-muted-foreground">Нийт сургалт</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-card rounded-xl shadow-sm border border-border p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-green-100 rounded-lg">
                   <Eye className="h-5 w-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-foreground">
                     {courses.filter((c) => c.published).length}
                   </p>
-                  <p className="text-sm text-gray-500">Нийтлэгдсэн</p>
+                  <p className="text-sm text-muted-foreground">Нийтлэгдсэн</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-card rounded-xl shadow-sm border border-border p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-100 rounded-lg">
                   <Users className="h-5 w-5 text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-foreground">
                     {courses.reduce(
                       (sum, c) => sum + (c.enrollment_count || 0),
                       0,
                     )}
                   </p>
-                  <p className="text-sm text-gray-500">Нийт суралцагчид</p>
+                  <p className="text-sm text-muted-foreground">Нийт суралцагчид</p>
                 </div>
               </div>
             </div>
