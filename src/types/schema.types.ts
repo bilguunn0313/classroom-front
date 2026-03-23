@@ -90,3 +90,41 @@ export interface TemperatureRecord {
   created_at: string;
   updated_at: string;
 }
+
+export interface Car {
+  id: number;
+  license_plate: string;
+  car_name: string | null;
+  created_by: number;
+  created_by_name?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TireCondition {
+  id: number;
+  car_id: number;
+  record_date: string;
+  condition: "good" | "fair" | "poor" | "critical";
+  notes: string | null;
+  recorded_by: number;
+  recorded_by_name?: string;
+  license_plate?: string;
+  car_name?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OdometerReading {
+  id: number;
+  car_id: number;
+  record_date: string;
+  reading_km: number;
+  notes: string | null;
+  recorded_by: number;
+  recorded_by_name?: string;
+  license_plate?: string;
+  car_name?: string;
+  created_at: string;
+  updated_at: string;
+}
