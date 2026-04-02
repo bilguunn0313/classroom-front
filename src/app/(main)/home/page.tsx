@@ -15,6 +15,7 @@ import {
   CircleGauge,
   Settings,
   ClipboardList,
+  Monitor,
 } from "lucide-react";
 
 const ROLE_LABEL: Record<string, string> = {
@@ -192,6 +193,24 @@ export default function HomePage() {
                 <h2 className="font-semibold text-lg">Цэс удирдах</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed mt-1">
                   Хоолны цэс нэмэх, засах, устгах
+                </p>
+              </Link>
+            )}
+
+            {user?.role === "admin" && (
+              <Link
+                href="/computer-assets"
+                className="group rounded-xl border border-t-2 border-t-teal-400 bg-card p-9 hover:border-teal-200 hover:border-t-teal-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 animate-slide-up delay-700"
+              >
+                <div className="flex items-start justify-between mb-5">
+                  <div className="w-14 h-14 rounded-2xl bg-teal-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                    <Monitor className="h-7 w-7 text-teal-600" />
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                </div>
+                <h2 className="font-semibold text-lg">МАБТТАX үзлэг</h2>
+                <p className="text-sm text-muted-foreground leading-relaxed mt-1">
+                  Техникийн мэдээлэл, QR код удирдах
                 </p>
               </Link>
             )}

@@ -128,3 +128,32 @@ export interface OdometerReading {
   created_at: string;
   updated_at: string;
 }
+
+export interface ComputerSpec {
+  id: number;
+  odoo_asset_id: number;
+  odoo_asset_code: string | null;
+  odoo_asset_name: string | null;
+  cpu: string | null;
+  ram: string | null;
+  storage: string | null;
+  os: string | null;
+  monitor: string | null;
+  notes: string | null;
+  created_by: number;
+  created_by_name?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OdooAsset {
+  id: number;
+  name: string;
+  code: string | false;
+  state: string;
+  category_id: [number, string];
+  value: number;
+  date: string;
+  partner_id: [number, string] | false;
+  user_id: [number, string] | false;
+}

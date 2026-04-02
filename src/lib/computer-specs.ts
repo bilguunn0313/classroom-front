@@ -1,0 +1,73 @@
+import api from "./axios";
+import axios from "axios";
+
+const PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+
+export interface CreateComputerSpecPayload {
+  odooAssetId: number;
+  odooAssetCode?: string | null;
+  odooAssetName?: string | null;
+  cpu?: string | null;
+  ram?: string | null;
+  storage?: string | null;
+  os?: string | null;
+  monitor?: string | null;
+  notes?: string | null;
+}
+
+export interface UpdateComputerSpecPayload {
+  odooAssetCode?: string | null;
+  odooAssetName?: string | null;
+  cpu?: string | null;
+  ram?: string | null;
+  storage?: string | null;
+  os?: string | null;
+  monitor?: string | null;
+  notes?: string | null;
+}
+
+export const computerSpecsAPI = {
+  getAll: async (page = 1, limit = 20, search?: string) => {
+    const params: Record<string, string | number> = { page, limit };
+    if (search) params.search = search;
+    const res = await api.get("/assets/specs", { params });
+    return res.data;
+  },
+
+  getSpecifiedIds: async () => {
+    const res = await api.get("/assets/specs/ids");
+    return res.data;
+  },
+
+  getByOdooId: async (odooAssetId: number) => {
+    const res = await api.get(`/assets/specs/${odooAssetId}`);
+    return res.data;
+  },
+
+  // Public — uses raw axios (no auth interceptor)
+  getByCode: async (code: string) => {
+    const res = await axios.get(`${PUBLIC_API_URL}/assets/specs/code/${code}`);
+    return res.data;
+  },
+
+  create: async (data: CreateComputerSpecPayload) => {
+    const res = await api.post("/assets/specs", data);
+    return res.data;
+  },
+
+  update: async (id: number, data: UpdateComputerSpecPayload) => {
+    const res = await api.put(`/assets/specs/${id}`, data);
+    return res.data;
+  },
+
+  delete: async (id: number) => {
+    const res = await api.delete(`/assets/specs/${id}`);
+    return res.data;
+  },
+
+  // Fetch Odoo assets (existing endpoint)
+  getOdooAssets: async (categoryId = 12) => {
+    const res = await api.get("/assets", { params: { category_id: categoryId } });
+    return res.data;
+  },
+};

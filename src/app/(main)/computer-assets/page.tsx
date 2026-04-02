@@ -1,0 +1,441 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  QrCode,
+  Search,
+  Monitor,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { ComputerSpec, OdooAsset } from "@/types/schema.types";
+import {
+  useComputerSpecs,
+  useOdooAssets,
+  useSpecifiedAssetIds,
+} from "@/hooks/useComputerSpecs";
+import { computerSpecsAPI } from "@/lib/computer-specs";
+import { ComputerSpecFormDialog } from "@/components/admin/ComputerSpecFormDialog";
+import { QRCodeDialog } from "@/components/admin/QRCodeDialog";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+
+export default function ComputerAssetsPage() {
+  // Tab & search state
+  const [activeTab, setActiveTab] = useState("odoo");
+  const [odooSearch, setOdooSearch] = useState("");
+  const [specsSearch, setSpecsSearch] = useState("");
+  const [specsPage, setSpecsPage] = useState(1);
+  const SPECS_LIMIT = 15;
+
+  // Dialog state
+  const [formOpen, setFormOpen] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [selectedSpec, setSelectedSpec] = useState<ComputerSpec | null>(null);
+  const [selectedAsset, setSelectedAsset] = useState<OdooAsset | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Data hooks
+  const { assets, loading: assetsLoading } = useOdooAssets();
+  const {
+    specs,
+    total: specsTotal,
+    loading: specsLoading,
+    refetch: refetchSpecs,
+  } = useComputerSpecs(specsPage, SPECS_LIMIT, specsSearch || undefined);
+  const { specifiedIds, refetch: refetchIds } = useSpecifiedAssetIds();
+
+  // Filter Odoo assets by search
+  const filteredAssets = useMemo(() => {
+    if (!odooSearch) return assets;
+    const q = odooSearch.toLowerCase();
+    return assets.filter(
+      (a) =>
+        a.name?.toLowerCase().includes(q) ||
+        (a.code &&
+          typeof a.code === "string" &&
+          a.code.toLowerCase().includes(q)),
+    );
+  }, [assets, odooSearch]);
+
+  const totalSpecsPages = Math.ceil(specsTotal / SPECS_LIMIT);
+
+  // Handlers
+  const handleAddSpec = (asset: OdooAsset) => {
+    setSelectedAsset(asset);
+    setSelectedSpec(null);
+    setFormOpen(true);
+  };
+
+  const handleEditSpec = (spec: ComputerSpec) => {
+    setSelectedSpec(spec);
+    setSelectedAsset(null);
+    setFormOpen(true);
+  };
+
+  const handleViewQR = (spec: ComputerSpec) => {
+    setSelectedSpec(spec);
+    setQrOpen(true);
+  };
+
+  const handleDeletePrompt = (spec: ComputerSpec) => {
+    setSelectedSpec(spec);
+    setDeleteOpen(true);
+  };
+
+  const handleFormSubmit = async (data: Record<string, string | undefined>) => {
+    try {
+      if (selectedSpec) {
+        // Edit
+        await computerSpecsAPI.update(selectedSpec.id, {
+          odooAssetCode: selectedSpec.odoo_asset_code,
+          odooAssetName: selectedSpec.odoo_asset_name,
+          cpu: data.cpu || null,
+          ram: data.ram || null,
+          storage: data.storage || null,
+          os: data.os || null,
+          monitor: data.monitor || null,
+          notes: data.notes || null,
+        });
+        toast.success("Мэдээлэл амжилттай шинэчлэгдлээ");
+      } else if (selectedAsset) {
+        // Create
+        await computerSpecsAPI.create({
+          odooAssetId: selectedAsset.id,
+          odooAssetCode:
+            typeof selectedAsset.code === "string" ? selectedAsset.code : null,
+          odooAssetName: selectedAsset.name,
+          cpu: data.cpu || null,
+          ram: data.ram || null,
+          storage: data.storage || null,
+          os: data.os || null,
+          monitor: data.monitor || null,
+          notes: data.notes || null,
+        });
+        toast.success("Мэдээлэл амжилттай нэмэгдлээ");
+      }
+      refetchSpecs();
+      refetchIds();
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.message || "Мэдээлэл хадгалахад алдаа гарлаа",
+      );
+      throw error;
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedSpec) return;
+    try {
+      setIsDeleting(true);
+      await computerSpecsAPI.delete(selectedSpec.id);
+      toast.success("Мэдээлэл амжилттай устгагдлаа");
+      refetchSpecs();
+      refetchIds();
+      setDeleteOpen(false);
+      setSelectedSpec(null);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Устгахад алдаа гарлаа");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <ProtectedRoute requiredRole="admin">
+      <main className="container mx-auto px-6 py-10 max-w-screen-2xl">
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">
+              МАБТТАX үзлэг
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Төхөөрөмжд техникийн мэдээлэл оруулж, QR код үүсгэх
+            </p>
+          </div>
+
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList>
+              <TabsTrigger value="odoo">Төхөөрөмж</TabsTrigger>
+              <TabsTrigger value="specs">Мэдээлэл жагсаалт</TabsTrigger>
+            </TabsList>
+
+            {/* ── Odoo Assets Tab ── */}
+            <TabsContent value="odoo" className="space-y-4">
+              <div className="relative max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Хөрөнгө хайх..."
+                  value={odooSearch}
+                  onChange={(e) => setOdooSearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+
+              {assetsLoading ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  Ачааллаж байна...
+                </div>
+              ) : (
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Нэр</TableHead>
+                        <TableHead>Код</TableHead>
+                        <TableHead>Төлөв</TableHead>
+                        <TableHead>Мэдээлэл</TableHead>
+                        <TableHead className="text-right">Үйлдэл</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredAssets.length === 0 ? (
+                        <TableRow>
+                          <TableCell
+                            colSpan={5}
+                            className="text-center py-8 text-muted-foreground"
+                          >
+                            Хөрөнгө олдсонгүй
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredAssets.map((asset) => {
+                          const hasSpec = specifiedIds.includes(asset.id);
+                          return (
+                            <TableRow key={asset.id}>
+                              <TableCell className="font-medium">
+                                {asset.name}
+                              </TableCell>
+                              <TableCell className="text-muted-foreground">
+                                {typeof asset.code === "string"
+                                  ? asset.code
+                                  : "—"}
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={
+                                    asset.state === "open"
+                                      ? "default"
+                                      : "secondary"
+                                  }
+                                >
+                                  {asset.state}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                {hasSpec ? (
+                                  <Badge
+                                    variant="outline"
+                                    className="border-green-500 text-green-700"
+                                  >
+                                    <Monitor className="mr-1 h-3 w-3" />
+                                    Оруулсан
+                                  </Badge>
+                                ) : (
+                                  <span className="text-muted-foreground text-sm">
+                                    —
+                                  </span>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {!hasSpec && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleAddSpec(asset)}
+                                  >
+                                    <Plus className="mr-1 h-4 w-4" />
+                                    Нэмэх
+                                  </Button>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* ── Specs List Tab ── */}
+            <TabsContent value="specs" className="space-y-4">
+              <div className="relative max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Мэдээлэл хайх..."
+                  value={specsSearch}
+                  onChange={(e) => {
+                    setSpecsSearch(e.target.value);
+                    setSpecsPage(1);
+                  }}
+                  className="pl-9"
+                />
+              </div>
+
+              {specsLoading ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  Ачааллаж байна...
+                </div>
+              ) : (
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Хөрөнгө</TableHead>
+                        <TableHead>Код</TableHead>
+                        <TableHead>CPU</TableHead>
+                        <TableHead>RAM</TableHead>
+                        <TableHead>Hard Disk</TableHead>
+                        <TableHead>ҮС</TableHead>
+                        <TableHead className="text-right">Үйлдэл</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {specs.length === 0 ? (
+                        <TableRow>
+                          <TableCell
+                            colSpan={7}
+                            className="text-center py-8 text-muted-foreground"
+                          >
+                            Мэдээлэл олдсонгүй
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        specs.map((spec) => (
+                          <TableRow key={spec.id}>
+                            <TableCell className="font-medium">
+                              {spec.odoo_asset_name || "—"}
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">
+                              {spec.odoo_asset_code || "—"}
+                            </TableCell>
+                            <TableCell>{spec.cpu || "—"}</TableCell>
+                            <TableCell>{spec.ram || "—"}</TableCell>
+                            <TableCell>{spec.storage || "—"}</TableCell>
+                            <TableCell>{spec.os || "—"}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center justify-end gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleViewQR(spec)}
+                                  title="QR код"
+                                >
+                                  <QrCode className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleEditSpec(spec)}
+                                  title="Засах"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeletePrompt(spec)}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  title="Устгах"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+
+              {/* Pagination */}
+              {totalSpecsPages > 1 && (
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    Нийт {specsTotal} мэдээлэл
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={specsPage <= 1}
+                      onClick={() => setSpecsPage((p) => p - 1)}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span className="text-sm">
+                      {specsPage} / {totalSpecsPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={specsPage >= totalSpecsPages}
+                      onClick={() => setSpecsPage((p) => p + 1)}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+
+          {/* Dialogs */}
+          <ComputerSpecFormDialog
+            isOpen={formOpen}
+            onClose={() => {
+              setFormOpen(false);
+              setSelectedSpec(null);
+              setSelectedAsset(null);
+            }}
+            onSubmit={handleFormSubmit}
+            spec={selectedSpec}
+            asset={selectedAsset}
+          />
+
+          <QRCodeDialog
+            isOpen={qrOpen}
+            onClose={() => {
+              setQrOpen(false);
+              setSelectedSpec(null);
+            }}
+            spec={selectedSpec}
+          />
+
+          <DeleteConfirmDialog
+            isOpen={deleteOpen}
+            onClose={() => {
+              setDeleteOpen(false);
+              setSelectedSpec(null);
+            }}
+            onConfirm={handleDelete}
+            title="Мэдээлэл устгах"
+            description={`"${selectedSpec?.odoo_asset_name || ""}" компьютерийн мэдээллийг устгах уу? Энэ үйлдлийг буцаах боломжгүй.`}
+            isLoading={isDeleting}
+          />
+        </div>
+      </main>
+    </ProtectedRoute>
+  );
+}
