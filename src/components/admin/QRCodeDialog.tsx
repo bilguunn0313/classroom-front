@@ -23,7 +23,7 @@ export function QRCodeDialog({ isOpen, onClose, spec }: QRCodeDialogProps) {
 
   if (!spec) return null;
 
-  const clientUrl = process.env.NEXT_PUBLIC_CLIENT_URL || "http://localhost:3000";
+  const clientUrl = typeof window !== "undefined" ? window.location.origin : "";
   const qrUrl = `${clientUrl}/computer/${spec.odoo_asset_code}`;
 
   const handlePrint = () => {
