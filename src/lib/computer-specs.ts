@@ -70,4 +70,46 @@ export const computerSpecsAPI = {
     const res = await api.get("/assets", { params: { category_id: categoryId } });
     return res.data;
   },
+
+  // ── Computer Inspections ──
+  getInspections: async (page = 1, limit = 20, search?: string) => {
+    const params: Record<string, string | number> = { page, limit };
+    if (search) params.search = search;
+    const res = await api.get("/assets/inspections", { params });
+    return res.data;
+  },
+
+  getInspectionHistory: async (specId: number, page = 1, limit = 20) => {
+    const res = await api.get(`/assets/inspections/spec/${specId}`, {
+      params: { page, limit },
+    });
+    return res.data;
+  },
+
+  createInspection: async (data: {
+    computerSpecId: number;
+    inspectionDate: string;
+    status: "pass" | "fail";
+    notes?: string | null;
+  }) => {
+    const res = await api.post("/assets/inspections", data);
+    return res.data;
+  },
+
+  updateInspection: async (
+    id: number,
+    data: {
+      inspectionDate?: string;
+      status?: "pass" | "fail";
+      notes?: string | null;
+    }
+  ) => {
+    const res = await api.put(`/assets/inspections/${id}`, data);
+    return res.data;
+  },
+
+  deleteInspection: async (id: number) => {
+    const res = await api.delete(`/assets/inspections/${id}`);
+    return res.data;
+  },
 };

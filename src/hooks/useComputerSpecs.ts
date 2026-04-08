@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { ComputerSpec, OdooAsset } from "@/types/schema.types";
+import { ComputerSpec, ComputerInspection, OdooAsset } from "@/types/schema.types";
 import { computerSpecsAPI } from "@/lib/computer-specs";
 
 interface UseComputerSpecsReturn {
@@ -110,4 +110,91 @@ export function useSpecifiedAssetIds(): UseSpecifiedAssetIdsReturn {
   }, [fetchIds]);
 
   return { specifiedIds, loading, refetch: fetchIds };
+}
+
+interface UseComputerInspectionsReturn {
+  inspections: ComputerInspection[];
+  total: number;
+  loading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+}
+
+export function useComputerInspections(
+  page: number = 1,
+  limit: number = 20,
+  search?: string
+): UseComputerInspectionsReturn {
+  const [inspections, setInspections] = useState<ComputerInspection[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchInspections = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await computerSpecsAPI.getInspections(page, limit, search);
+      if (response.success) {
+        setInspections(response.data);
+        setTotal(response.total);
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Мэдээлэл ачаалахад алдаа гарлаа"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [page, limit, search]);
+
+  useEffect(() => {
+    fetchInspections();
+  }, [fetchInspections]);
+
+  return { inspections, total, loading, error, refetch: fetchInspections };
+}
+
+interface UseInspectionHistoryReturn {
+  inspections: ComputerInspection[];
+  total: number;
+  loading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+}
+
+export function useInspectionHistory(
+  specId: number | null,
+  page: number = 1,
+  limit: number = 20
+): UseInspectionHistoryReturn {
+  const [inspections, setInspections] = useState<ComputerInspection[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchHistory = useCallback(async () => {
+    if (!specId) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await computerSpecsAPI.getInspectionHistory(specId, page, limit);
+      if (response.success) {
+        setInspections(response.data);
+        setTotal(response.total);
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Мэдээлэл ачаалахад алдаа гарлаа"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [specId, page, limit]);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
+
+  return { inspections, total, loading, error, refetch: fetchHistory };
 }

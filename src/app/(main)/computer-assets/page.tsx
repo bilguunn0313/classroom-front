@@ -23,17 +23,22 @@ import {
   Monitor,
   ChevronLeft,
   ChevronRight,
+  ClipboardCheck,
+  Eye,
 } from "lucide-react";
-import { ComputerSpec, OdooAsset } from "@/types/schema.types";
+import { ComputerSpec, ComputerInspection, OdooAsset } from "@/types/schema.types";
 import {
   useComputerSpecs,
   useOdooAssets,
   useSpecifiedAssetIds,
+  useComputerInspections,
 } from "@/hooks/useComputerSpecs";
 import { computerSpecsAPI } from "@/lib/computer-specs";
 import { ComputerSpecFormDialog } from "@/components/admin/ComputerSpecFormDialog";
 import { QRCodeDialog } from "@/components/admin/QRCodeDialog";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
+import { InspectionFormDialog } from "@/components/admin/InspectionFormDialog";
+import { InspectionHistoryDialog } from "@/components/admin/InspectionHistoryDialog";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 export default function ComputerAssetsPage() {
@@ -44,6 +49,11 @@ export default function ComputerAssetsPage() {
   const [specsPage, setSpecsPage] = useState(1);
   const SPECS_LIMIT = 15;
 
+  // Inspections tab state
+  const [inspSearch, setInspSearch] = useState("");
+  const [inspPage, setInspPage] = useState(1);
+  const INSP_LIMIT = 15;
+
   // Dialog state
   const [formOpen, setFormOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
@@ -51,6 +61,13 @@ export default function ComputerAssetsPage() {
   const [selectedSpec, setSelectedSpec] = useState<ComputerSpec | null>(null);
   const [selectedAsset, setSelectedAsset] = useState<OdooAsset | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Inspection dialog state
+  const [inspFormOpen, setInspFormOpen] = useState(false);
+  const [inspHistoryOpen, setInspHistoryOpen] = useState(false);
+  const [inspDeleteOpen, setInspDeleteOpen] = useState(false);
+  const [selectedInspection, setSelectedInspection] = useState<ComputerInspection | null>(null);
+  const [isDeletingInsp, setIsDeletingInsp] = useState(false);
 
   // Data hooks
   const { assets, loading: assetsLoading } = useOdooAssets();
@@ -61,6 +78,12 @@ export default function ComputerAssetsPage() {
     refetch: refetchSpecs,
   } = useComputerSpecs(specsPage, SPECS_LIMIT, specsSearch || undefined);
   const { specifiedIds, refetch: refetchIds } = useSpecifiedAssetIds();
+  const {
+    inspections,
+    total: inspTotal,
+    loading: inspLoading,
+    refetch: refetchInspections,
+  } = useComputerInspections(inspPage, INSP_LIMIT, inspSearch || undefined);
 
   // Filter Odoo assets by search
   const filteredAssets = useMemo(() => {
@@ -76,6 +99,7 @@ export default function ComputerAssetsPage() {
   }, [assets, odooSearch]);
 
   const totalSpecsPages = Math.ceil(specsTotal / SPECS_LIMIT);
+  const totalInspPages = Math.ceil(inspTotal / INSP_LIMIT);
 
   // Handlers
   const handleAddSpec = (asset: OdooAsset) => {
@@ -158,6 +182,61 @@ export default function ComputerAssetsPage() {
     }
   };
 
+  // Inspection handlers
+  const handleEditInspection = (insp: ComputerInspection) => {
+    setSelectedInspection(insp);
+    setInspFormOpen(true);
+  };
+
+  const handleDeleteInspPrompt = (insp: ComputerInspection) => {
+    setSelectedInspection(insp);
+    setInspDeleteOpen(true);
+  };
+
+  const handleViewHistory = (spec: ComputerSpec) => {
+    setSelectedSpec(spec);
+    setInspHistoryOpen(true);
+  };
+
+  const handleInspFormSubmit = async (data: {
+    inspectionDate: string;
+    status: "pass" | "fail";
+    notes?: string;
+  }) => {
+    try {
+      if (selectedInspection) {
+        await computerSpecsAPI.updateInspection(selectedInspection.id, {
+          inspectionDate: data.inspectionDate,
+          status: data.status,
+          notes: data.notes || null,
+        });
+        toast.success("Үзлэг амжилттай шинэчлэгдлээ");
+      }
+      refetchInspections();
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.message || "Хадгалахад алдаа гарлаа",
+      );
+      throw error;
+    }
+  };
+
+  const handleDeleteInspection = async () => {
+    if (!selectedInspection) return;
+    try {
+      setIsDeletingInsp(true);
+      await computerSpecsAPI.deleteInspection(selectedInspection.id);
+      toast.success("Үзлэг амжилттай устгагдлаа");
+      refetchInspections();
+      setInspDeleteOpen(false);
+      setSelectedInspection(null);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Устгахад алдаа гарлаа");
+    } finally {
+      setIsDeletingInsp(false);
+    }
+  };
+
   return (
     <ProtectedRoute requiredRole="admin">
       <main className="container mx-auto px-6 py-10 max-w-screen-2xl">
@@ -175,6 +254,7 @@ export default function ComputerAssetsPage() {
             <TabsList>
               <TabsTrigger value="odoo">Төхөөрөмж</TabsTrigger>
               <TabsTrigger value="specs">Мэдээлэл жагсаалт</TabsTrigger>
+              <TabsTrigger value="inspections">Үзлэг</TabsTrigger>
             </TabsList>
 
             {/* ── Odoo Assets Tab ── */}
@@ -337,6 +417,14 @@ export default function ComputerAssetsPage() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
+                                  onClick={() => handleViewHistory(spec)}
+                                  title="Үзлэгийн түүх"
+                                >
+                                  <ClipboardCheck className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
                                   onClick={() => handleViewQR(spec)}
                                   title="QR код"
                                 >
@@ -399,6 +487,136 @@ export default function ComputerAssetsPage() {
                 </div>
               )}
             </TabsContent>
+
+            {/* ── Inspections Tab ── */}
+            <TabsContent value="inspections" className="space-y-4">
+              <div className="relative max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Үзлэг хайх..."
+                  value={inspSearch}
+                  onChange={(e) => {
+                    setInspSearch(e.target.value);
+                    setInspPage(1);
+                  }}
+                  className="pl-9"
+                />
+              </div>
+
+              {inspLoading ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  Ачааллаж байна...
+                </div>
+              ) : (
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Хөрөнгө</TableHead>
+                        <TableHead>Код</TableHead>
+                        <TableHead>Огноо</TableHead>
+                        <TableHead>Төлөв</TableHead>
+                        <TableHead>Шалгасан</TableHead>
+                        <TableHead>Тэмдэглэл</TableHead>
+                        <TableHead className="text-right">Үйлдэл</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {inspections.length === 0 ? (
+                        <TableRow>
+                          <TableCell
+                            colSpan={7}
+                            className="text-center py-8 text-muted-foreground"
+                          >
+                            Үзлэгийн мэдээлэл олдсонгүй
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        inspections.map((insp) => (
+                          <TableRow key={insp.id}>
+                            <TableCell className="font-medium">
+                              {insp.odoo_asset_name || "—"}
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">
+                              {insp.odoo_asset_code || "—"}
+                            </TableCell>
+                            <TableCell>
+                              {new Date(insp.inspection_date).toLocaleDateString("mn-MN")}
+                            </TableCell>
+                            <TableCell>
+                              {insp.status === "pass" ? (
+                                <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                                  Хэвийн
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
+                                  Асуудалтай
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>{insp.inspected_by_name || "—"}</TableCell>
+                            <TableCell className="max-w-[200px] truncate">
+                              {insp.notes || "—"}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center justify-end gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleEditInspection(insp)}
+                                  title="Засах"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteInspPrompt(insp)}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  title="Устгах"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+
+              {/* Pagination */}
+              {totalInspPages > 1 && (
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    Нийт {inspTotal} үзлэг
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={inspPage <= 1}
+                      onClick={() => setInspPage((p) => p - 1)}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span className="text-sm">
+                      {inspPage} / {totalInspPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={inspPage >= totalInspPages}
+                      onClick={() => setInspPage((p) => p + 1)}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
           </Tabs>
 
           {/* Dialogs */}
@@ -433,6 +651,39 @@ export default function ComputerAssetsPage() {
             title="Мэдээлэл устгах"
             description={`"${selectedSpec?.odoo_asset_name || ""}" компьютерийн мэдээллийг устгах уу? Энэ үйлдлийг буцаах боломжгүй.`}
             isLoading={isDeleting}
+          />
+
+          <InspectionHistoryDialog
+            isOpen={inspHistoryOpen}
+            onClose={() => {
+              setInspHistoryOpen(false);
+              setSelectedSpec(null);
+            }}
+            spec={selectedSpec}
+            onChanged={refetchInspections}
+          />
+
+          <InspectionFormDialog
+            isOpen={inspFormOpen}
+            onClose={() => {
+              setInspFormOpen(false);
+              setSelectedInspection(null);
+            }}
+            onSubmit={handleInspFormSubmit}
+            inspection={selectedInspection}
+            assetName={selectedInspection?.odoo_asset_name}
+          />
+
+          <DeleteConfirmDialog
+            isOpen={inspDeleteOpen}
+            onClose={() => {
+              setInspDeleteOpen(false);
+              setSelectedInspection(null);
+            }}
+            onConfirm={handleDeleteInspection}
+            title="Үзлэг устгах"
+            description="Энэ үзлэгийн мэдээллийг устгах уу? Энэ үйлдлийг буцаах боломжгүй."
+            isLoading={isDeletingInsp}
           />
         </div>
       </main>

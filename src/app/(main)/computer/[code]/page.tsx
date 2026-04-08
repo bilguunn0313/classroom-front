@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { computerSpecsAPI } from "@/lib/computer-specs";
-import { ComputerSpec } from "@/types/schema.types";
+import { ComputerSpecWithInspection } from "@/types/schema.types";
 import {
   Cpu,
   MemoryStick,
@@ -44,7 +44,7 @@ export default function ComputerSpecPublicPage() {
   const params = useParams();
   const code = params.code as string;
 
-  const [spec, setSpec] = useState<ComputerSpec | null>(null);
+  const [spec, setSpec] = useState<ComputerSpecWithInspection | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -185,6 +185,38 @@ export default function ComputerSpecPublicPage() {
               <p className="text-sm text-gray-400">
                 Техникийн мэдээлэл бүртгэгдээгүй байна
               </p>
+            </div>
+          )}
+
+          {/* Latest Inspection */}
+          {spec.latest_inspection && (
+            <div className="px-5 py-4 border-t border-gray-100">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+                Сүүлийн үзлэг
+              </p>
+              <div className="flex items-center gap-3">
+                <span
+                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                    spec.latest_inspection.status === "pass"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
+                >
+                  {spec.latest_inspection.status === "pass"
+                    ? "Хэвийн"
+                    : "Асуудалтай"}
+                </span>
+                <span className="text-sm text-gray-600">
+                  {new Date(
+                    spec.latest_inspection.inspection_date
+                  ).toLocaleDateString("mn-MN")}
+                </span>
+              </div>
+              {spec.latest_inspection.notes && (
+                <p className="text-sm text-gray-500 mt-1.5">
+                  {spec.latest_inspection.notes}
+                </p>
+              )}
             </div>
           )}
 

@@ -146,6 +146,24 @@ export interface ComputerSpec {
   updated_at: string;
 }
 
+export interface ComputerInspection {
+  id: number;
+  computer_spec_id: number;
+  inspection_date: string;
+  status: "pass" | "fail";
+  notes: string | null;
+  inspected_by: number;
+  inspected_by_name?: string;
+  odoo_asset_name?: string;
+  odoo_asset_code?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ComputerSpecWithInspection extends ComputerSpec {
+  latest_inspection?: ComputerInspection | null;
+}
+
 export interface OdooAsset {
   id: number;
   name: string;
