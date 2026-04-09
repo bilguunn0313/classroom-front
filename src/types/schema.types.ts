@@ -175,3 +175,65 @@ export interface OdooAsset {
   partner_id: [number, string] | false;
   user_id: [number, string] | false;
 }
+
+// Fleet vehicle from Odoo ERP
+export interface FleetVehicle {
+  id: number;
+  name: string;
+  license_plate: string;
+  vin_sn: string;
+  model_id: [number, string] | false;
+  department_id: [number, string] | false;
+  related_department_id: [number, string] | false;
+  ownership_type: string;
+  technical_config: string | null;
+  car_type: string | null;
+  sub_type: string | null;
+  manufacture_date: string | null;
+  color: string | null;
+  program_code: string | null;
+  related_asset: string | null;
+  capacity: number;
+  load_capacity: number;
+  state_id: [number, string] | false;
+  odometer: number;
+}
+
+export interface OdooDepartment {
+  id: number;
+  name: string;
+  parent_id?: [number, string] | false;
+}
+
+export interface FleetVehicleState {
+  id: number;
+  name: string;
+  sequence: number;
+}
+
+export interface FleetVehicleModel {
+  id: number;
+  name: string;
+  brand_id: [number, string] | false;
+}
+
+export interface CreateVehicleData {
+  license_plate: string;
+  vin_sn?: string;
+  model_id?: number | false;
+  department_id?: number | false;
+  related_department_id?: number | false;
+  ownership_type?: string;
+  technical_config?: string;
+  car_type?: string;
+  sub_type?: string;
+  manufacture_date?: string;
+  color?: string;
+  program_code?: string;
+  related_asset?: string;
+  capacity?: number;
+  load_capacity?: number;
+  state_id?: number | false;
+}
+
+export type UpdateVehicleData = Partial<CreateVehicleData>;

@@ -4,16 +4,29 @@ import { useState } from "react";
 import Link from "next/link";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useUserContext } from "@/lib/userProvider";
-import { useCars } from "@/hooks/useCars";
+// import { useCars } from "@/hooks/useCars";
 import {
-  useTireConditionRecords,
-  useLatestTireConditions,
-} from "@/hooks/useTireCondition";
-import { useOdometerRecords, useLatestOdometer } from "@/hooks/useOdometer";
-import { carAPI } from "@/lib/car";
-import { tireConditionAPI } from "@/lib/tire-condition";
-import { odometerAPI } from "@/lib/odometer";
-import { Car, TireCondition, OdometerReading } from "@/types/schema.types";
+  useFleetVehicles,
+  useDepartments,
+  useVehicleStates,
+  useVehicleModels,
+} from "@/hooks/useFleet";
+// import {
+//   useTireConditionRecords,
+//   useLatestTireConditions,
+// } from "@/hooks/useTireCondition";
+// import { useOdometerRecords, useLatestOdometer } from "@/hooks/useOdometer";
+// import { carAPI } from "@/lib/car";
+import { fleetAPI } from "@/lib/fleet";
+// import { tireConditionAPI } from "@/lib/tire-condition";
+// import { odometerAPI } from "@/lib/odometer";
+import {
+  // Car,
+  FleetVehicle,
+  // TireCondition,
+  // OdometerReading,
+  CreateVehicleData,
+} from "@/types/schema.types";
 import { toast } from "sonner";
 import {
   Table,
@@ -26,7 +39,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+// import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -50,427 +63,260 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import {
   CircleGauge,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
+  // ChevronLeft,
+  // ChevronRight,
+  // Plus,
   Loader2,
   ArrowLeft,
-  Download,
-  Car as CarIcon,
-  Gauge,
+  // Download,
+  // Car as CarIcon,
+  // Gauge,
+  Truck,
+  Check,
 } from "lucide-react";
 
-const MONTH_NAMES = [
-  "1-р сар",
-  "2-р сар",
-  "3-р сар",
-  "4-р сар",
-  "5-р сар",
-  "6-р сар",
-  "7-р сар",
-  "8-р сар",
-  "9-р сар",
-  "10-р сар",
-  "11-р сар",
-  "12-р сар",
-];
+// const MONTH_NAMES = [
+//   "1-р сар", "2-р сар", "3-р сар", "4-р сар", "5-р сар", "6-р сар",
+//   "7-р сар", "8-р сар", "9-р сар", "10-р сар", "11-р сар", "12-р сар",
+// ];
 
-const CONDITION_LABELS: Record<string, string> = {
-  good: "Сайн",
-  fair: "Дунд",
-  poor: "Муу",
-  critical: "Аюултай",
+// const CONDITION_LABELS: Record<string, string> = {
+//   good: "Сайн", fair: "Дунд", poor: "Муу", critical: "Аюултай",
+// };
+
+// const CONDITION_COLORS: Record<string, string> = {
+//   good: "bg-green-100 text-green-700 border-green-200",
+//   fair: "bg-yellow-100 text-yellow-700 border-yellow-200",
+//   poor: "bg-orange-100 text-orange-700 border-orange-200",
+//   critical: "bg-red-100 text-red-700 border-red-200",
+// };
+
+const OWNERSHIP_LABELS: Record<string, string> = {
+  own: "Өөрийн хөрөнгө",
+  contract: "Гэрээт",
+  loan: "Зээлтэй",
 };
 
-const CONDITION_COLORS: Record<string, string> = {
-  good: "bg-green-100 text-green-700 border-green-200",
-  fair: "bg-yellow-100 text-yellow-700 border-yellow-200",
-  poor: "bg-orange-100 text-orange-700 border-orange-200",
-  critical: "bg-red-100 text-red-700 border-red-200",
-};
+// type DetailTab = "tire" | "odometer";
 
-type DetailTab = "tire" | "odometer";
+// function formatDate(dateStr: string): string {
+//   const d = new Date(dateStr + "T00:00:00");
+//   const days = ["Ня", "Да", "Мя", "Лх", "Пү", "Ба", "Бя"];
+//   return `${d.getMonth() + 1}/${d.getDate()} (${days[d.getDay()]})`;
+// }
 
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  const days = ["Ня", "Да", "Мя", "Лх", "Пү", "Ба", "Бя"];
-  return `${d.getMonth() + 1}/${d.getDate()} (${days[d.getDay()]})`;
-}
-
-function formatTime(dateStr: string): string {
-  const d = new Date(dateStr);
-  const h = String(d.getHours()).padStart(2, "0");
-  const m = String(d.getMinutes()).padStart(2, "0");
-  return `${h}:${m}`;
-}
+// function formatTime(dateStr: string): string {
+//   const d = new Date(dateStr);
+//   const h = String(d.getHours()).padStart(2, "0");
+//   const m = String(d.getMinutes()).padStart(2, "0");
+//   return `${h}:${m}`;
+// }
 
 function formatKm(km: number): string {
   return km.toLocaleString() + " км";
 }
 
-function exportTireCSV(
-  records: TireCondition[],
-  year: number,
-  month: number,
-  carLabel: string
-) {
-  const header = [
-    "Огноо",
-    "Улсын дугаар",
-    "Машин",
-    "Байдал",
-    "Тэмдэглэл",
-    "Бүртгэсэн",
-  ];
-  const rows = records.map((r) => [
-    String(r.record_date).split("T")[0],
-    r.license_plate || "",
-    r.car_name || "",
-    CONDITION_LABELS[r.condition] || r.condition,
-    r.notes ? `"${r.notes.replace(/"/g, '""')}"` : "",
-    r.recorded_by_name || "",
-  ]);
-
-  const csv = [header, ...rows].map((row) => row.join(",")).join("\n");
-  const bom = "\uFEFF";
-  const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `tire-condition-${carLabel}-${year}-${String(month).padStart(2, "0")}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+function odooLabel(field: [number, string] | false): string {
+  if (field === false || !field) return "—";
+  return field[1];
 }
+
+// function exportTireCSV(...) { ... } — commented out (local tire system disabled)
+
+// ── Default form state for fleet vehicle ──
+const emptyVehicleForm = (): Record<string, string> => ({
+  license_plate: "",
+  vin_sn: "",
+  model_id: "",
+  department_id: "",
+  related_department_id: "",
+  color: "",
+  ownership_type: "",
+  technical_config: "",
+  car_type: "",
+  sub_type: "",
+  manufacture_date: "",
+  program_code: "",
+  related_asset: "",
+  capacity: "0",
+  load_capacity: "0",
+  state_id: "",
+});
 
 export default function TireConditionPage() {
   const { user } = useUserContext();
   const isManager = user?.role === "admin" || user?.role === "supervisor";
 
-  const { cars, refetch: refetchCars } = useCars();
+  // // Old car system — disabled (using Odoo fleet instead)
+  // const { cars, refetch: refetchCars } = useCars();
 
-  const [selectedCarId, setSelectedCarId] = useState<number | null>(null);
-  const [detailTab, setDetailTab] = useState<DetailTab>("tire");
+  // Odoo fleet system
+  const { vehicles, loading: vehiclesLoading, refetch: refetchVehicles } = useFleetVehicles();
+  const { departments } = useDepartments();
+  const { states } = useVehicleStates();
+  const { models } = useVehicleModels();
 
-  const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
+  // // Local tire/odometer — disabled (using Odoo fleet instead)
+  // const [selectedCarId, setSelectedCarId] = useState<number | null>(null);
+  // const [detailTab, setDetailTab] = useState<DetailTab>("tire");
+  // const now = new Date();
+  // const [year, setYear] = useState(now.getFullYear());
+  // const [month, setMonth] = useState(now.getMonth() + 1);
+  // const { records: latestRecords, loading: latestLoading, refetch: refetchLatest } = useLatestTireConditions();
+  // const { records: monthlyRecords, loading: monthlyLoading, refetch: refetchMonthly } = useTireConditionRecords(selectedCarId, year, month);
+  // const { records: latestOdoRecords, refetch: refetchLatestOdo } = useLatestOdometer();
+  // const { records: monthlyOdoRecords, loading: monthlyOdoLoading, refetch: refetchMonthlyOdo } = useOdometerRecords(selectedCarId, year, month);
+  // const isOverview = selectedCarId === null;
+  // const latestOdoMap = new Map<number, OdometerReading>();
+  // for (const r of latestOdoRecords) { latestOdoMap.set(r.car_id, r); }
 
-  const {
-    records: latestRecords,
-    loading: latestLoading,
-    refetch: refetchLatest,
-  } = useLatestTireConditions();
+  // // ── Old Car dialog state — disabled ──
+  // const [carDialogOpen, setCarDialogOpen] = useState(false);
+  // const [editingCar, setEditingCar] = useState<Car | null>(null);
+  // const [carPlate, setCarPlate] = useState("");
+  // const [carNameForm, setCarNameForm] = useState("");
+  // const [savingCar, setSavingCar] = useState(false);
+  // const [deleteCarTarget, setDeleteCarTarget] = useState<Car | null>(null);
+  // const [deletingCar, setDeletingCar] = useState(false);
 
-  const {
-    records: monthlyRecords,
-    loading: monthlyLoading,
-    refetch: refetchMonthly,
-  } = useTireConditionRecords(selectedCarId, year, month);
+  // ── Fleet Vehicle dialog state ──
+  const [fleetDialogOpen, setFleetDialogOpen] = useState(false);
+  const [editingVehicle, setEditingVehicle] = useState<FleetVehicle | null>(null);
+  const [vForm, setVForm] = useState<Record<string, string>>(emptyVehicleForm());
+  const [savingVehicle, setSavingVehicle] = useState(false);
 
-  const {
-    records: latestOdoRecords,
-    refetch: refetchLatestOdo,
-  } = useLatestOdometer();
+  const [deleteVehicleTarget, setDeleteVehicleTarget] = useState<FleetVehicle | null>(null);
+  const [deletingVehicle, setDeletingVehicle] = useState(false);
 
-  const {
-    records: monthlyOdoRecords,
-    loading: monthlyOdoLoading,
-    refetch: refetchMonthlyOdo,
-  } = useOdometerRecords(selectedCarId, year, month);
+  // // ── Condition dialog state — disabled ──
+  // const [condDialogOpen, setCondDialogOpen] = useState(false);
+  // const [editingCond, setEditingCond] = useState<TireCondition | null>(null);
+  // const [formCarId, setFormCarId] = useState("");
+  // const [formDate, setFormDate] = useState("");
+  // const [formCondition, setFormCondition] = useState("");
+  // const [formNotes, setFormNotes] = useState("");
+  // const [savingCond, setSavingCond] = useState(false);
+  // const [deleteCondTarget, setDeleteCondTarget] = useState<TireCondition | null>(null);
+  // const [deletingCond, setDeletingCond] = useState(false);
 
-  const isOverview = selectedCarId === null;
+  // // ── Odometer dialog state — disabled ──
+  // const [odoDialogOpen, setOdoDialogOpen] = useState(false);
+  // const [editingOdo, setEditingOdo] = useState<OdometerReading | null>(null);
+  // const [odoCarId, setOdoCarId] = useState("");
+  // const [odoDate, setOdoDate] = useState("");
+  // const [odoKm, setOdoKm] = useState("");
+  // const [odoNotes, setOdoNotes] = useState("");
+  // const [savingOdo, setSavingOdo] = useState(false);
+  // const [deleteOdoTarget, setDeleteOdoTarget] = useState<OdometerReading | null>(null);
+  // const [deletingOdo, setDeletingOdo] = useState(false);
 
-  // Build a map of latest odometer per car for overview
-  const latestOdoMap = new Map<number, OdometerReading>();
-  for (const r of latestOdoRecords) {
-    latestOdoMap.set(r.car_id, r);
-  }
+  // // ── Month nav, Car CRUD, Condition CRUD, Odometer CRUD — all disabled ──
+  // // (local PostgreSQL tire/odometer system commented out — using Odoo fleet)
 
-  // ── Car dialog state ──
-  const [carDialogOpen, setCarDialogOpen] = useState(false);
-  const [editingCar, setEditingCar] = useState<Car | null>(null);
-  const [carPlate, setCarPlate] = useState("");
-  const [carNameForm, setCarNameForm] = useState("");
-  const [savingCar, setSavingCar] = useState(false);
-
-  const [deleteCarTarget, setDeleteCarTarget] = useState<Car | null>(null);
-  const [deletingCar, setDeletingCar] = useState(false);
-
-  // ── Condition dialog state ──
-  const [condDialogOpen, setCondDialogOpen] = useState(false);
-  const [editingCond, setEditingCond] = useState<TireCondition | null>(null);
-  const [formCarId, setFormCarId] = useState("");
-  const [formDate, setFormDate] = useState("");
-  const [formCondition, setFormCondition] = useState("");
-  const [formNotes, setFormNotes] = useState("");
-  const [savingCond, setSavingCond] = useState(false);
-
-  const [deleteCondTarget, setDeleteCondTarget] =
-    useState<TireCondition | null>(null);
-  const [deletingCond, setDeletingCond] = useState(false);
-
-  // ── Odometer dialog state ──
-  const [odoDialogOpen, setOdoDialogOpen] = useState(false);
-  const [editingOdo, setEditingOdo] = useState<OdometerReading | null>(null);
-  const [odoCarId, setOdoCarId] = useState("");
-  const [odoDate, setOdoDate] = useState("");
-  const [odoKm, setOdoKm] = useState("");
-  const [odoNotes, setOdoNotes] = useState("");
-  const [savingOdo, setSavingOdo] = useState(false);
-
-  const [deleteOdoTarget, setDeleteOdoTarget] =
-    useState<OdometerReading | null>(null);
-  const [deletingOdo, setDeletingOdo] = useState(false);
-
-  // ── Month nav ──
-  const goToPrevMonth = () => {
-    if (month === 1) {
-      setYear(year - 1);
-      setMonth(12);
-    } else {
-      setMonth(month - 1);
-    }
+  // ── Fleet Vehicle CRUD ──
+  const updateVField = (key: string, value: string) => {
+    setVForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const goToNextMonth = () => {
-    if (month === 12) {
-      setYear(year + 1);
-      setMonth(1);
-    } else {
-      setMonth(month + 1);
-    }
+  const openCreateVehicleDialog = () => {
+    setEditingVehicle(null);
+    setVForm(emptyVehicleForm());
+    setFleetDialogOpen(true);
   };
 
-  // ── Car CRUD ──
-  const openCreateCarDialog = () => {
-    setEditingCar(null);
-    setCarPlate("");
-    setCarNameForm("");
-    setCarDialogOpen(true);
+  const openEditVehicleDialog = (v: FleetVehicle) => {
+    setEditingVehicle(v);
+    setVForm({
+      license_plate: v.license_plate || "",
+      vin_sn: v.vin_sn || "",
+      model_id: v.model_id ? String(v.model_id[0]) : "",
+      department_id: v.department_id ? String(v.department_id[0]) : "",
+      related_department_id: v.related_department_id ? String(v.related_department_id[0]) : "",
+      color: v.color || "",
+      ownership_type: v.ownership_type || "",
+      technical_config: v.technical_config || "",
+      car_type: v.car_type || "",
+      sub_type: v.sub_type || "",
+      manufacture_date: v.manufacture_date || "",
+      program_code: v.program_code || "",
+      related_asset: v.related_asset || "",
+      capacity: String(v.capacity || 0),
+      load_capacity: String(v.load_capacity || 0),
+      state_id: v.state_id ? String(v.state_id[0]) : "",
+    });
+    setFleetDialogOpen(true);
   };
 
-  const openEditCarDialog = (car: Car) => {
-    setEditingCar(car);
-    setCarPlate(car.license_plate);
-    setCarNameForm(car.car_name || "");
-    setCarDialogOpen(true);
-  };
-
-  const handleSaveCar = async () => {
-    if (!carPlate.trim()) {
+  const handleSaveVehicle = async () => {
+    if (!vForm.license_plate.trim()) {
       toast.error("Улсын дугаар оруулна уу");
       return;
     }
     try {
-      setSavingCar(true);
-      if (editingCar) {
-        await carAPI.update(editingCar.id, {
-          licensePlate: carPlate.trim(),
-          carName: carNameForm.trim() || null,
-        });
-        toast.success("Машины мэдээлэл шинэчлэгдлээ");
+      setSavingVehicle(true);
+      const payload: CreateVehicleData = {
+        license_plate: vForm.license_plate.trim(),
+        vin_sn: vForm.vin_sn.trim() || undefined,
+        model_id: vForm.model_id ? Number(vForm.model_id) : undefined,
+        department_id: vForm.department_id ? Number(vForm.department_id) : undefined,
+        related_department_id: vForm.related_department_id ? Number(vForm.related_department_id) : undefined,
+        state_id: vForm.state_id ? Number(vForm.state_id) : undefined,
+        color: vForm.color.trim() || undefined,
+        ownership_type: vForm.ownership_type || undefined,
+        technical_config: vForm.technical_config.trim() || undefined,
+        car_type: vForm.car_type.trim() || undefined,
+        sub_type: vForm.sub_type.trim() || undefined,
+        manufacture_date: vForm.manufacture_date || undefined,
+        program_code: vForm.program_code.trim() || undefined,
+        related_asset: vForm.related_asset.trim() || undefined,
+        capacity: Number(vForm.capacity) || undefined,
+        load_capacity: Number(vForm.load_capacity) || undefined,
+      };
+
+      if (editingVehicle) {
+        await fleetAPI.updateVehicle(editingVehicle.id, payload);
+        toast.success("Тээврийн хэрэгсэл шинэчлэгдлээ");
       } else {
-        await carAPI.create({
-          licensePlate: carPlate.trim(),
-          carName: carNameForm.trim() || null,
-        });
-        toast.success("Машин бүртгэгдлээ");
+        await fleetAPI.createVehicle(payload);
+        toast.success("Тээврийн хэрэгсэл бүртгэгдлээ");
       }
-      setCarDialogOpen(false);
-      refetchCars();
-      refetchLatest();
+      setFleetDialogOpen(false);
+      refetchVehicles();
     } catch (err: any) {
       const msg =
         err?.response?.data?.message || err?.message || "Алдаа гарлаа";
       toast.error(msg);
     } finally {
-      setSavingCar(false);
+      setSavingVehicle(false);
     }
   };
 
-  const handleDeleteCar = async () => {
-    if (!deleteCarTarget) return;
+  const handleDeleteVehicle = async () => {
+    if (!deleteVehicleTarget) return;
     try {
-      setDeletingCar(true);
-      await carAPI.delete(deleteCarTarget.id);
-      toast.success("Машин устгагдлаа");
-      setDeleteCarTarget(null);
-      if (selectedCarId === deleteCarTarget.id) {
-        setSelectedCarId(null);
-      }
-      refetchCars();
-      refetchLatest();
-      refetchLatestOdo();
+      setDeletingVehicle(true);
+      await fleetAPI.deleteVehicle(deleteVehicleTarget.id);
+      toast.success("Тээврийн хэрэгсэл устгагдлаа");
+      setDeleteVehicleTarget(null);
+      refetchVehicles();
     } catch (err: any) {
       const msg =
         err?.response?.data?.message || err?.message || "Алдаа гарлаа";
       toast.error(msg);
     } finally {
-      setDeletingCar(false);
+      setDeletingVehicle(false);
     }
   };
 
-  // ── Condition CRUD ──
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-
-  const openCreateCondDialog = () => {
-    setEditingCond(null);
-    setFormCarId(selectedCarId ? String(selectedCarId) : "");
-    setFormDate(todayStr);
-    setFormCondition("");
-    setFormNotes("");
-    setCondDialogOpen(true);
-  };
-
-  const openEditCondDialog = (record: TireCondition) => {
-    setEditingCond(record);
-    setFormCarId(String(record.car_id));
-    setFormDate(String(record.record_date).split("T")[0]);
-    setFormCondition(record.condition);
-    setFormNotes(record.notes || "");
-    setCondDialogOpen(true);
-  };
-
-  const handleSaveCond = async () => {
-    if (!formCarId || !formDate || !formCondition) {
-      toast.error("Машин, огноо, байдал сонгоно уу");
-      return;
-    }
-    try {
-      setSavingCond(true);
-      if (editingCond) {
-        await tireConditionAPI.update(editingCond.id, {
-          carId: Number(formCarId),
-          recordDate: formDate,
-          condition: formCondition,
-          notes: formNotes || null,
-        });
-        toast.success("Бүртгэл шинэчлэгдлээ");
-      } else {
-        await tireConditionAPI.create({
-          carId: Number(formCarId),
-          recordDate: formDate,
-          condition: formCondition,
-          notes: formNotes || null,
-        });
-        toast.success("Дугуйн байдал бүртгэгдлээ");
-      }
-      setCondDialogOpen(false);
-      refetchLatest();
-      refetchMonthly();
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.message || err?.message || "Алдаа гарлаа";
-      toast.error(msg);
-    } finally {
-      setSavingCond(false);
-    }
-  };
-
-  const handleDeleteCond = async () => {
-    if (!deleteCondTarget) return;
-    try {
-      setDeletingCond(true);
-      await tireConditionAPI.delete(deleteCondTarget.id);
-      toast.success("Бүртгэл устгагдлаа");
-      setDeleteCondTarget(null);
-      refetchLatest();
-      refetchMonthly();
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.message || err?.message || "Алдаа гарлаа";
-      toast.error(msg);
-    } finally {
-      setDeletingCond(false);
-    }
-  };
-
-  // ── Odometer CRUD ──
-  const openCreateOdoDialog = () => {
-    setEditingOdo(null);
-    setOdoCarId(selectedCarId ? String(selectedCarId) : "");
-    setOdoDate(todayStr);
-    setOdoKm("");
-    setOdoNotes("");
-    setOdoDialogOpen(true);
-  };
-
-  const openEditOdoDialog = (record: OdometerReading) => {
-    setEditingOdo(record);
-    setOdoCarId(String(record.car_id));
-    setOdoDate(String(record.record_date).split("T")[0]);
-    setOdoKm(String(record.reading_km));
-    setOdoNotes(record.notes || "");
-    setOdoDialogOpen(true);
-  };
-
-  const handleSaveOdo = async () => {
-    if (!odoCarId || !odoDate || !odoKm) {
-      toast.error("Машин, огноо, км оруулна уу");
-      return;
-    }
-    const kmNum = parseInt(odoKm, 10);
-    if (isNaN(kmNum) || kmNum < 0) {
-      toast.error("Км тоо байх ёстой");
-      return;
-    }
-    try {
-      setSavingOdo(true);
-      if (editingOdo) {
-        await odometerAPI.update(editingOdo.id, {
-          carId: Number(odoCarId),
-          recordDate: odoDate,
-          readingKm: kmNum,
-          notes: odoNotes || null,
-        });
-        toast.success("Км заалт шинэчлэгдлээ");
-      } else {
-        await odometerAPI.create({
-          carId: Number(odoCarId),
-          recordDate: odoDate,
-          readingKm: kmNum,
-          notes: odoNotes || null,
-        });
-        toast.success("Км заалт бүртгэгдлээ");
-      }
-      setOdoDialogOpen(false);
-      refetchLatestOdo();
-      refetchMonthlyOdo();
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.message || err?.message || "Алдаа гарлаа";
-      toast.error(msg);
-    } finally {
-      setSavingOdo(false);
-    }
-  };
-
-  const handleDeleteOdo = async () => {
-    if (!deleteOdoTarget) return;
-    try {
-      setDeletingOdo(true);
-      await odometerAPI.delete(deleteOdoTarget.id);
-      toast.success("Км заалтын бүртгэл устгагдлаа");
-      setDeleteOdoTarget(null);
-      refetchLatestOdo();
-      refetchMonthlyOdo();
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.message || err?.message || "Алдаа гарлаа";
-      toast.error(msg);
-    } finally {
-      setDeletingOdo(false);
-    }
-  };
-
-  const selectedCar = cars.find((c) => c.id === selectedCarId);
+  // // ── Condition CRUD + Odometer CRUD — disabled (local system) ──
 
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-background">
-        <main className="container mx-auto px-6 py-10 max-w-6xl">
+        <main className="container mx-auto px-6 py-10 max-w-[1600px]">
           {/* Header */}
           <div className="flex items-center gap-3 mb-6">
             <Link
@@ -492,535 +338,428 @@ export default function TireConditionPage() {
             </div>
           </div>
 
-          {/* Car selector + month nav + actions */}
-          <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
-            <div className="flex items-center gap-2">
-              <Select
-                value={selectedCarId ? String(selectedCarId) : "overview"}
-                onValueChange={(val) => {
-                  setSelectedCarId(val === "overview" ? null : Number(val));
-                  setDetailTab("tire");
-                }}
+          {/* Actions */}
+          <div className="flex items-center justify-end mb-5">
+            {isManager && (
+              <Button
+                size="sm"
+                onClick={openCreateVehicleDialog}
+                className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800"
+                variant="outline"
               >
-                <SelectTrigger className="w-[220px] h-9">
-                  <SelectValue placeholder="Бүх машин" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="overview">Бүх машин (ерөнхий)</SelectItem>
-                  {cars.map((car) => (
-                    <SelectItem key={car.id} value={String(car.id)}>
-                      {car.license_plate}
-                      {car.car_name ? ` — ${car.car_name}` : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {!isOverview && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={goToPrevMonth}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <span className="text-sm font-medium min-w-[120px] text-center">
-                    {year} оны {MONTH_NAMES[month - 1]}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={goToNextMonth}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              {!isOverview && detailTab === "tire" && monthlyRecords.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    exportTireCSV(
-                      monthlyRecords,
-                      year,
-                      month,
-                      selectedCar?.license_plate || "all"
-                    )
-                  }
-                >
-                  <Download className="h-4 w-4 mr-1" />
-                  CSV татах
-                </Button>
-              )}
-              {isManager && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={openCreateCarDialog}
-                  >
-                    <CarIcon className="h-4 w-4 mr-1" />
-                    Машин нэмэх
-                  </Button>
-                  {(isOverview || detailTab === "tire") && (
-                    <Button size="sm" onClick={openCreateCondDialog}>
-                      <Plus className="h-4 w-4 mr-1" />
-                      Дугуй
-                    </Button>
-                  )}
-                  {(isOverview || detailTab === "odometer") && (
-                    <Button size="sm" onClick={openCreateOdoDialog}>
-                      <Gauge className="h-4 w-4 mr-1" />
-                      Км заалт
-                    </Button>
-                  )}
-                </>
-              )}
-            </div>
+                <Truck className="h-4 w-4 mr-1" />
+                ӨҮ бүртгэх
+              </Button>
+            )}
           </div>
 
-          {/* Detail tabs (when a car is selected) */}
-          {!isOverview && (
-            <div className="flex gap-1 mb-4">
-              <button
-                onClick={() => setDetailTab("tire")}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  detailTab === "tire"
-                    ? "bg-foreground text-background"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
-              >
-                Дугуйн байдал
-              </button>
-              <button
-                onClick={() => setDetailTab("odometer")}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  detailTab === "odometer"
-                    ? "bg-foreground text-background"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
-              >
-                Км заалт
-              </button>
-            </div>
-          )}
-
           {/* ══════════════════════════════════════════════════════════════ */}
-          {/*  OVERVIEW MODE                                                */}
+          {/*  FLEET VEHICLES (Odoo ERP)                                    */}
           {/* ══════════════════════════════════════════════════════════════ */}
-          {isOverview && (
-            <>
-              <div className="rounded-lg border bg-card">
-                {latestLoading ? (
-                  <div className="flex items-center justify-center py-12 text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    <span className="text-sm">Уншиж байна...</span>
-                  </div>
-                ) : latestRecords.length === 0 ? (
-                  <div className="text-center py-12">
-                    <CircleGauge className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">
-                      Бүртгэл байхгүй байна
-                    </p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Улсын дугаар</TableHead>
-                        <TableHead>Машин</TableHead>
-                        <TableHead>Байдал</TableHead>
-                        <TableHead>Огноо</TableHead>
-                        <TableHead className="text-right">Км заалт</TableHead>
-                        <TableHead>Тэмдэглэл</TableHead>
-                        <TableHead>Бүртгэсэн</TableHead>
-                        {isManager && (
-                          <TableHead className="text-right">Үйлдэл</TableHead>
-                        )}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {latestRecords.map((record) => {
-                        const odo = latestOdoMap.get(record.car_id);
-                        return (
-                          <TableRow key={record.id}>
-                            <TableCell className="font-medium">
-                              {record.license_plate}
-                            </TableCell>
-                            <TableCell className="text-muted-foreground">
-                              {record.car_name || "—"}
-                            </TableCell>
-                            <TableCell>
-                              <span
-                                className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${CONDITION_COLORS[record.condition] || ""}`}
-                              >
-                                {CONDITION_LABELS[record.condition] ||
-                                  record.condition}
-                              </span>
-                            </TableCell>
-                            <TableCell className="tabular-nums">
-                              {formatDate(record.record_date)}
-                            </TableCell>
-                            <TableCell className="text-right tabular-nums text-muted-foreground">
-                              {odo ? formatKm(odo.reading_km) : "—"}
-                            </TableCell>
-                            <TableCell className="text-muted-foreground max-w-[140px] truncate">
-                              {record.notes || "—"}
-                            </TableCell>
-                            <TableCell className="text-muted-foreground">
-                              {record.recorded_by_name || "—"}
-                            </TableCell>
-                            {isManager && (
-                              <TableCell className="text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 text-xs"
-                                    onClick={() => openEditCondDialog(record)}
-                                  >
-                                    Засах
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 text-xs text-red-500 hover:text-red-600 hover:border-red-300"
-                                    onClick={() => setDeleteCondTarget(record)}
-                                  >
-                                    Устгах
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            )}
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                )}
+          <div className="rounded-lg border bg-card">
+            {vehiclesLoading ? (
+              <div className="flex items-center justify-center py-12 text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <span className="text-sm">Уншиж байна...</span>
               </div>
-
-              {/* Cars management list (manager only) */}
-              {isManager && cars.length > 0 && (
-                <div className="mt-8">
-                  <h2 className="text-sm font-medium mb-3 text-muted-foreground">
-                    Бүртгэлтэй машинууд
-                  </h2>
-                  <div className="rounded-lg border bg-card">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Улсын дугаар</TableHead>
-                          <TableHead>Нэр</TableHead>
-                          <TableHead>Бүртгэсэн</TableHead>
-                          <TableHead className="text-right">Үйлдэл</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {cars.map((car) => (
-                          <TableRow key={car.id}>
-                            <TableCell className="font-medium">
-                              {car.license_plate}
-                            </TableCell>
-                            <TableCell className="text-muted-foreground">
-                              {car.car_name || "—"}
-                            </TableCell>
-                            <TableCell className="text-muted-foreground">
-                              {car.created_by_name || "—"}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-7 text-xs"
-                                  onClick={() => openEditCarDialog(car)}
-                                >
-                                  Засах
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-7 text-xs text-red-500 hover:text-red-600 hover:border-red-300"
-                                  onClick={() => setDeleteCarTarget(car)}
-                                >
-                                  Устгах
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* ══════════════════════════════════════════════════════════════ */}
-          {/*  CAR DETAIL — TIRE TAB                                        */}
-          {/* ══════════════════════════════════════════════════════════════ */}
-          {!isOverview && detailTab === "tire" && (
-            <div className="rounded-lg border bg-card">
-              {monthlyLoading ? (
-                <div className="flex items-center justify-center py-12 text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  <span className="text-sm">Уншиж байна...</span>
-                </div>
-              ) : monthlyRecords.length === 0 ? (
-                <div className="text-center py-12">
-                  <CircleGauge className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
-                  <p className="text-sm text-muted-foreground">
-                    Энэ сард бүртгэл байхгүй байна
-                  </p>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Огноо</TableHead>
-                      <TableHead>Байдал</TableHead>
-                      <TableHead>Шинэчилсэн цаг</TableHead>
-                      <TableHead>Тэмдэглэл</TableHead>
-                      <TableHead>Бүртгэсэн</TableHead>
-                      {isManager && (
-                        <TableHead className="text-right">Үйлдэл</TableHead>
-                      )}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {monthlyRecords.map((record) => (
-                      <TableRow key={record.id}>
-                        <TableCell className="font-medium">
-                          {formatDate(record.record_date)}
-                        </TableCell>
-                        <TableCell>
-                          <span
-                            className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${CONDITION_COLORS[record.condition] || ""}`}
-                          >
-                            {CONDITION_LABELS[record.condition] ||
-                              record.condition}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground tabular-nums">
-                          {formatTime(record.updated_at)}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground max-w-[160px] truncate">
-                          {record.notes || "—"}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {record.recorded_by_name || "—"}
-                        </TableCell>
-                        {isManager && (
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 text-xs"
-                                onClick={() => openEditCondDialog(record)}
-                              >
-                                Засах
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 text-xs text-red-500 hover:text-red-600 hover:border-red-300"
-                                onClick={() => setDeleteCondTarget(record)}
-                              >
-                                Устгах
-                              </Button>
-                            </div>
-                          </TableCell>
+            ) : vehicles.length === 0 ? (
+              <div className="text-center py-12">
+                <Truck className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">
+                  Odoo-д бүртгэлтэй тээврийн хэрэгсэл байхгүй
+                </p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Улсын дугаар</TableHead>
+                    <TableHead>Нэр</TableHead>
+                    <TableHead>Модел</TableHead>
+                    <TableHead>Салбар</TableHead>
+                    <TableHead>Төлөв</TableHead>
+                    <TableHead className="text-right">Км</TableHead>
+                    {isManager && (
+                      <TableHead className="text-right">Үйлдэл</TableHead>
+                    )}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {vehicles.map((v) => (
+                    <TableRow key={v.id}>
+                      <TableCell className="font-medium">
+                        {v.license_plate || "—"}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {v.name || "—"}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {odooLabel(v.model_id)}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {odooLabel(v.department_id)}
+                      </TableCell>
+                      <TableCell>
+                        {v.state_id ? (
+                          <Badge variant="secondary" className="text-[11px] font-normal">
+                            {v.state_id[1]}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
                         )}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </div>
-          )}
-
-          {/* ══════════════════════════════════════════════════════════════ */}
-          {/*  CAR DETAIL — ODOMETER TAB                                    */}
-          {/* ══════════════════════════════════════════════════════════════ */}
-          {!isOverview && detailTab === "odometer" && (
-            <div className="rounded-lg border bg-card">
-              {monthlyOdoLoading ? (
-                <div className="flex items-center justify-center py-12 text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  <span className="text-sm">Уншиж байна...</span>
-                </div>
-              ) : monthlyOdoRecords.length === 0 ? (
-                <div className="text-center py-12">
-                  <Gauge className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
-                  <p className="text-sm text-muted-foreground">
-                    Энэ сард км заалтын бүртгэл байхгүй байна
-                  </p>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Огноо</TableHead>
-                      <TableHead className="text-right">Км заалт</TableHead>
-                      <TableHead className="text-right">Зөрүү</TableHead>
-                      <TableHead>Тэмдэглэл</TableHead>
-                      <TableHead>Бүртгэсэн</TableHead>
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums text-muted-foreground">
+                        {v.odometer ? formatKm(v.odometer) : "—"}
+                      </TableCell>
                       {isManager && (
-                        <TableHead className="text-right">Үйлдэл</TableHead>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => openEditVehicleDialog(v)}
+                            >
+                              Засах
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs text-red-500 hover:text-red-600 hover:border-red-300"
+                              onClick={() => setDeleteVehicleTarget(v)}
+                            >
+                              Устгах
+                            </Button>
+                          </div>
+                        </TableCell>
                       )}
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {monthlyOdoRecords.map((record, idx) => {
-                      const prev =
-                        idx > 0 ? monthlyOdoRecords[idx - 1] : null;
-                      const diff = prev
-                        ? record.reading_km - prev.reading_km
-                        : null;
-                      return (
-                        <TableRow key={record.id}>
-                          <TableCell className="font-medium">
-                            {formatDate(record.record_date)}
-                          </TableCell>
-                          <TableCell className="text-right tabular-nums">
-                            {formatKm(record.reading_km)}
-                          </TableCell>
-                          <TableCell className="text-right tabular-nums">
-                            {diff !== null ? (
-                              <span
-                                className={
-                                  diff >= 0
-                                    ? "text-blue-600"
-                                    : "text-red-500"
-                                }
-                              >
-                                {diff >= 0 ? "+" : ""}
-                                {diff.toLocaleString()} км
-                              </span>
-                            ) : (
-                              <span className="text-muted-foreground">—</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground max-w-[160px] truncate">
-                            {record.notes || "—"}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {record.recorded_by_name || "—"}
-                          </TableCell>
-                          {isManager && (
-                            <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-7 text-xs"
-                                  onClick={() => openEditOdoDialog(record)}
-                                >
-                                  Засах
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-7 text-xs text-red-500 hover:text-red-600 hover:border-red-300"
-                                  onClick={() => setDeleteOdoTarget(record)}
-                                >
-                                  Устгах
-                                </Button>
-                              </div>
-                            </TableCell>
-                          )}
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              )}
-            </div>
-          )}
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+
+          {/* Local tire + odometer tabs — disabled (using Odoo fleet) */}
         </main>
 
-        {/* ── Car Create/Edit Dialog ── */}
-        <Dialog open={carDialogOpen} onOpenChange={setCarDialogOpen}>
-          <DialogContent className="sm:max-w-[400px]">
+        {/* Old Car + Car Delete dialogs — disabled (using Odoo fleet) */}
+
+        {/* ════════════════════════════════════════════════════════════════ */}
+        {/*  FLEET VEHICLE CREATE/EDIT DIALOG (Odoo ERP)                    */}
+        {/* ════════════════════════════════════════════════════════════════ */}
+        <Dialog open={fleetDialogOpen} onOpenChange={setFleetDialogOpen}>
+          <DialogContent className="sm:max-w-[720px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>
-                {editingCar ? "Машин засах" : "Машин нэмэх"}
+              <DialogTitle className="flex items-center gap-2">
+                <Truck className="h-5 w-5 text-blue-600" />
+                {editingVehicle
+                  ? "Тээврийн хэрэгсэл засах"
+                  : "Тээврийн хэрэгсэл бүртгэх"}
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 pt-2">
-              <div>
-                <Label htmlFor="car-plate">Улсын дугаар</Label>
-                <Input
-                  id="car-plate"
-                  placeholder="жишээ нь: 1234УНА"
-                  value={carPlate}
-                  onChange={(e) => setCarPlate(e.target.value)}
-                  className="mt-1.5"
-                />
+
+            {/* Status workflow bar */}
+            {states.length > 0 && (
+              <div className="flex items-center gap-1 px-1 py-2 bg-muted/40 rounded-lg overflow-x-auto">
+                {states.map((st, idx) => {
+                  const isActive = vForm.state_id === String(st.id);
+                  return (
+                    <button
+                      key={st.id}
+                      type="button"
+                      onClick={() => updateVField("state_id", String(st.id))}
+                      className={`
+                        relative flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md
+                        transition-all duration-200 whitespace-nowrap
+                        ${
+                          isActive
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        }
+                      `}
+                    >
+                      {isActive && <Check className="h-3 w-3" />}
+                      <span>{st.name}</span>
+                      {idx < states.length - 1 && (
+                        <span className="absolute -right-1 top-1/2 -translate-y-1/2 text-muted-foreground/30 text-[10px] pointer-events-none">
+                          ›
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
-              <div>
-                <Label htmlFor="car-name">Машины нэр</Label>
-                <Input
-                  id="car-name"
-                  placeholder="жишээ нь: Хүнд даацын 1"
-                  value={carNameForm}
-                  onChange={(e) => setCarNameForm(e.target.value)}
-                  className="mt-1.5"
-                />
+            )}
+
+            <div className="space-y-5 pt-1">
+              {/* Two-column form */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                {/* ── Left column ── */}
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="v-plate" className="text-xs font-medium">
+                      Улсын дугаар <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="v-plate"
+                      placeholder="жишээ нь: 1234УНА"
+                      value={vForm.license_plate}
+                      onChange={(e) => updateVField("license_plate", e.target.value)}
+                      className="mt-1 h-9"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="v-vin" className="text-xs font-medium">
+                      Арлын дугаар (VIN)
+                    </Label>
+                    <Input
+                      id="v-vin"
+                      placeholder="VIN / Chassis number"
+                      value={vForm.vin_sn}
+                      onChange={(e) => updateVField("vin_sn", e.target.value)}
+                      className="mt-1 h-9"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-medium">Модел</Label>
+                    <Select
+                      value={vForm.model_id}
+                      onValueChange={(val) => updateVField("model_id", val)}
+                    >
+                      <SelectTrigger className="mt-1 h-9">
+                        <SelectValue placeholder="Модел сонгох" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {models.map((m) => (
+                          <SelectItem key={m.id} value={String(m.id)}>
+                            {m.name}
+                            {m.brand_id ? ` (${m.brand_id[1]})` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs font-medium">Салбар</Label>
+                    <Select
+                      value={vForm.department_id}
+                      onValueChange={(val) => updateVField("department_id", val)}
+                    >
+                      <SelectTrigger className="mt-1 h-9">
+                        <SelectValue placeholder="Салбар сонгох" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {departments.map((d) => (
+                          <SelectItem key={d.id} value={String(d.id)}>
+                            {d.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs font-medium">Хамаарах салбар</Label>
+                    <Select
+                      value={vForm.related_department_id}
+                      onValueChange={(val) => updateVField("related_department_id", val)}
+                    >
+                      <SelectTrigger className="mt-1 h-9">
+                        <SelectValue placeholder="Хамаарах салбар" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {departments.map((d) => (
+                          <SelectItem key={d.id} value={String(d.id)}>
+                            {d.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="v-color" className="text-xs font-medium">
+                      Өнгө
+                    </Label>
+                    <Input
+                      id="v-color"
+                      placeholder="жишээ нь: Цагаан"
+                      value={vForm.color}
+                      onChange={(e) => updateVField("color", e.target.value)}
+                      className="mt-1 h-9"
+                    />
+                  </div>
+                </div>
+
+                {/* ── Right column ── */}
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-xs font-medium">Өмчлөлийн төрөл</Label>
+                    <Select
+                      value={vForm.ownership_type}
+                      onValueChange={(val) => updateVField("ownership_type", val)}
+                    >
+                      <SelectTrigger className="mt-1 h-9">
+                        <SelectValue placeholder="Төрөл сонгох" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="own">Өөрийн хөрөнгө</SelectItem>
+                        <SelectItem value="contract">Гэрээт</SelectItem>
+                        <SelectItem value="loan">Зээлтэй</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="v-tech" className="text-xs font-medium">
+                      Техникийн тохиргоо
+                    </Label>
+                    <Input
+                      id="v-tech"
+                      placeholder="Техникийн мэдээлэл"
+                      value={vForm.technical_config}
+                      onChange={(e) => updateVField("technical_config", e.target.value)}
+                      className="mt-1 h-9"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="v-type" className="text-xs font-medium">
+                      Машины төрөл
+                    </Label>
+                    <Input
+                      id="v-type"
+                      placeholder="жишээ нь: Суудлын"
+                      value={vForm.car_type}
+                      onChange={(e) => updateVField("car_type", e.target.value)}
+                      className="mt-1 h-9"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="v-subtype" className="text-xs font-medium">
+                      Дэд төрөл
+                    </Label>
+                    <Input
+                      id="v-subtype"
+                      placeholder="жишээ нь: Жийп"
+                      value={vForm.sub_type}
+                      onChange={(e) => updateVField("sub_type", e.target.value)}
+                      className="mt-1 h-9"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="v-mfg" className="text-xs font-medium">
+                      Үйлдвэрлэсэн огноо
+                    </Label>
+                    <Input
+                      id="v-mfg"
+                      type="date"
+                      value={vForm.manufacture_date}
+                      onChange={(e) => updateVField("manufacture_date", e.target.value)}
+                      className="mt-1 h-9"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="v-prog" className="text-xs font-medium">
+                      Програм код
+                    </Label>
+                    <Input
+                      id="v-prog"
+                      placeholder="Програм код"
+                      value={vForm.program_code}
+                      onChange={(e) => updateVField("program_code", e.target.value)}
+                      className="mt-1 h-9"
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-end gap-2 pt-2">
+
+              {/* Bottom row — spans both columns */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1 border-t">
+                <div className="pt-3">
+                  <Label htmlFor="v-asset" className="text-xs font-medium">
+                    Холбогдох хөрөнгө
+                  </Label>
+                  <Input
+                    id="v-asset"
+                    placeholder="Хөрөнгийн код"
+                    value={vForm.related_asset}
+                    onChange={(e) => updateVField("related_asset", e.target.value)}
+                    className="mt-1 h-9"
+                  />
+                </div>
+                <div className="pt-3">
+                  <Label htmlFor="v-cap" className="text-xs font-medium">
+                    Багтаамж (хүн)
+                  </Label>
+                  <Input
+                    id="v-cap"
+                    type="number"
+                    min="0"
+                    value={vForm.capacity}
+                    onChange={(e) => updateVField("capacity", e.target.value)}
+                    className="mt-1 h-9"
+                  />
+                </div>
+                <div className="pt-3">
+                  <Label htmlFor="v-load" className="text-xs font-medium">
+                    Даац (кг)
+                  </Label>
+                  <Input
+                    id="v-load"
+                    type="number"
+                    min="0"
+                    value={vForm.load_capacity}
+                    onChange={(e) => updateVField("load_capacity", e.target.value)}
+                    className="mt-1 h-9"
+                  />
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-2 pt-3 border-t">
                 <Button
                   variant="outline"
-                  onClick={() => setCarDialogOpen(false)}
-                  disabled={savingCar}
+                  onClick={() => setFleetDialogOpen(false)}
+                  disabled={savingVehicle}
                 >
                   Болих
                 </Button>
-                <Button onClick={handleSaveCar} disabled={savingCar}>
-                  {savingCar && (
+                <Button
+                  onClick={handleSaveVehicle}
+                  disabled={savingVehicle}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {savingVehicle && (
                     <Loader2 className="h-4 w-4 animate-spin mr-1" />
                   )}
-                  {editingCar ? "Хадгалах" : "Нэмэх"}
+                  {editingVehicle ? "Хадгалах" : "Бүртгэх"}
                 </Button>
               </div>
             </div>
           </DialogContent>
         </Dialog>
 
-        {/* ── Car Delete Confirmation ── */}
+        {/* ── Fleet Vehicle Delete Confirmation ── */}
         <AlertDialog
-          open={!!deleteCarTarget}
-          onOpenChange={(open) => !open && setDeleteCarTarget(null)}
+          open={!!deleteVehicleTarget}
+          onOpenChange={(open) => !open && setDeleteVehicleTarget(null)}
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Машин устгах</AlertDialogTitle>
+              <AlertDialogTitle>Тээврийн хэрэгсэл устгах</AlertDialogTitle>
               <AlertDialogDescription>
-                &quot;{deleteCarTarget?.license_plate}&quot; машиныг устгахдаа
-                итгэлтэй байна уу? Бүх дугуйн болон км заалтын бүртгэл мөн
-                устана. Энэ үйлдлийг буцаах боломжгүй.
+                &quot;{deleteVehicleTarget?.license_plate || deleteVehicleTarget?.name}&quot; тээврийн хэрэгслийг
+                Odoo ERP-ээс устгахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={deletingCar}>
+              <AlertDialogCancel disabled={deletingVehicle}>
                 Болих
               </AlertDialogCancel>
               <AlertDialogAction
-                onClick={handleDeleteCar}
-                disabled={deletingCar}
+                onClick={handleDeleteVehicle}
+                disabled={deletingVehicle}
                 className="bg-red-500 hover:bg-red-600"
               >
-                {deletingCar && (
+                {deletingVehicle && (
                   <Loader2 className="h-4 w-4 animate-spin mr-1" />
                 )}
                 Устгах
@@ -1029,226 +768,7 @@ export default function TireConditionPage() {
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* ── Condition Create/Edit Dialog ── */}
-        <Dialog open={condDialogOpen} onOpenChange={setCondDialogOpen}>
-          <DialogContent className="sm:max-w-[400px]">
-            <DialogHeader>
-              <DialogTitle>
-                {editingCond
-                  ? "Дугуйн байдал засах"
-                  : "Дугуйн байдал бүртгэх"}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 pt-2">
-              <div>
-                <Label>Машин</Label>
-                <Select value={formCarId} onValueChange={setFormCarId}>
-                  <SelectTrigger className="mt-1.5">
-                    <SelectValue placeholder="Машин сонгох" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {cars.map((car) => (
-                      <SelectItem key={car.id} value={String(car.id)}>
-                        {car.license_plate}
-                        {car.car_name ? ` — ${car.car_name}` : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="cond-date">Огноо</Label>
-                <Input
-                  id="cond-date"
-                  type="date"
-                  value={formDate}
-                  onChange={(e) => setFormDate(e.target.value)}
-                  className="mt-1.5"
-                />
-              </div>
-              <div>
-                <Label>Байдал</Label>
-                <Select value={formCondition} onValueChange={setFormCondition}>
-                  <SelectTrigger className="mt-1.5">
-                    <SelectValue placeholder="Байдал сонгох" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="good">Сайн</SelectItem>
-                    <SelectItem value="fair">Дунд</SelectItem>
-                    <SelectItem value="poor">Муу</SelectItem>
-                    <SelectItem value="critical">Аюултай</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="cond-notes">Тэмдэглэл</Label>
-                <Textarea
-                  id="cond-notes"
-                  placeholder="Нэмэлт тайлбар..."
-                  value={formNotes}
-                  onChange={(e) => setFormNotes(e.target.value)}
-                  className="mt-1.5"
-                  rows={3}
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setCondDialogOpen(false)}
-                  disabled={savingCond}
-                >
-                  Болих
-                </Button>
-                <Button onClick={handleSaveCond} disabled={savingCond}>
-                  {savingCond && (
-                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                  )}
-                  {editingCond ? "Хадгалах" : "Бүртгэх"}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* ── Condition Delete Confirmation ── */}
-        <AlertDialog
-          open={!!deleteCondTarget}
-          onOpenChange={(open) => !open && setDeleteCondTarget(null)}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Бүртгэл устгах</AlertDialogTitle>
-              <AlertDialogDescription>
-                Энэ дугуйн байдлын бүртгэлийг устгахдаа итгэлтэй байна уу? Энэ
-                үйлдлийг буцаах боломжгүй.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={deletingCond}>
-                Болих
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteCond}
-                disabled={deletingCond}
-                className="bg-red-500 hover:bg-red-600"
-              >
-                {deletingCond && (
-                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                )}
-                Устгах
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        {/* ── Odometer Create/Edit Dialog ── */}
-        <Dialog open={odoDialogOpen} onOpenChange={setOdoDialogOpen}>
-          <DialogContent className="sm:max-w-[400px]">
-            <DialogHeader>
-              <DialogTitle>
-                {editingOdo ? "Км заалт засах" : "Км заалт бүртгэх"}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 pt-2">
-              <div>
-                <Label>Машин</Label>
-                <Select value={odoCarId} onValueChange={setOdoCarId}>
-                  <SelectTrigger className="mt-1.5">
-                    <SelectValue placeholder="Машин сонгох" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {cars.map((car) => (
-                      <SelectItem key={car.id} value={String(car.id)}>
-                        {car.license_plate}
-                        {car.car_name ? ` — ${car.car_name}` : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="odo-date">Огноо</Label>
-                <Input
-                  id="odo-date"
-                  type="date"
-                  value={odoDate}
-                  onChange={(e) => setOdoDate(e.target.value)}
-                  className="mt-1.5"
-                />
-              </div>
-              <div>
-                <Label htmlFor="odo-km">Км заалт</Label>
-                <Input
-                  id="odo-km"
-                  type="number"
-                  min="0"
-                  step="1"
-                  placeholder="жишээ нь: 125000"
-                  value={odoKm}
-                  onChange={(e) => setOdoKm(e.target.value)}
-                  className="mt-1.5"
-                />
-              </div>
-              <div>
-                <Label htmlFor="odo-notes">Тэмдэглэл</Label>
-                <Textarea
-                  id="odo-notes"
-                  placeholder="Нэмэлт тайлбар..."
-                  value={odoNotes}
-                  onChange={(e) => setOdoNotes(e.target.value)}
-                  className="mt-1.5"
-                  rows={3}
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setOdoDialogOpen(false)}
-                  disabled={savingOdo}
-                >
-                  Болих
-                </Button>
-                <Button onClick={handleSaveOdo} disabled={savingOdo}>
-                  {savingOdo && (
-                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                  )}
-                  {editingOdo ? "Хадгалах" : "Бүртгэх"}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* ── Odometer Delete Confirmation ── */}
-        <AlertDialog
-          open={!!deleteOdoTarget}
-          onOpenChange={(open) => !open && setDeleteOdoTarget(null)}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Км заалт устгах</AlertDialogTitle>
-              <AlertDialogDescription>
-                Энэ км заалтын бүртгэлийг устгахдаа итгэлтэй байна уу? Энэ
-                үйлдлийг буцаах боломжгүй.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={deletingOdo}>
-                Болих
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteOdo}
-                disabled={deletingOdo}
-                className="bg-red-500 hover:bg-red-600"
-              >
-                {deletingOdo && (
-                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                )}
-                Устгах
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        {/* Condition + Odometer dialogs — disabled (using Odoo fleet) */}
       </div>
     </ProtectedRoute>
   );
