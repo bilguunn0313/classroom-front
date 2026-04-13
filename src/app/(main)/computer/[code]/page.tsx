@@ -5,12 +5,9 @@ import { useParams } from "next/navigation";
 import { computerSpecsAPI } from "@/lib/computer-specs";
 import { ComputerSpecWithInspection } from "@/types/schema.types";
 import {
-  Cpu,
-  MemoryStick,
-  HardDrive,
-  Monitor,
+  FileText,
   StickyNote,
-  Laptop,
+  Monitor,
   AlertCircle,
   Loader2,
 } from "lucide-react";
@@ -32,7 +29,7 @@ function SpecRow({ icon, label, value }: SpecField) {
         <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
           {label}
         </p>
-        <p className="text-[15px] font-medium text-gray-900 mt-0.5 break-words">
+        <p className="text-[15px] font-medium text-gray-900 mt-0.5 break-words whitespace-pre-line">
           {value}
         </p>
       </div>
@@ -107,29 +104,9 @@ export default function ComputerSpecPublicPage() {
 
   const specFields: SpecField[] = [
     {
-      icon: <Cpu className="h-4.5 w-4.5" />,
-      label: "Процессор",
-      value: spec.cpu,
-    },
-    {
-      icon: <MemoryStick className="h-4.5 w-4.5" />,
-      label: "Санах ой",
-      value: spec.ram,
-    },
-    {
-      icon: <HardDrive className="h-4.5 w-4.5" />,
-      label: "Hard Disk",
-      value: spec.storage,
-    },
-    {
-      icon: <Laptop className="h-4.5 w-4.5" />,
-      label: "Үйлдлийн систем",
-      value: spec.os,
-    },
-    {
-      icon: <Monitor className="h-4.5 w-4.5" />,
-      label: "Монитор",
-      value: spec.monitor,
+      icon: <FileText className="h-4.5 w-4.5" />,
+      label: "Тодорхойлолт",
+      value: spec.descr,
     },
     {
       icon: <StickyNote className="h-4.5 w-4.5" />,

@@ -19,18 +19,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { ComputerSpec, OdooAsset } from "@/types/schema.types";
 
 const formSchema = z.object({
-  cpu: z.string().max(255).optional().or(z.literal("")),
-  ram: z.string().max(100).optional().or(z.literal("")),
-  storage: z.string().max(255).optional().or(z.literal("")),
-  os: z.string().max(255).optional().or(z.literal("")),
-  monitor: z.string().max(255).optional().or(z.literal("")),
+  descr: z.string().optional().or(z.literal("")),
   notes: z.string().optional().or(z.literal("")),
 });
 
@@ -57,11 +52,7 @@ export function ComputerSpecFormDialog({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      cpu: "",
-      ram: "",
-      storage: "",
-      os: "",
-      monitor: "",
+      descr: "",
       notes: "",
     },
   });
@@ -70,20 +61,12 @@ export function ComputerSpecFormDialog({
     if (isOpen) {
       if (spec) {
         form.reset({
-          cpu: spec.cpu || "",
-          ram: spec.ram || "",
-          storage: spec.storage || "",
-          os: spec.os || "",
-          monitor: spec.monitor || "",
+          descr: spec.descr || "",
           notes: spec.notes || "",
         });
       } else {
         form.reset({
-          cpu: "",
-          ram: "",
-          storage: "",
-          os: "",
-          monitor: "",
+          descr: "",
           notes: "",
         });
       }
@@ -129,68 +112,16 @@ export function ComputerSpecFormDialog({
           >
             <FormField
               control={form.control}
-              name="cpu"
+              name="descr"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>CPU</FormLabel>
+                  <FormLabel>Тодорхойлолт</FormLabel>
                   <FormControl>
-                    <Input placeholder="Intel Core i5-12400" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="ram"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>RAM</FormLabel>
-                  <FormControl>
-                    <Input placeholder="16GB DDR4" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="storage"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Hard Disk</FormLabel>
-                  <FormControl>
-                    <Input placeholder="512GB SSD + 1TB HDD" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="os"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Үйлдлийн систем</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Windows 11 Pro" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="monitor"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Монитор</FormLabel>
-                  <FormControl>
-                    <Input placeholder='24" Dell P2422H' {...field} />
+                    <Textarea
+                      placeholder="Техникийн үзүүлэлт, тоног төхөөрөмжийн мэдээлэл..."
+                      rows={5}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -205,7 +136,7 @@ export function ComputerSpecFormDialog({
                   <FormLabel>Тэмдэглэл</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Нэмэлт мэдээлэл..."
+                      placeholder="Асуудал, анхаарах зүйлс..."
                       rows={3}
                       {...field}
                     />

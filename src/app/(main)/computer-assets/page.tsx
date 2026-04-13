@@ -24,9 +24,12 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardCheck,
-  Eye,
 } from "lucide-react";
-import { ComputerSpec, ComputerInspection, OdooAsset } from "@/types/schema.types";
+import {
+  ComputerSpec,
+  ComputerInspection,
+  OdooAsset,
+} from "@/types/schema.types";
 import {
   useComputerSpecs,
   useOdooAssets,
@@ -40,6 +43,18 @@ import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 import { InspectionFormDialog } from "@/components/admin/InspectionFormDialog";
 import { InspectionHistoryDialog } from "@/components/admin/InspectionHistoryDialog";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+const STATE_LABELS: Record<string, string> = {
+  draft: "Ноорог",
+  open: "Ашиглаж байгаа",
+  close: "Хаагдсан",
+};
 
 export default function ComputerAssetsPage() {
   // Tab & search state
@@ -66,7 +81,8 @@ export default function ComputerAssetsPage() {
   const [inspFormOpen, setInspFormOpen] = useState(false);
   const [inspHistoryOpen, setInspHistoryOpen] = useState(false);
   const [inspDeleteOpen, setInspDeleteOpen] = useState(false);
-  const [selectedInspection, setSelectedInspection] = useState<ComputerInspection | null>(null);
+  const [selectedInspection, setSelectedInspection] =
+    useState<ComputerInspection | null>(null);
   const [isDeletingInsp, setIsDeletingInsp] = useState(false);
 
   // Data hooks
@@ -131,11 +147,7 @@ export default function ComputerAssetsPage() {
         await computerSpecsAPI.update(selectedSpec.id, {
           odooAssetCode: selectedSpec.odoo_asset_code,
           odooAssetName: selectedSpec.odoo_asset_name,
-          cpu: data.cpu || null,
-          ram: data.ram || null,
-          storage: data.storage || null,
-          os: data.os || null,
-          monitor: data.monitor || null,
+          descr: data.descr || null,
           notes: data.notes || null,
         });
         toast.success("Мэдээлэл амжилттай шинэчлэгдлээ");
@@ -146,11 +158,7 @@ export default function ComputerAssetsPage() {
           odooAssetCode:
             typeof selectedAsset.code === "string" ? selectedAsset.code : null,
           odooAssetName: selectedAsset.name,
-          cpu: data.cpu || null,
-          ram: data.ram || null,
-          storage: data.storage || null,
-          os: data.os || null,
-          monitor: data.monitor || null,
+          descr: data.descr || null,
           notes: data.notes || null,
         });
         toast.success("Мэдээлэл амжилттай нэмэгдлээ");
@@ -211,12 +219,18 @@ export default function ComputerAssetsPage() {
           notes: data.notes || null,
         });
         toast.success("Үзлэг амжилттай шинэчлэгдлээ");
+      } else if (selectedSpec) {
+        await computerSpecsAPI.createInspection({
+          computerSpecId: selectedSpec.id,
+          inspectionDate: data.inspectionDate,
+          status: data.status,
+          notes: data.notes || null,
+        });
+        toast.success("Үзлэг амжилттай бүртгэгдлээ");
       }
       refetchInspections();
     } catch (error: any) {
-      toast.error(
-        error.response?.data?.message || "Хадгалахад алдаа гарлаа",
-      );
+      toast.error(error.response?.data?.message || "Хадгалахад алдаа гарлаа");
       throw error;
     }
   };
@@ -316,7 +330,7 @@ export default function ComputerAssetsPage() {
                                       : "secondary"
                                   }
                                 >
-                                  {asset.state}
+                                  {STATE_LABELS[asset.state] || asset.state}
                                 </Badge>
                               </TableCell>
                               <TableCell>
@@ -382,10 +396,8 @@ export default function ComputerAssetsPage() {
                       <TableRow>
                         <TableHead>Хөрөнгө</TableHead>
                         <TableHead>Код</TableHead>
-                        <TableHead>CPU</TableHead>
-                        <TableHead>RAM</TableHead>
-                        <TableHead>Hard Disk</TableHead>
-                        <TableHead>ҮС</TableHead>
+                        <TableHead>Тодорхойлолт</TableHead>
+                        <TableHead>Тэмдэглэл</TableHead>
                         <TableHead className="text-right">Үйлдэл</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -393,7 +405,7 @@ export default function ComputerAssetsPage() {
                       {specs.length === 0 ? (
                         <TableRow>
                           <TableCell
-                            colSpan={7}
+                            colSpan={5}
                             className="text-center py-8 text-muted-foreground"
                           >
                             Мэдээлэл олдсонгүй
@@ -408,46 +420,66 @@ export default function ComputerAssetsPage() {
                             <TableCell className="text-muted-foreground">
                               {spec.odoo_asset_code || "—"}
                             </TableCell>
-                            <TableCell>{spec.cpu || "—"}</TableCell>
-                            <TableCell>{spec.ram || "—"}</TableCell>
-                            <TableCell>{spec.storage || "—"}</TableCell>
-                            <TableCell>{spec.os || "—"}</TableCell>
+                            <TableCell className="max-w-[300px] truncate">
+                              {spec.descr || "—"}
+                            </TableCell>
+                            <TableCell className="max-w-[200px] truncate">
+                              {spec.notes || "—"}
+                            </TableCell>
                             <TableCell>
-                              <div className="flex items-center justify-end gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleViewHistory(spec)}
-                                  title="Үзлэгийн түүх"
-                                >
-                                  <ClipboardCheck className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleViewQR(spec)}
-                                  title="QR код"
-                                >
-                                  <QrCode className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleEditSpec(spec)}
-                                  title="Засах"
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeletePrompt(spec)}
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                  title="Устгах"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
+                              <TooltipProvider delayDuration={300}>
+                                <div className="flex items-center justify-end gap-1">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleViewHistory(spec)}
+                                      >
+                                        <ClipboardCheck className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Үзлэгийн түүх</TooltipContent>
+                                  </Tooltip>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleViewQR(spec)}
+                                      >
+                                        <QrCode className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>QR код</TooltipContent>
+                                  </Tooltip>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleEditSpec(spec)}
+                                      >
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Засах</TooltipContent>
+                                  </Tooltip>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleDeletePrompt(spec)}
+                                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Устгах</TooltipContent>
+                                  </Tooltip>
+                                </div>
+                              </TooltipProvider>
                             </TableCell>
                           </TableRow>
                         ))
@@ -541,7 +573,9 @@ export default function ComputerAssetsPage() {
                               {insp.odoo_asset_code || "—"}
                             </TableCell>
                             <TableCell>
-                              {new Date(insp.inspection_date).toLocaleDateString("mn-MN")}
+                              {new Date(
+                                insp.inspection_date,
+                              ).toLocaleDateString("mn-MN")}
                             </TableCell>
                             <TableCell>
                               {insp.status === "pass" ? (
@@ -554,30 +588,42 @@ export default function ComputerAssetsPage() {
                                 </Badge>
                               )}
                             </TableCell>
-                            <TableCell>{insp.inspected_by_name || "—"}</TableCell>
+                            <TableCell>
+                              {insp.inspected_by_name || "—"}
+                            </TableCell>
                             <TableCell className="max-w-[200px] truncate">
                               {insp.notes || "—"}
                             </TableCell>
                             <TableCell>
-                              <div className="flex items-center justify-end gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleEditInspection(insp)}
-                                  title="Засах"
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeleteInspPrompt(insp)}
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                  title="Устгах"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
+                              <TooltipProvider delayDuration={300}>
+                                <div className="flex items-center justify-end gap-1">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleEditInspection(insp)}
+                                      >
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Засах</TooltipContent>
+                                  </Tooltip>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleDeleteInspPrompt(insp)}
+                                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Устгах</TooltipContent>
+                                  </Tooltip>
+                                </div>
+                              </TooltipProvider>
                             </TableCell>
                           </TableRow>
                         ))

@@ -94,12 +94,6 @@ import {
 //   critical: "bg-red-100 text-red-700 border-red-200",
 // };
 
-const OWNERSHIP_LABELS: Record<string, string> = {
-  own: "Өөрийн хөрөнгө",
-  contract: "Гэрээт",
-  loan: "Зээлтэй",
-};
-
 // type DetailTab = "tire" | "odometer";
 
 // function formatDate(dateStr: string): string {
@@ -272,8 +266,8 @@ export default function TireConditionPage() {
         manufacture_date: vForm.manufacture_date || undefined,
         program_code: vForm.program_code.trim() || undefined,
         related_asset: vForm.related_asset.trim() || undefined,
-        capacity: Number(vForm.capacity) || undefined,
-        load_capacity: Number(vForm.load_capacity) || undefined,
+        capacity: vForm.capacity !== "" ? Number(vForm.capacity) : undefined,
+        load_capacity: vForm.load_capacity !== "" ? Number(vForm.load_capacity) : undefined,
       };
 
       if (editingVehicle) {

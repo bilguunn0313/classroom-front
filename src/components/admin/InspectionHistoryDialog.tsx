@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -48,6 +48,12 @@ export function InspectionHistoryDialog({
   onChanged,
 }: InspectionHistoryDialogProps) {
   const [page, setPage] = useState(1);
+
+  // Reset page when dialog opens for a different spec
+  useEffect(() => {
+    if (isOpen) setPage(1);
+  }, [isOpen, spec?.id]);
+
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedInspection, setSelectedInspection] =

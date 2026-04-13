@@ -7,22 +7,14 @@ export interface CreateComputerSpecPayload {
   odooAssetId: number;
   odooAssetCode?: string | null;
   odooAssetName?: string | null;
-  cpu?: string | null;
-  ram?: string | null;
-  storage?: string | null;
-  os?: string | null;
-  monitor?: string | null;
+  descr?: string | null;
   notes?: string | null;
 }
 
 export interface UpdateComputerSpecPayload {
   odooAssetCode?: string | null;
   odooAssetName?: string | null;
-  cpu?: string | null;
-  ram?: string | null;
-  storage?: string | null;
-  os?: string | null;
-  monitor?: string | null;
+  descr?: string | null;
   notes?: string | null;
 }
 
