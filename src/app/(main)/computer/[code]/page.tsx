@@ -1,15 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { computerSpecsAPI } from "@/lib/computer-specs";
 import { ComputerSpecWithInspection } from "@/types/schema.types";
+import { useUserContext } from "@/lib/userProvider";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ComputerSpecFormDialog } from "@/components/admin/ComputerSpecFormDialog";
+import { InspectionFormDialog } from "@/components/admin/InspectionFormDialog";
+import { toast } from "sonner";
 import {
   FileText,
   StickyNote,
   Monitor,
   AlertCircle,
   Loader2,
+  Pencil,
+  ClipboardCheck,
 } from "lucide-react";
 
 interface SpecField {
@@ -37,36 +44,73 @@ function SpecRow({ icon, label, value }: SpecField) {
   );
 }
 
-export default function ComputerSpecPublicPage() {
+function ComputerSpecContent() {
   const params = useParams();
   const code = params.code as string;
+  const { user } = useUserContext();
+  const isAdmin = user?.role === "admin";
 
   const [spec, setSpec] = useState<ComputerSpecWithInspection | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [inspectionDialogOpen, setInspectionDialogOpen] = useState(false);
+
+  const fetchSpec = useCallback(async () => {
     if (!code) return;
-
-    const fetchSpec = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await computerSpecsAPI.getByCode(code);
-        if (response.success) {
-          setSpec(response.data);
-        } else {
-          setError("Мэдээлэл олдсонгүй");
-        }
-      } catch {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await computerSpecsAPI.getByCode(code);
+      if (response.success) {
+        setSpec(response.data);
+      } else {
         setError("Мэдээлэл олдсонгүй");
-      } finally {
-        setLoading(false);
       }
-    };
-
-    fetchSpec();
+    } catch {
+      setError("Мэдээлэл олдсонгүй");
+    } finally {
+      setLoading(false);
+    }
   }, [code]);
+
+  useEffect(() => {
+    fetchSpec();
+  }, [fetchSpec]);
+
+  const handleEditSubmit = async (data: { descr?: string; notes?: string }) => {
+    if (!spec) return;
+    try {
+      await computerSpecsAPI.update(spec.id, data);
+      toast.success("Мэдээлэл амжилттай шинэчлэгдлээ");
+      setEditDialogOpen(false);
+      await fetchSpec();
+    } catch {
+      toast.error("Шинэчлэхэд алдаа гарлаа");
+    }
+  };
+
+  const handleInspectionSubmit = async (data: {
+    inspectionDate: string;
+    status: "pass" | "fail";
+    notes?: string;
+  }) => {
+    if (!spec) return;
+    try {
+      await computerSpecsAPI.createInspection({
+        computerSpecId: spec.id,
+        inspectionDate: data.inspectionDate,
+        status: data.status,
+        notes: data.notes || null,
+      });
+      toast.success("Үзлэг амжилттай бүртгэгдлээ");
+      setInspectionDialogOpen(false);
+      await fetchSpec();
+    } catch {
+      toast.error("Үзлэг бүртгэхэд алдаа гарлаа");
+    }
+  };
 
   // Loading state
   if (loading) {
@@ -197,6 +241,26 @@ export default function ComputerSpecPublicPage() {
             </div>
           )}
 
+          {/* Admin action buttons */}
+          {isAdmin && (
+            <div className="px-5 py-4 border-t border-gray-100 flex gap-3">
+              <button
+                onClick={() => setEditDialogOpen(true)}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-50 text-blue-700 text-sm font-semibold hover:bg-blue-100 active:bg-blue-200 transition-colors"
+              >
+                <Pencil className="h-4 w-4" />
+                Мэдээлэл засах
+              </button>
+              <button
+                onClick={() => setInspectionDialogOpen(true)}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-green-50 text-green-700 text-sm font-semibold hover:bg-green-100 active:bg-green-200 transition-colors"
+              >
+                <ClipboardCheck className="h-4 w-4" />
+                Үзлэг нэмэх
+              </button>
+            </div>
+          )}
+
           {/* Footer */}
           <div className="px-5 py-3.5 bg-gray-50/70 border-t border-gray-100">
             <p className="text-[11px] text-gray-400 text-center font-medium">
@@ -205,6 +269,32 @@ export default function ComputerSpecPublicPage() {
           </div>
         </div>
       </div>
+
+      {/* Dialogs */}
+      {isAdmin && (
+        <>
+          <ComputerSpecFormDialog
+            isOpen={editDialogOpen}
+            onClose={() => setEditDialogOpen(false)}
+            onSubmit={handleEditSubmit}
+            spec={spec}
+          />
+          <InspectionFormDialog
+            isOpen={inspectionDialogOpen}
+            onClose={() => setInspectionDialogOpen(false)}
+            onSubmit={handleInspectionSubmit}
+            assetName={spec.odoo_asset_name || spec.odoo_asset_code || undefined}
+          />
+        </>
+      )}
     </div>
+  );
+}
+
+export default function ComputerSpecPublicPage() {
+  return (
+    <ProtectedRoute>
+      <ComputerSpecContent />
+    </ProtectedRoute>
   );
 }

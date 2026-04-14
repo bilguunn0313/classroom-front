@@ -1,7 +1,4 @@
 import api from "./axios";
-import axios from "axios";
-
-const PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 export interface CreateComputerSpecPayload {
   odooAssetId: number;
@@ -36,9 +33,8 @@ export const computerSpecsAPI = {
     return res.data;
   },
 
-  // Public — uses raw axios (no auth interceptor)
   getByCode: async (code: string) => {
-    const res = await axios.get(`${PUBLIC_API_URL}/assets/specs/code/${code}`);
+    const res = await api.get(`/assets/specs/code/${code}`);
     return res.data;
   },
 
