@@ -1,135 +1,124 @@
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { lessonAPI } from "@/lib/lesson";
 import { Lesson } from "@/types/schema.types";
-import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-interface useLessonsReturn {
-  lessons: Lesson[];
-  loading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-  selectedLesson: Lesson | null;
-  selectLesson: (lesson: Lesson) => void;
-  createLesson: (data: {
-    courseId: number;
-    title: string;
-    description?: string | null;
-    lessonOrder: number;
-  }) => Promise<Lesson | null>;
-  updateLesson: (
-    id: number,
-    data: { title: string; description?: string | null; lessonOrder: number },
-  ) => Promise<Lesson | null>;
-  deleteLesson: (id: number) => Promise<void>;
-  publishLesson: (id: number) => Promise<void>;
-}
-
-export function useLessons(courseId: number): useLessonsReturn {
-  const [lessons, setLessons] = useState<Lesson[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export function useLessons(courseId: number) {
+  const queryClient = useQueryClient();
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 
-  const fetchLessons = useCallback(async () => {
-    if (!courseId) return;
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await lessonAPI.getByCourse(courseId);
-
-      // Handle different response structures
-      const lessonsData = response?.data || response || [];
-
-      const sorted = (Array.isArray(lessonsData) ? lessonsData : []).sort(
-        (a: Lesson, b: Lesson) => a.lesson_order - b.lesson_order,
-      );
-      setLessons(sorted);
-
-      if (!selectedLesson && sorted.length > 0) {
-        setSelectedLesson(sorted[0]);
-      }
-    } catch (error: any) {
-      console.error("Error fetching lessons:", error);
-      // Don't set error if it's just an empty result
-      if (error.response?.status !== 404) {
-        setError(error.message || "Failed to load lessons");
-      } else {
-        setLessons([]);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [courseId, selectedLesson]);
-
-  useEffect(() => {
-    fetchLessons();
-  }, [courseId]);
-
-  const selectLesson = useCallback((lesson: Lesson) => {
-    setSelectedLesson(lesson);
-  }, []);
-
-  const createLesson = useCallback(async (data: any) => {
-    try {
-      const res = await lessonAPI.create(data);
-      setLessons((prev) => [...prev, res]);
-      toast.success("Хичээл амжилттай нэмэгдлээ");
-      return res;
-    } catch (error: any) {
-      toast.error("Хичээл нэмэхэд алдаа гарлаа");
-      throw error;
-    }
-  }, []);
-
-  const updateLesson = useCallback(
-    async (id: number, data: any) => {
+  const query = useQuery({
+    queryKey: ["lessons", courseId],
+    queryFn: async () => {
       try {
-        const updated = await lessonAPI.update(id, data);
-        setLessons((prev) =>
-          prev.map((l) => (l.id === id ? { ...l, ...updated } : l)),
+        const response = await lessonAPI.getByCourse(courseId);
+        const lessonsData = response?.data || response || [];
+        return (Array.isArray(lessonsData) ? lessonsData : []).sort(
+          (a: Lesson, b: Lesson) => a.lesson_order - b.lesson_order
         );
-        if (selectedLesson?.id === id) {
-          setSelectedLesson({ ...selectedLesson, ...updated });
-        }
-        toast.success("Хичээл амжилттай шинэчлэгдлээ");
-        return updated;
-      } catch (err: any) {
-        toast.error(err.message || "Хичээл шинэчлэхэд алдаа гарлаа");
-        throw err;
+      } catch (error: any) {
+        if (error.response?.status === 404) return [];
+        throw error;
       }
     },
-    [selectedLesson],
-  );
+    enabled: !!courseId,
+  });
 
-  const deleteLesson = useCallback(async (id: number) => {
-    const res = await lessonAPI.delete(id);
-    setLessons((prev) => prev.filter((l) => l.id !== id));
-    toast.success("Хичээл амжилттай устгагдлаа");
-  }, []);
+  const lessons = query.data ?? [];
 
-  const publishLesson = useCallback(async (id: number) => {
-    try {
-      await lessonAPI.publish(id);
-      setLessons((prev) =>
-        prev.map((l) => (l.id === id ? { ...l, published: true } : l)),
-      );
-      toast.success("Хичээл амжилттай нийтлэгдлээ");
-    } catch (err: any) {
-      toast.error(err.message || "Хичээл нийтлэхэд алдаа гарлаа");
-      throw err;
+  // Auto-select first lesson when data loads
+  useEffect(() => {
+    if (lessons.length > 0 && !selectedLesson) {
+      setSelectedLesson(lessons[0]);
     }
-  }, []);
+  }, [lessons, selectedLesson]);
+
+  const createMutation = useMutation({
+    mutationFn: (data: {
+      courseId: number;
+      title: string;
+      description?: string | null;
+      lessonOrder: number;
+    }) => lessonAPI.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["lessons", courseId] });
+      toast.success("Хичээл амжилттай нэмэгдлээ");
+    },
+    onError: () => {
+      toast.error("Хичээл нэмэхэд алдаа гарлаа");
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: number;
+      data: { title: string; description?: string | null; lessonOrder: number };
+    }) => lessonAPI.update(id, data),
+    onSuccess: (updated, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ["lessons", courseId] });
+      if (selectedLesson?.id === id) {
+        setSelectedLesson((prev) => (prev ? { ...prev, ...updated } : prev));
+      }
+      toast.success("Хичээл амжилттай шинэчлэгдлээ");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Хичээл шинэчлэхэд алдаа гарлаа");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => lessonAPI.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["lessons", courseId] });
+      toast.success("Хичээл амжилттай устгагдлаа");
+    },
+  });
+
+  const publishMutation = useMutation({
+    mutationFn: (id: number) => lessonAPI.publish(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["lessons", courseId] });
+      toast.success("Хичээл амжилттай нийтлэгдлээ");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Хичээл нийтлэхэд алдаа гарлаа");
+    },
+  });
 
   return {
     lessons,
-    loading,
-    error,
-    refetch: fetchLessons,
+    loading: query.isPending,
+    error: query.error?.message ?? null,
+    refetch: async () => {
+      await query.refetch();
+    },
     selectedLesson,
-    selectLesson,
-    createLesson,
-    updateLesson,
-    deleteLesson,
-    publishLesson,
+    selectLesson: (lesson: Lesson) => setSelectedLesson(lesson),
+    createLesson: async (data: {
+      courseId: number;
+      title: string;
+      description?: string | null;
+      lessonOrder: number;
+    }) => {
+      const result = await createMutation.mutateAsync(data);
+      return result as Lesson;
+    },
+    updateLesson: async (
+      id: number,
+      data: { title: string; description?: string | null; lessonOrder: number }
+    ) => {
+      const result = await updateMutation.mutateAsync({ id, data });
+      return result as Lesson;
+    },
+    deleteLesson: async (id: number) => {
+      await deleteMutation.mutateAsync(id);
+    },
+    publishLesson: async (id: number) => {
+      await publishMutation.mutateAsync(id);
+    },
   };
 }

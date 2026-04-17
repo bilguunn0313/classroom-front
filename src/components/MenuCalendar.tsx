@@ -25,9 +25,18 @@ interface MenuCalendarProps {
 const DAY_LABELS = ["Да", "Мя", "Лх", "Пү", "Ба", "Бя", "Ня"];
 
 const MONTH_NAMES = [
-  "1-р сар", "2-р сар", "3-р сар", "4-р сар",
-  "5-р сар", "6-р сар", "7-р сар", "8-р сар",
-  "9-р сар", "10-р сар", "11-р сар", "12-р сар",
+  "1-р сар",
+  "2-р сар",
+  "3-р сар",
+  "4-р сар",
+  "5-р сар",
+  "6-р сар",
+  "7-р сар",
+  "8-р сар",
+  "9-р сар",
+  "10-р сар",
+  "11-р сар",
+  "12-р сар",
 ];
 
 export function MenuCalendar({
@@ -41,7 +50,6 @@ export function MenuCalendar({
   const currentMonth = new Date(year, month - 1, 1);
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
-  // Monday-first week
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
   const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
 
@@ -64,32 +72,32 @@ export function MenuCalendar({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5">
+    <div className="bg-card rounded-2xl border border-border p-4 sm:p-5">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-5">
         <button
           onClick={handlePrevMonth}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
         >
-          <ChevronLeft className="h-5 w-5 text-gray-600" />
+          <ChevronLeft className="h-4 w-4" />
         </button>
-        <h2 className="text-lg font-semibold text-gray-800">
+        <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
           {year} оны {MONTH_NAMES[month - 1]}
         </h2>
         <button
           onClick={handleNextMonth}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
         >
-          <ChevronRight className="h-5 w-5 text-gray-600" />
+          <ChevronRight className="h-4 w-4" />
         </button>
       </div>
 
       {/* Day labels */}
-      <div className="grid grid-cols-7 mb-2">
+      <div className="grid grid-cols-7 mb-1.5">
         {DAY_LABELS.map((label) => (
           <div
             key={label}
-            className="text-center text-xs font-medium text-gray-400 py-1"
+            className="text-center text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wider py-1.5"
           >
             {label}
           </div>
@@ -97,12 +105,14 @@ export function MenuCalendar({
       </div>
 
       {/* Days grid */}
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-0.5">
         {days.map((day) => {
           const dateStr = format(day, "yyyy-MM-dd");
           const inMonth = isSameMonth(day, currentMonth);
-          const today = isToday(day);
-          const selected = selectedDate ? isSameDay(day, new Date(selectedDate + "T00:00:00")) : false;
+          const todayFlag = isToday(day);
+          const selected = selectedDate
+            ? isSameDay(day, new Date(selectedDate + "T00:00:00"))
+            : false;
           const hasMenu = menuDates.has(dateStr);
 
           return (
@@ -112,18 +122,22 @@ export function MenuCalendar({
               disabled={!inMonth}
               className={`
                 relative flex flex-col items-center justify-center
-                h-10 sm:h-11 rounded-lg text-sm transition-all
-                ${!inMonth ? "text-gray-200 cursor-default" : "cursor-pointer hover:bg-blue-50"}
-                ${selected ? "bg-blue-500 text-white hover:bg-blue-600 font-semibold" : ""}
-                ${today && !selected ? "ring-2 ring-blue-400 font-semibold text-blue-600" : ""}
-                ${inMonth && !selected && !today ? "text-gray-700" : ""}
+                h-10 sm:h-11 rounded-lg text-sm font-medium transition-all duration-150
+                ${!inMonth ? "text-muted-foreground/20 cursor-default" : "cursor-pointer"}
+                ${selected ? "bg-brand-500 text-white shadow-sm shadow-brand-500/25" : ""}
+                ${!selected && inMonth ? "hover:bg-muted" : ""}
+                ${todayFlag && !selected ? "text-brand-600 font-semibold" : ""}
+                ${inMonth && !selected && !todayFlag ? "text-foreground" : ""}
               `}
             >
-              <span>{format(day, "d")}</span>
+              {todayFlag && !selected && (
+                <span className="absolute inset-1 rounded-md border-2 border-brand-400/50" />
+              )}
+              <span className="relative">{format(day, "d")}</span>
               {hasMenu && inMonth && (
                 <span
-                  className={`absolute bottom-1 w-1.5 h-1.5 rounded-full ${
-                    selected ? "bg-white" : "bg-blue-400"
+                  className={`absolute bottom-1 w-1 h-1 rounded-full ${
+                    selected ? "bg-white/80" : "bg-brand-400"
                   }`}
                 />
               )}

@@ -64,6 +64,10 @@ export const menuAPI = {
     const res = await api.post(`/menu/${menuId}/respond`, { willAttend });
     return res.data;
   },
+  cancelResponse: async (menuId: number) => {
+    const res = await api.delete(`/menu/${menuId}/respond`);
+    return res.data;
+  },
   getMyResponse: async (menuId: number) => {
     const res = await api.get(`/menu/${menuId}/my-response`);
     return res.data;

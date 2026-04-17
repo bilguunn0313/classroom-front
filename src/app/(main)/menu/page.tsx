@@ -2,22 +2,47 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import Link from "next/link";
 import { MenuCalendar } from "@/components/MenuCalendar";
 import { MenuRSVP } from "@/components/MenuRSVP";
 import { useMenuByDate, useMonthlyMenus } from "@/hooks/useMenu";
+import { useUserContext } from "@/lib/userProvider";
 import { MenuItem } from "@/types/schema.types";
-import { UtensilsCrossed, Flame } from "lucide-react";
+import {
+  UtensilsCrossed,
+  Flame,
+  Settings,
+  ArrowLeft,
+  CookingPot,
+  GlassWater,
+  Loader2,
+} from "lucide-react";
 
-const ITEM_TYPE_LABELS: Record<string, string> = {
-  meal_1: "1-р хоол",
-  meal_2: "2-р хоол",
-  drink: "Уух зүйл",
+const ITEM_TYPE_CONFIG: Record<
+  string,
+  { label: string; icon: typeof CookingPot; accent: string }
+> = {
+  meal_1: {
+    label: "1-р хоол",
+    icon: CookingPot,
+    accent: "text-amber-600 bg-amber-50 border-amber-200",
+  },
+  meal_2: {
+    label: "2-р хоол",
+    icon: UtensilsCrossed,
+    accent: "text-orange-600 bg-orange-50 border-orange-200",
+  },
+  drink: {
+    label: "Уух зүйл",
+    icon: GlassWater,
+    accent: "text-sky-600 bg-sky-50 border-sky-200",
+  },
 };
 
 function MenuItemCard({ item }: { item: MenuItem }) {
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  const [imgError, setImgError] = useState(false);
+  const backendUrl =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
   const getFullUrl = (url: string) => {
     if (!url) return "";
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
@@ -31,52 +56,43 @@ function MenuItemCard({ item }: { item: MenuItem }) {
         .filter(Boolean)
     : [];
 
+  const showImage = item.image_url && !imgError;
+
   return (
-    <div className="group bg-white rounded-xl border border-gray-900/15 overflow-hidden flex flex-row hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ease-out">
-      {/* Fixed-size image */}
-      {item.image_url ? (
-        <div className="w-[140px] sm:w-[180px] h-[130px] sm:h-[150px] flex-shrink-0 overflow-hidden">
+    <div className="group bg-card rounded-xl border border-border overflow-hidden flex flex-row hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ease-out">
+      {showImage ? (
+        <div className="w-[130px] sm:w-[160px] h-[110px] sm:h-[130px] flex-shrink-0 overflow-hidden bg-muted">
           <img
-            src={getFullUrl(item.image_url)}
+            src={getFullUrl(item.image_url!)}
             alt={item.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+            onError={() => setImgError(true)}
           />
         </div>
       ) : (
-        <div className="w-[140px] sm:w-[180px] h-[130px] sm:h-[150px] flex-shrink-0 bg-gray-50 flex items-center justify-center">
-          <UtensilsCrossed className="h-8 w-8 text-gray-200" />
+        <div className="w-[130px] sm:w-[160px] h-[110px] sm:h-[130px] flex-shrink-0 bg-muted/50 flex items-center justify-center">
+          <UtensilsCrossed className="h-7 w-7 text-muted-foreground/20" />
         </div>
       )}
 
-      {/* Text content */}
       <div className="flex-1 p-3 sm:p-4 flex flex-col justify-center min-w-0 relative">
-        {/* Calorie badge */}
         {item.calories && (
-          <span className="absolute top-2.5 right-2.5 flex items-center gap-1 text-[11px] font-medium text-orange-600 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded-md">
-            <Flame className="h-3 w-3" />
-            {item.calories} ккал
+          <span className="absolute top-2 right-2 flex items-center gap-0.5 text-[10px] font-semibold text-orange-500 bg-orange-50 border border-orange-100 px-1.5 py-0.5 rounded-md">
+            <Flame className="h-2.5 w-2.5" />
+            {item.calories}
           </span>
         )}
 
-        {/* Name */}
-        <p className="font-semibold text-gray-800 text-sm sm:text-base leading-snug pr-16">
+        <p className="font-semibold text-foreground text-sm sm:text-[15px] leading-snug pr-14">
           {item.name}
         </p>
 
-        {/* Description */}
-        {item.description && (
-          <p className="text-xs sm:text-sm text-gray-400 mt-1 line-clamp-1 leading-relaxed">
-            {item.description}
-          </p>
-        )}
-
-        {/* Ingredient pills */}
         {ingredientList.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
             {ingredientList.map((ing, i) => (
               <span
                 key={i}
-                className="text-[11px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full"
+                className="text-[10px] font-medium text-muted-foreground bg-muted/70 px-1.5 py-0.5 rounded"
               >
                 {ing}
               </span>
@@ -89,13 +105,13 @@ function MenuItemCard({ item }: { item: MenuItem }) {
 }
 
 export default function MenuPage() {
+  const { user } = useUserContext();
   const [mounted, setMounted] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [calYear, setCalYear] = useState(2026);
   const [calMonth, setCalMonth] = useState(1);
   const [animKey, setAnimKey] = useState(0);
 
-  // Initialize dates on client only to avoid hydration mismatch
   useEffect(() => {
     const now = new Date();
     const todayStr = format(now, "yyyy-MM-dd");
@@ -123,12 +139,16 @@ export default function MenuPage() {
   };
 
   const displayDate = selectedDate
-    ? new Date(selectedDate + "T00:00:00").toLocaleDateString("mn-MN", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        weekday: "long",
-      })
+    ? (() => {
+        const d = new Date(selectedDate + "T00:00:00");
+        const weekdays = ["Ням", "Даваа", "Мягмар", "Лхагва", "Пүрэв", "Баасан", "Бямба"];
+        const months = [
+          "1-р сарын", "2-р сарын", "3-р сарын", "4-р сарын",
+          "5-р сарын", "6-р сарын", "7-р сарын", "8-р сарын",
+          "9-р сарын", "10-р сарын", "11-р сарын", "12-р сарын",
+        ];
+        return `${d.getFullYear()} оны ${months[d.getMonth()]} ${d.getDate()}, ${weekdays[d.getDay()]} гараг`;
+      })()
     : "";
 
   const grouped = menu
@@ -141,31 +161,47 @@ export default function MenuPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-page-bg flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="text-gray-400">Уншиж байна...</div>
-        </main>
-        <Footer />
-      </div>
+      <main className="container mx-auto px-6 py-10 max-w-screen-2xl">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground/40" />
+        </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-page-bg flex flex-col">
-      <Header />
-
-      <main className="flex-1 container mx-auto px-4 py-6 sm:py-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">Хоолны цэс</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Өдөр сонгож цэс болон хариу өгөх боломжтой
-          </p>
+    <main className="container mx-auto px-6 py-10 max-w-screen-2xl">
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/home"
+              className="flex items-center justify-center w-9 h-9 rounded-xl border border-border bg-card text-muted-foreground hover:text-foreground hover:border-gray-300 transition-all duration-200"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground tracking-tight">
+                Хоолны цэс
+              </h1>
+            </div>
+          </div>
+          {(user?.role === "admin" || user?.role === "chief") && (
+            <Link
+              href="/menu/manage"
+              className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground bg-card border border-border hover:border-gray-300 px-3.5 py-2 rounded-xl transition-all duration-200"
+            >
+              <Settings className="h-4 w-4" />
+              Цэс удирдах
+            </Link>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6">
-          {/* Calendar */}
-          <div>
+        {/* Main layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-8">
+          {/* Left: Calendar */}
+          <div className="lg:sticky lg:top-6 lg:self-start">
             <MenuCalendar
               year={calYear}
               month={calMonth}
@@ -176,105 +212,95 @@ export default function MenuPage() {
             />
           </div>
 
-          {/* Day Detail */}
-          <div className="space-y-4">
-            {/* Date + RSVP side by side */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="bg-card rounded-2xl shadow-sm border border-border p-4 flex items-center">
-                <div className="min-w-0">
-                  <h2 className="text-base font-semibold text-gray-800 truncate">
-                    {displayDate}
-                  </h2>
-                  {selectedDate === today && (
-                    <span className="inline-block mt-1 text-xs bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full font-medium">
-                      Өнөөдөр
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {menu ? (
-                <MenuRSVP
-                  menuId={menu.id}
-                  menuDate={menu.menu_date.split("T")[0]}
-                />
-              ) : (
-                <div className="bg-card rounded-2xl shadow-sm border border-border p-4 flex items-center justify-center">
-                  <p className="text-sm text-gray-300">--</p>
-                </div>
+          {/* Right: Day detail */}
+          <div className="space-y-5">
+            {/* Date header */}
+            <div className="flex items-center gap-3">
+              <h2 className="text-lg font-semibold text-foreground">
+                {displayDate}
+              </h2>
+              {selectedDate === today && (
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-600 bg-brand-50 border border-brand-200 px-2 py-0.5 rounded-md">
+                  Өнөөдөр
+                </span>
               )}
             </div>
 
-            {/* Animated content */}
-            <div key={animKey} className="animate-[fadeSlideIn_0.35s_ease-out]">
+            {/* Content */}
+            <div
+              key={animKey}
+              className="animate-[fadeSlideIn_0.3s_ease-out]"
+            >
               {dayLoading && (
-                <div className="text-center py-12 text-gray-400">
-                  Уншиж байна...
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground/40" />
                 </div>
               )}
 
               {!dayLoading && !menu && (
-                <div className="bg-card rounded-2xl border border-border shadow-sm p-8 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-brand-50 flex items-center justify-center mx-auto mb-3">
-                    <UtensilsCrossed className="h-8 w-8 text-brand-500" />
+                <div className="rounded-2xl border-2 border-dashed border-border py-16 text-center">
+                  <div className="w-14 h-14 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto mb-4">
+                    <UtensilsCrossed className="h-7 w-7 text-muted-foreground/30" />
                   </div>
-                  <p className="text-muted-foreground">Энэ өдөр цэс байхгүй байна</p>
+                  <p className="text-muted-foreground font-medium">
+                    Энэ өдөр цэс байхгүй байна
+                  </p>
+                  <p className="text-sm text-muted-foreground/60 mt-1">
+                    Өөр өдөр сонгоно уу
+                  </p>
                 </div>
               )}
 
               {menu && grouped && (
-                <>
+                <div className="space-y-5">
                   {menu.notes && (
-                    <div className="bg-brand-50 border border-brand-200 rounded-xl px-4 py-3 text-sm text-brand-700 mb-4">
+                    <div className="bg-brand-50/60 border border-brand-200 rounded-xl px-4 py-3 text-sm text-brand-700 font-medium">
                       {menu.notes}
                     </div>
                   )}
 
-                  {/* All meals in one unified card */}
-                  <div className="bg-card rounded-2xl shadow-sm border border-border p-5 sm:p-6">
-                    <div className="space-y-6">
-                      {(["meal_1", "meal_2", "drink"] as const).map(
-                        (type, idx) => {
-                          if (grouped[type].length === 0) return null;
-                          const prevTypes = (
-                            ["meal_1", "meal_2", "drink"] as const
-                          ).slice(0, idx);
-                          const hasPrev = prevTypes.some(
-                            (t) => grouped[t].length > 0,
-                          );
-                          return (
-                            <section key={type}>
-                              {hasPrev && (
-                                <hr className="border-gray-100 mb-6" />
-                              )}
-                              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                                {ITEM_TYPE_LABELS[type]}
-                              </h3>
-                              <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-                                {grouped[type].map((item) => (
-                                  <MenuItemCard key={item.id} item={item} />
-                                ))}
-                              </div>
-                            </section>
-                          );
-                        },
-                      )}
-                    </div>
-                  </div>
-                </>
+                  {/* Food sections */}
+                  {(["meal_1", "meal_2", "drink"] as const).map((type) => {
+                    if (grouped[type].length === 0) return null;
+                    const config = ITEM_TYPE_CONFIG[type];
+                    const Icon = config.icon;
+
+                    return (
+                      <section key={type}>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span
+                            className={`inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-lg border ${config.accent}`}
+                          >
+                            <Icon className="h-3.5 w-3.5" />
+                            {config.label}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                          {grouped[type].map((item) => (
+                            <MenuItemCard key={item.id} item={item} />
+                          ))}
+                        </div>
+                      </section>
+                    );
+                  })}
+
+                  {/* RSVP — after seeing the food */}
+                  <MenuRSVP
+                    menuId={menu.id}
+                    menuDate={menu.menu_date.split("T")[0]}
+                  />
+                </div>
               )}
             </div>
           </div>
         </div>
-      </main>
-
-      <Footer />
+      </div>
 
       <style jsx global>{`
         @keyframes fadeSlideIn {
           from {
             opacity: 0;
-            transform: translateY(12px);
+            transform: translateY(8px);
           }
           to {
             opacity: 1;
@@ -282,6 +308,6 @@ export default function MenuPage() {
           }
         }
       `}</style>
-    </div>
+    </main>
   );
 }

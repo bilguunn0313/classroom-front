@@ -1,77 +1,51 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Course, Lesson } from "@/types/schema.types";
 import { courseAPI } from "@/lib/course";
 import { lessonAPI } from "@/lib/lesson";
 
-interface UseCourseDetailReturn {
-  course: Course | null;
-  lessons: Lesson[];
-  selectedLesson: Lesson | null;
-  loading: boolean;
-  error: string | null;
-  selectLesson: (lesson: Lesson) => void;
-  refetch: () => Promise<void>;
-}
-
-export function useCourseDetail(courseId: number): UseCourseDetailReturn {
-  const [course, setCourse] = useState<Course | null>(null);
-  const [lessons, setLessons] = useState<Lesson[]>([]);
+export function useCourseDetail(courseId: number) {
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchCourseAndLessons = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  const courseQuery = useQuery({
+    queryKey: ["course", courseId],
+    queryFn: async () => {
+      const response = await courseAPI.getById(courseId);
+      if (!response.success) throw new Error("Failed to fetch course");
+      return response.data as Course;
+    },
+    enabled: !!courseId,
+  });
 
-      const [courseResponse, lessonsResponse] = await Promise.all([
-        courseAPI.getById(courseId),
-        lessonAPI.getByCourse(courseId),
-      ]);
+  const lessonsQuery = useQuery({
+    queryKey: ["lessons", courseId],
+    queryFn: async () => {
+      const response = await lessonAPI.getByCourse(courseId);
+      if (!response.success) throw new Error("Failed to fetch lessons");
+      return (response.data as Lesson[]).sort(
+        (a, b) => a.lesson_order - b.lesson_order
+      );
+    },
+    enabled: !!courseId,
+  });
 
-      if (!courseResponse.success) {
-        throw new Error("Failed to fetch course");
-      }
-
-      setCourse(courseResponse.data);
-
-      if (lessonsResponse.success) {
-        const sortedLessons = lessonsResponse.data.sort(
-          (a: Lesson, b: Lesson) => a.lesson_order - b.lesson_order
-        );
-        setLessons(sortedLessons);
-
-        // Auto-select first lesson
-        if (sortedLessons.length > 0 && !selectedLesson) {
-          setSelectedLesson(sortedLessons[0]);
-        }
-      }
-    } catch (err) {
-      console.error("Error fetching course data:", err);
-      setError(err instanceof Error ? err.message : "Failed to load course");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Auto-select first lesson when data loads
   useEffect(() => {
-    if (courseId) {
-      fetchCourseAndLessons();
+    if (lessonsQuery.data?.length && !selectedLesson) {
+      setSelectedLesson(lessonsQuery.data[0]);
     }
-  }, [courseId]);
-
-  const selectLesson = (lesson: Lesson) => {
-    setSelectedLesson(lesson);
-  };
+  }, [lessonsQuery.data, selectedLesson]);
 
   return {
-    course,
-    lessons,
+    course: courseQuery.data ?? null,
+    lessons: lessonsQuery.data ?? [],
     selectedLesson,
-    loading,
-    error,
-    selectLesson,
-    refetch: fetchCourseAndLessons,
+    loading: courseQuery.isPending || lessonsQuery.isPending,
+    error:
+      courseQuery.error?.message || lessonsQuery.error?.message || null,
+    selectLesson: (lesson: Lesson) => setSelectedLesson(lesson),
+    refetch: async () => {
+      await Promise.all([courseQuery.refetch(), lessonsQuery.refetch()]);
+    },
   };
 }

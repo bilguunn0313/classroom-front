@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useMemo, useRef } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { lessonProgressAPI } from "@/lib/progress";
 import { toast } from "sonner";
 
@@ -12,94 +13,100 @@ interface LessonProgress {
 }
 
 interface LocalProgress extends LessonProgress {
-  duration?: number; // Video duration for percentage calculation
+  duration?: number;
 }
 
-interface UseProgressReturn {
-  progressMap: Map<number, LocalProgress>;
-  loading: boolean;
-  updateProgress: (lessonId: number, position: number, duration?: number) => Promise<void>;
-  markComplete: (lessonId: number) => Promise<void>;
-  isCompleted: (lessonId: number) => boolean;
-  getProgress: (lessonId: number) => number;
-  getLastPosition: (lessonId: number) => number;
-  refetch: () => Promise<void>;
-}
+export function useProgress(courseId: number) {
+  const queryClient = useQueryClient();
+  const durationMapRef = useRef(new Map<number, number>());
 
-export function useProgress(courseId: number): UseProgressReturn {
-  const [progressMap, setProgressMap] = useState<Map<number, LocalProgress>>(
-    new Map()
-  );
-  const [loading, setLoading] = useState(true);
-
-  const fetchProgress = useCallback(async () => {
-    try {
-      setLoading(true);
-      const progressList = await lessonProgressAPI.getByCourse(courseId);
-      const map = new Map<number, LocalProgress>();
-      if (Array.isArray(progressList)) {
-        progressList.forEach((p: LessonProgress) => {
-          map.set(p.lesson_id, p);
-        });
+  const query = useQuery({
+    queryKey: ["progress", courseId],
+    queryFn: async () => {
+      try {
+        const progressList = await lessonProgressAPI.getByCourse(courseId);
+        return Array.isArray(progressList) ? progressList : [];
+      } catch (error: any) {
+        if (error.response?.status === 404) return [];
+        throw error;
       }
-      setProgressMap(map);
-    } catch (error: any) {
-      console.error("Failed to fetch progress:", error);
-      // It's OK if there's no progress yet (empty course or new user)
-      if (error.response?.status !== 404) {
-        console.warn("Unexpected error fetching progress:", error.message);
-      }
-      setProgressMap(new Map());
-    } finally {
-      setLoading(false);
-    }
-  }, [courseId]);
+    },
+    enabled: !!courseId,
+  });
 
-  useEffect(() => {
-    if (courseId) {
-      fetchProgress();
-    }
-  }, [courseId, fetchProgress]);
+  const progressMap = useMemo(() => {
+    const map = new Map<number, LocalProgress>();
+    (query.data ?? []).forEach((p: LessonProgress) => {
+      map.set(p.lesson_id, {
+        ...p,
+        duration: durationMapRef.current.get(p.lesson_id),
+      });
+    });
+    return map;
+  }, [query.data]);
+
+  const updateMutation = useMutation({
+    mutationFn: ({
+      lessonId,
+      position,
+    }: {
+      lessonId: number;
+      position: number;
+    }) =>
+      lessonProgressAPI.update(lessonId, {
+        lastPosition: Math.floor(position),
+      }),
+    onSuccess: (updated, { lessonId }) => {
+      queryClient.setQueryData(
+        ["progress", courseId],
+        (old: LessonProgress[] | undefined) => {
+          if (!old) return [updated];
+          const exists = old.some((p) => p.lesson_id === lessonId);
+          if (exists)
+            return old.map((p) => (p.lesson_id === lessonId ? updated : p));
+          return [...old, updated];
+        }
+      );
+    },
+  });
+
+  const completeMutation = useMutation({
+    mutationFn: (lessonId: number) => lessonProgressAPI.markComplete(lessonId),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(
+        ["progress", courseId],
+        (old: LessonProgress[] | undefined) => {
+          if (!old) return [updated];
+          return old.map((p) =>
+            p.lesson_id === updated.lesson_id ? updated : p
+          );
+        }
+      );
+      toast.success("Хичээл дууссан гэж тэмдэглэгдлээ!");
+    },
+    onError: () => {
+      toast.error("Явцыг шинэчлэхэд алдаа гарлаа");
+    },
+  });
 
   const updateProgress = useCallback(
     async (lessonId: number, position: number, duration?: number) => {
+      if (duration) durationMapRef.current.set(lessonId, duration);
       try {
-        const updated = await lessonProgressAPI.update(lessonId, {
-          lastPosition: Math.floor(position),
-        });
-
-        setProgressMap((prev) => {
-          const newMap = new Map(prev);
-          const existing = prev.get(lessonId);
-          newMap.set(lessonId, {
-            ...updated,
-            duration: duration || existing?.duration,
-          });
-          return newMap;
-        });
-      } catch (error) {
-        console.error("Failed to update progress:", error);
+        await updateMutation.mutateAsync({ lessonId, position });
+      } catch {
+        // Silent - progress update failure during playback is non-critical
       }
     },
-    []
+    [updateMutation]
   );
 
-  const markComplete = useCallback(async (lessonId: number) => {
-    try {
-      const updated = await lessonProgressAPI.markComplete(lessonId);
-
-      setProgressMap((prev) => {
-        const newMap = new Map(prev);
-        newMap.set(lessonId, updated);
-        return newMap;
-      });
-
-      toast.success("Хичээл дууссан гэж тэмдэглэгдлээ!");
-    } catch (error) {
-      console.error("Failed to mark complete:", error);
-      toast.error("Явцыг шинэчлэхэд алдаа гарлаа");
-    }
-  }, []);
+  const markComplete = useCallback(
+    async (lessonId: number) => {
+      await completeMutation.mutateAsync(lessonId);
+    },
+    [completeMutation]
+  );
 
   const isCompleted = useCallback(
     (lessonId: number) => {
@@ -113,9 +120,10 @@ export function useProgress(courseId: number): UseProgressReturn {
       const progress = progressMap.get(lessonId);
       if (!progress) return 0;
       if (progress.completed) return 100;
-      // Calculate actual percentage if we have duration
-      if (progress.duration && progress.duration > 0) {
-        return Math.min(100, (progress.last_position / progress.duration) * 100);
+      const duration =
+        progress.duration ?? durationMapRef.current.get(lessonId);
+      if (duration && duration > 0) {
+        return Math.min(100, (progress.last_position / duration) * 100);
       }
       return 0;
     },
@@ -131,12 +139,14 @@ export function useProgress(courseId: number): UseProgressReturn {
 
   return {
     progressMap,
-    loading,
+    loading: query.isPending,
     updateProgress,
     markComplete,
     isCompleted,
     getProgress,
     getLastPosition,
-    refetch: fetchProgress,
+    refetch: async () => {
+      await query.refetch();
+    },
   };
 }

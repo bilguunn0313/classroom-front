@@ -1,82 +1,45 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { TemperatureRecord } from "@/types/schema.types";
 import { temperatureAPI } from "@/lib/temperature";
 
-interface UseTemperatureRecordsReturn {
-  records: TemperatureRecord[];
-  loading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-}
-
-export function useTemperatureRecords(
-  year: number,
-  month: number
-): UseTemperatureRecordsReturn {
-  const [records, setRecords] = useState<TemperatureRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchRecords = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+export function useTemperatureRecords(year: number, month: number) {
+  const query = useQuery({
+    queryKey: ["temperature-records", year, month],
+    queryFn: async () => {
       const response = await temperatureAPI.getMonthly(year, month);
-      if (response.success) {
-        setRecords(response.data);
-      } else {
+      if (!response.success)
         throw new Error("Failed to fetch temperature records");
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to load temperature records"
-      );
-    } finally {
-      setLoading(false);
-    }
+      return response.data as TemperatureRecord[];
+    },
+  });
+
+  return {
+    records: query.data ?? [],
+    loading: query.isPending,
+    error: query.error?.message ?? null,
+    refetch: async () => {
+      await query.refetch();
+    },
   };
-
-  useEffect(() => {
-    fetchRecords();
-  }, [year, month]);
-
-  return { records, loading, error, refetch: fetchRecords };
 }
 
-interface UseTodayTemperatureReturn {
-  record: TemperatureRecord | null;
-  loading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-}
-
-export function useTodayTemperature(): UseTodayTemperatureReturn {
-  const [record, setRecord] = useState<TemperatureRecord | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchRecord = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+export function useTodayTemperature() {
+  const query = useQuery({
+    queryKey: ["today-temperature"],
+    queryFn: async () => {
       const response = await temperatureAPI.getToday();
-      if (response.success) {
-        setRecord(response.data);
-      } else {
+      if (!response.success)
         throw new Error("Failed to fetch today's temperature");
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to load temperature"
-      );
-    } finally {
-      setLoading(false);
-    }
+      return response.data as TemperatureRecord;
+    },
+  });
+
+  return {
+    record: query.data ?? null,
+    loading: query.isPending,
+    error: query.error?.message ?? null,
+    refetch: async () => {
+      await query.refetch();
+    },
   };
-
-  useEffect(() => {
-    fetchRecord();
-  }, []);
-
-  return { record, loading, error, refetch: fetchRecord };
 }

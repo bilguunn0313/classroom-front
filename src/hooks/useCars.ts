@@ -1,39 +1,23 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Car } from "@/types/schema.types";
 import { carAPI } from "@/lib/car";
 
-interface UseCarsReturn {
-  cars: Car[];
-  loading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-}
-
-export function useCars(): UseCarsReturn {
-  const [cars, setCars] = useState<Car[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchCars = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+export function useCars() {
+  const query = useQuery({
+    queryKey: ["cars"],
+    queryFn: async () => {
       const response = await carAPI.getAll();
-      if (response.success) {
-        setCars(response.data);
-      } else {
-        throw new Error("Failed to fetch cars");
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load cars");
-    } finally {
-      setLoading(false);
-    }
+      if (!response.success) throw new Error("Failed to fetch cars");
+      return response.data as Car[];
+    },
+  });
+
+  return {
+    cars: query.data ?? [],
+    loading: query.isPending,
+    error: query.error?.message ?? null,
+    refetch: async () => {
+      await query.refetch();
+    },
   };
-
-  useEffect(() => {
-    fetchCars();
-  }, []);
-
-  return { cars, loading, error, refetch: fetchCars };
 }

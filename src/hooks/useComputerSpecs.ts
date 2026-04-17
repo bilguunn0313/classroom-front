@@ -1,200 +1,134 @@
-import { useState, useEffect, useCallback } from "react";
-import { ComputerSpec, ComputerInspection, OdooAsset } from "@/types/schema.types";
+import { useQuery } from "@tanstack/react-query";
+import {
+  ComputerSpec,
+  ComputerInspection,
+  OdooAsset,
+} from "@/types/schema.types";
 import { computerSpecsAPI } from "@/lib/computer-specs";
-
-interface UseComputerSpecsReturn {
-  specs: ComputerSpec[];
-  total: number;
-  loading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-}
 
 export function useComputerSpecs(
   page: number = 1,
   limit: number = 20,
-  search?: string,
-): UseComputerSpecsReturn {
-  const [specs, setSpecs] = useState<ComputerSpec[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchSpecs = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  search?: string
+) {
+  const query = useQuery({
+    queryKey: ["computer-specs", page, limit, search],
+    queryFn: async () => {
       const response = await computerSpecsAPI.getAll(page, limit, search);
-      if (response.success) {
-        setSpecs(response.data);
-        setTotal(response.total);
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Мэдээлэл ачаалахад алдаа гарлаа",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [page, limit, search]);
+      if (!response.success)
+        throw new Error("Мэдээлэл ачаалахад алдаа гарлаа");
+      return { data: response.data as ComputerSpec[], total: response.total as number };
+    },
+  });
 
-  useEffect(() => {
-    fetchSpecs();
-  }, [fetchSpecs]);
-
-  return { specs, total, loading, error, refetch: fetchSpecs };
+  return {
+    specs: query.data?.data ?? [],
+    total: query.data?.total ?? 0,
+    loading: query.isPending,
+    error: query.error?.message ?? null,
+    refetch: async () => {
+      await query.refetch();
+    },
+  };
 }
 
-interface UseOdooAssetsReturn {
-  assets: OdooAsset[];
-  loading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-}
-
-export function useOdooAssets(categoryId = 12): UseOdooAssetsReturn {
-  const [assets, setAssets] = useState<OdooAsset[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchAssets = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
+export function useOdooAssets(categoryId = 12) {
+  const query = useQuery({
+    queryKey: ["odoo-assets", categoryId],
+    queryFn: async () => {
       const response = await computerSpecsAPI.getOdooAssets(categoryId);
-      if (response.success) {
-        setAssets(response.data);
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Төхөөрөмж ачаалахад алдаа гарлаа",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [categoryId]);
+      if (!response.success)
+        throw new Error("Төхөөрөмж ачаалахад алдаа гарлаа");
+      return response.data as OdooAsset[];
+    },
+  });
 
-  useEffect(() => {
-    fetchAssets();
-  }, [fetchAssets]);
-
-  return { assets, loading, error, refetch: fetchAssets };
+  return {
+    assets: query.data ?? [],
+    loading: query.isPending,
+    error: query.error?.message ?? null,
+    refetch: async () => {
+      await query.refetch();
+    },
+  };
 }
 
-interface UseSpecifiedAssetIdsReturn {
-  specifiedIds: number[];
-  loading: boolean;
-  refetch: () => Promise<void>;
-}
-
-export function useSpecifiedAssetIds(): UseSpecifiedAssetIdsReturn {
-  const [specifiedIds, setSpecifiedIds] = useState<number[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchIds = useCallback(async () => {
-    try {
-      setLoading(true);
+export function useSpecifiedAssetIds() {
+  const query = useQuery({
+    queryKey: ["specified-asset-ids"],
+    queryFn: async () => {
       const response = await computerSpecsAPI.getSpecifiedIds();
-      if (response.success) {
-        setSpecifiedIds(response.data);
-      }
-    } catch {
-      // silent
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      if (!response.success) return [];
+      return response.data as number[];
+    },
+  });
 
-  useEffect(() => {
-    fetchIds();
-  }, [fetchIds]);
-
-  return { specifiedIds, loading, refetch: fetchIds };
-}
-
-interface UseComputerInspectionsReturn {
-  inspections: ComputerInspection[];
-  total: number;
-  loading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
+  return {
+    specifiedIds: query.data ?? [],
+    loading: query.isPending,
+    refetch: async () => {
+      await query.refetch();
+    },
+  };
 }
 
 export function useComputerInspections(
   page: number = 1,
   limit: number = 20,
   search?: string
-): UseComputerInspectionsReturn {
-  const [inspections, setInspections] = useState<ComputerInspection[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchInspections = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await computerSpecsAPI.getInspections(page, limit, search);
-      if (response.success) {
-        setInspections(response.data);
-        setTotal(response.total);
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Мэдээлэл ачаалахад алдаа гарлаа"
+) {
+  const query = useQuery({
+    queryKey: ["computer-inspections", page, limit, search],
+    queryFn: async () => {
+      const response = await computerSpecsAPI.getInspections(
+        page,
+        limit,
+        search
       );
-    } finally {
-      setLoading(false);
-    }
-  }, [page, limit, search]);
+      if (!response.success)
+        throw new Error("Мэдээлэл ачаалахад алдаа гарлаа");
+      return { data: response.data as ComputerInspection[], total: response.total as number };
+    },
+  });
 
-  useEffect(() => {
-    fetchInspections();
-  }, [fetchInspections]);
-
-  return { inspections, total, loading, error, refetch: fetchInspections };
-}
-
-interface UseInspectionHistoryReturn {
-  inspections: ComputerInspection[];
-  total: number;
-  loading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
+  return {
+    inspections: query.data?.data ?? [],
+    total: query.data?.total ?? 0,
+    loading: query.isPending,
+    error: query.error?.message ?? null,
+    refetch: async () => {
+      await query.refetch();
+    },
+  };
 }
 
 export function useInspectionHistory(
   specId: number | null,
   page: number = 1,
   limit: number = 20
-): UseInspectionHistoryReturn {
-  const [inspections, setInspections] = useState<ComputerInspection[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchHistory = useCallback(async () => {
-    if (!specId) return;
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await computerSpecsAPI.getInspectionHistory(specId, page, limit);
-      if (response.success) {
-        setInspections(response.data);
-        setTotal(response.total);
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Мэдээлэл ачаалахад алдаа гарлаа"
+) {
+  const query = useQuery({
+    queryKey: ["inspection-history", specId, page, limit],
+    queryFn: async () => {
+      const response = await computerSpecsAPI.getInspectionHistory(
+        specId!,
+        page,
+        limit
       );
-    } finally {
-      setLoading(false);
-    }
-  }, [specId, page, limit]);
+      if (!response.success)
+        throw new Error("Мэдээлэл ачаалахад алдаа гарлаа");
+      return { data: response.data as ComputerInspection[], total: response.total as number };
+    },
+    enabled: !!specId,
+  });
 
-  useEffect(() => {
-    fetchHistory();
-  }, [fetchHistory]);
-
-  return { inspections, total, loading, error, refetch: fetchHistory };
+  return {
+    inspections: query.data?.data ?? [],
+    total: query.data?.total ?? 0,
+    loading: query.isPending,
+    error: query.error?.message ?? null,
+    refetch: async () => {
+      await query.refetch();
+    },
+  };
 }

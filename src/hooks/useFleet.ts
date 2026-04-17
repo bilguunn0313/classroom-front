@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   FleetVehicle,
   OdooDepartment,
@@ -7,124 +7,70 @@ import {
 } from "@/types/schema.types";
 import { fleetAPI } from "@/lib/fleet";
 
-interface UseFleetVehiclesReturn {
-  vehicles: FleetVehicle[];
-  loading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-}
-
-export function useFleetVehicles(): UseFleetVehiclesReturn {
-  const [vehicles, setVehicles] = useState<FleetVehicle[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchVehicles = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+export function useFleetVehicles() {
+  const query = useQuery({
+    queryKey: ["fleet-vehicles"],
+    queryFn: async () => {
       const response = await fleetAPI.getVehicles();
-      if (response.success) {
-        setVehicles(response.data);
-      } else {
-        throw new Error("Failed to fetch vehicles");
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Тээврийн хэрэгсэл ачаалахад алдаа гарлаа"
-      );
-    } finally {
-      setLoading(false);
-    }
+      if (!response.success) throw new Error("Failed to fetch vehicles");
+      return response.data as FleetVehicle[];
+    },
+  });
+
+  return {
+    vehicles: query.data ?? [],
+    loading: query.isPending,
+    error: query.error?.message ?? null,
+    refetch: async () => {
+      await query.refetch();
+    },
   };
-
-  useEffect(() => {
-    fetchVehicles();
-  }, []);
-
-  return { vehicles, loading, error, refetch: fetchVehicles };
 }
 
-interface UseDepartmentsReturn {
-  departments: OdooDepartment[];
-  loading: boolean;
+export function useDepartments() {
+  const query = useQuery({
+    queryKey: ["departments"],
+    queryFn: async () => {
+      const response = await fleetAPI.getDepartments();
+      if (!response.success) return [];
+      return response.data as OdooDepartment[];
+    },
+  });
+
+  return {
+    departments: query.data ?? [],
+    loading: query.isPending,
+  };
 }
 
-export function useDepartments(): UseDepartmentsReturn {
-  const [departments, setDepartments] = useState<OdooDepartment[]>([]);
-  const [loading, setLoading] = useState(true);
+export function useVehicleStates() {
+  const query = useQuery({
+    queryKey: ["vehicle-states"],
+    queryFn: async () => {
+      const response = await fleetAPI.getStates();
+      if (!response.success) return [];
+      return response.data as FleetVehicleState[];
+    },
+  });
 
-  useEffect(() => {
-    const fetch = async () => {
-      try {
-        const response = await fleetAPI.getDepartments();
-        if (response.success) {
-          setDepartments(response.data);
-        }
-      } catch {
-        // Silently fail for dropdown data
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetch();
-  }, []);
-
-  return { departments, loading };
+  return {
+    states: query.data ?? [],
+    loading: query.isPending,
+  };
 }
 
-interface UseVehicleStatesReturn {
-  states: FleetVehicleState[];
-  loading: boolean;
-}
+export function useVehicleModels() {
+  const query = useQuery({
+    queryKey: ["vehicle-models"],
+    queryFn: async () => {
+      const response = await fleetAPI.getModels();
+      if (!response.success) return [];
+      return response.data as FleetVehicleModel[];
+    },
+  });
 
-export function useVehicleStates(): UseVehicleStatesReturn {
-  const [states, setStates] = useState<FleetVehicleState[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetch = async () => {
-      try {
-        const response = await fleetAPI.getStates();
-        if (response.success) {
-          setStates(response.data);
-        }
-      } catch {
-        // Silently fail for dropdown data
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetch();
-  }, []);
-
-  return { states, loading };
-}
-
-interface UseVehicleModelsReturn {
-  models: FleetVehicleModel[];
-  loading: boolean;
-}
-
-export function useVehicleModels(): UseVehicleModelsReturn {
-  const [models, setModels] = useState<FleetVehicleModel[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetch = async () => {
-      try {
-        const response = await fleetAPI.getModels();
-        if (response.success) {
-          setModels(response.data);
-        }
-      } catch {
-        // Silently fail for dropdown data
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetch();
-  }, []);
-
-  return { models, loading };
+  return {
+    models: query.data ?? [],
+    loading: query.isPending,
+  };
 }

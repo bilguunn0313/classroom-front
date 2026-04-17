@@ -1,7 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import { courseAPI } from "@/lib/course";
 import { subjectAPI } from "@/lib/subject";
 import { Course, Subject } from "@/types/schema.types";
-import { useEffect, useState } from "react";
 
 interface SubjectWithCourse {
   subject: Subject;
@@ -10,33 +10,19 @@ interface SubjectWithCourse {
 }
 
 export function useSubjectWithCourse() {
-  const [data, setData] = useState<SubjectWithCourse[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // 2 parallel calls instead of 1+N
+  const query = useQuery({
+    queryKey: ["subjects-with-courses"],
+    queryFn: async () => {
       const [subjectResponse, coursesResponse] = await Promise.all([
         subjectAPI.getAll(),
         courseAPI.getAllPublished(),
       ]);
 
-      if (!subjectResponse.success) {
-        throw new Error("failed to fetch subjects");
-      }
+      if (!subjectResponse.success) throw new Error("Failed to fetch subjects");
 
       const subjects: Subject[] = subjectResponse.data;
       const allCourses: Course[] = coursesResponse.data || [];
 
-      // Group courses by subject_id on the frontend
       const subjectsWithCourses: SubjectWithCourse[] = subjects.map(
         (subject) => {
           const courses = allCourses.filter(
@@ -47,18 +33,16 @@ export function useSubjectWithCourse() {
         }
       );
 
-      const filtered = subjectsWithCourses.filter(
-        (item) => item.course.length > 0
-      );
+      return subjectsWithCourses.filter((item) => item.course.length > 0);
+    },
+  });
 
-      setData(filtered);
-    } catch (error) {
-      console.error("Error:", error);
-      setError(error instanceof Error ? error.message : "Failed to load data");
-    } finally {
-      setLoading(false);
-    }
+  return {
+    data: query.data ?? [],
+    loading: query.isPending,
+    error: query.error?.message ?? null,
+    refetch: async () => {
+      await query.refetch();
+    },
   };
-
-  return { data, loading, error, refetch: fetchData };
 }
