@@ -16,10 +16,10 @@ export default function AdminLayout({
 }) {
   return (
     <ProtectedRoute requiredRole="admin">
-      <SidebarProvider>
+      <SidebarProvider className="h-svh overflow-hidden">
         <AppSidebar />
-        <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+        <SidebarInset className="overflow-y-auto">
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 sticky top-0 bg-background z-10">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
           </header>

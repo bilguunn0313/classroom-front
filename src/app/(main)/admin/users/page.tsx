@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { adminAPI } from "@/lib/admin";
 import { AdminUser, PaginationData } from "@/types/admin";
 import SearchBar from "@/components/admin/SearchBar";
@@ -33,13 +33,14 @@ export default function AdminUsersPage() {
     queryFn: async () => {
       const response = await adminAPI.getUsers({
         page,
-        limit: 10,
+        limit: 20,
         search: search || undefined,
         role:
           roleFilter !== "all" ? (roleFilter as "admin" | "user" | "chief" | "supervisor") : undefined,
       });
       return response;
     },
+    placeholderData: keepPreviousData,
   });
 
   const filters: FilterOption[] = [

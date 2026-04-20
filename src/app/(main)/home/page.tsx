@@ -7,14 +7,12 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { enrollmentAPI } from "@/lib/enrollment";
 import {
   GraduationCap,
-  UtensilsCrossed,
   ArrowRight,
   LogOut,
   BookOpen,
   Thermometer,
   CircleGauge,
   Settings,
-  ClipboardList,
   Monitor,
 } from "lucide-react";
 
@@ -114,22 +112,6 @@ export default function HomePage() {
             </Link>
 
             <Link
-              href="/menu"
-              className="group rounded-xl border border-t-2 border-t-orange-400 bg-card p-9 hover:border-orange-200 hover:border-t-orange-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 animate-slide-up delay-200"
-            >
-              <div className="flex items-start justify-between mb-5">
-                <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                  <UtensilsCrossed className="h-7 w-7 text-orange-500" />
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
-              </div>
-              <h2 className="font-semibold text-lg">Хоолны цэс</h2>
-              <p className="text-sm text-muted-foreground leading-relaxed mt-1">
-                Өдрийн хоолны цэс харах, хариу өгөх
-              </p>
-            </Link>
-
-            <Link
               href="/temperature"
               className="group rounded-xl border border-t-2 border-t-cyan-400 bg-card p-9 hover:border-cyan-200 hover:border-t-cyan-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 animate-slide-up delay-300"
             >
@@ -175,24 +157,6 @@ export default function HomePage() {
                 <h2 className="font-semibold text-lg">Админ хэсэг</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed mt-1">
                   Хэрэглэгч, сургалт, хичээл удирдах
-                </p>
-              </Link>
-            )}
-
-            {(user?.role === "admin" || user?.role === "chief") && (
-              <Link
-                href="/menu/manage"
-                className="group rounded-xl border border-t-2 border-t-green-400 bg-card p-9 hover:border-green-200 hover:border-t-green-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 animate-slide-up delay-600"
-              >
-                <div className="flex items-start justify-between mb-5">
-                  <div className="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                    <ClipboardList className="h-7 w-7 text-green-600" />
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
-                </div>
-                <h2 className="font-semibold text-lg">Цэс удирдах</h2>
-                <p className="text-sm text-muted-foreground leading-relaxed mt-1">
-                  Хоолны цэс нэмэх, засах, устгах
                 </p>
               </Link>
             )}

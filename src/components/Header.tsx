@@ -4,12 +4,9 @@ import {
   Menu,
   X,
   LogOut,
-  User,
   Settings,
   ChevronDown,
   BookOpen,
-  Hamburger,
-  UtensilsCrossed,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -124,18 +121,6 @@ const Header = () => {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                className="focus:outline-none"
-                onClick={() => router.push("/menu")}
-              >
-                <div className="flex items-center gap-1 text-white hover:text-blue-200 transition-colors cursor-pointer font-medium ">
-                  <UtensilsCrossed size={18} />
-                  <span>Хоолны цэс</span>
-                </div>
-              </DropdownMenuTrigger>
-            </DropdownMenu>
-
             {isAuthenticated ? (
               // User Menu
               <DropdownMenu>
@@ -171,18 +156,6 @@ const Header = () => {
                     <BookOpen className="mr-2 h-4 w-4" />
                     <span>Миний сургалтууд</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push("/menu")}>
-                    <Hamburger className="mr-2 h-4 w-4" />
-                    <span>Хоолны цэс</span>
-                  </DropdownMenuItem>
-                  {(user?.role === "admin" || user?.role === "chief") && (
-                    <DropdownMenuItem
-                      onClick={() => router.push("/menu/manage")}
-                    >
-                      <Hamburger className="mr-2 h-4 w-4" />
-                      <span>Цэс удирдах</span>
-                    </DropdownMenuItem>
-                  )}
                   {user?.role === "admin" && (
                     <DropdownMenuItem
                       onClick={() => router.push("/admin/dashboard")}
@@ -326,18 +299,6 @@ const Header = () => {
                       <BookOpen size={18} />
                       <span>Миний сургалтууд</span>
                     </button>
-                    {(user?.role === "admin" || user?.role === "chief") && (
-                      <button
-                        onClick={() => {
-                          router.push("/menu/manage");
-                          setIsMenuOpen(false);
-                        }}
-                        className="flex items-center gap-3 text-white hover:bg-blue-500/50 transition-colors py-2 px-3 rounded-lg w-full"
-                      >
-                        <Hamburger size={18} />
-                        <span>Цэс удирдах</span>
-                      </button>
-                    )}
                     {user?.role === "admin" && (
                       <button
                         onClick={() => router.push("/admin/dashboard")}

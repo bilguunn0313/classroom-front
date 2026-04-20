@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Save, Plus, Upload, X } from "lucide-react";
+import { Save, Plus, Upload, X, Video } from "lucide-react";
 import { toast } from "sonner";
 import { lessonAPI } from "@/lib/lesson";
 import { Lesson } from "@/types/schema.types";

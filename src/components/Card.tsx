@@ -1,4 +1,3 @@
-import { useUserContext } from "@/lib/userProvider";
 import { Course } from "@/types/schema.types";
 import { BookOpen } from "lucide-react";
 
@@ -8,7 +7,6 @@ interface CourseCardProps {
 }
 
 const CourseCard = ({ course, onClick }: CourseCardProps) => {
-  const { user } = useUserContext();
 
   // Helper to get full URL (handles both relative and absolute URLs)
   const getFullUrl = (url: string) => {
@@ -60,7 +58,7 @@ const CourseCard = ({ course, onClick }: CourseCardProps) => {
         )}
 
         {/* Instructor */}
-        <p className="text-xs text-foreground mb-2">{user?.name || "Багш"}</p>
+        <p className="text-xs text-foreground mb-2">{course.user_name || "Багш"}</p>
 
         {/* Subject Tag */}
         {course.subject_name && (
