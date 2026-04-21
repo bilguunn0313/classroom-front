@@ -7,12 +7,14 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { enrollmentAPI } from "@/lib/enrollment";
 import {
   GraduationCap,
+  UtensilsCrossed,
   ArrowRight,
   LogOut,
   BookOpen,
   Thermometer,
   CircleGauge,
   Settings,
+  ClipboardList,
   Monitor,
 } from "lucide-react";
 
@@ -108,6 +110,22 @@ export default function HomePage() {
               <h2 className="font-semibold text-lg">Сургалт</h2>
               <p className="text-sm text-muted-foreground leading-relaxed mt-1">
                 Видео хичээл үзэх, мэдлэгээ дээшлүүлэх
+              </p>
+            </Link>
+
+            <Link
+              href="/menu"
+              className="group rounded-xl border border-t-2 border-t-orange-400 bg-card p-9 hover:border-orange-200 hover:border-t-orange-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 animate-slide-up delay-200"
+            >
+              <div className="flex items-start justify-between mb-5">
+                <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                  <UtensilsCrossed className="h-7 w-7 text-orange-600" />
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+              </div>
+              <h2 className="font-semibold text-lg">Хоолны цэс</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed mt-1">
+                Өдрийн хоолны цэс харах
               </p>
             </Link>
 
