@@ -80,6 +80,16 @@ export interface MenuResponseSummary {
   not_attending: number;
 }
 
+export interface Dish {
+  id: number;
+  name: string;
+  image_url: string | null;
+  item_type: "meal_1" | "meal_2" | "drink";
+  created_by: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface TemperatureRecord {
   id: number;
   record_date: string;

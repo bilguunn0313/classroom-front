@@ -12,6 +12,8 @@ import {
   useMenuResponses,
 } from "@/hooks/useMenu";
 import { menuAPI } from "@/lib/menu";
+import { useDishes } from "@/hooks/useDishes";
+import { Dish } from "@/types/schema.types";
 import { toast } from "sonner";
 import {
   Plus,
@@ -25,6 +27,9 @@ import {
   CookingPot,
   UtensilsCrossed,
   GlassWater,
+  BookOpen,
+  Search,
+  PenLine,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -49,16 +54,12 @@ interface ItemFormData {
   name: string;
   imageUrl: string;
   itemType: "meal_1" | "meal_2" | "drink";
-  ingredients: string;
-  calories: string;
 }
 
 const EMPTY_ITEM = (type: "meal_1" | "meal_2" | "drink"): ItemFormData => ({
   name: "",
   imageUrl: "",
   itemType: type,
-  ingredients: "",
-  calories: "",
 });
 
 const ITEM_TYPE_CONFIG: Record<
@@ -116,6 +117,9 @@ function MenuManageContent() {
   const [items, setItems] = useState<ItemFormData[]>([]);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerType, setPickerType] = useState<"meal_1" | "meal_2" | "drink">("meal_1");
+  const [pickerSearch, setPickerSearch] = useState("");
 
   useEffect(() => {
     if (menu) {
@@ -125,8 +129,6 @@ function MenuManageContent() {
           name: item.name,
           imageUrl: item.image_url || "",
           itemType: item.item_type,
-          ingredients: item.ingredients || "",
-          calories: item.calories ? String(item.calories) : "",
         })),
       );
     } else {
@@ -143,7 +145,26 @@ function MenuManageContent() {
   };
 
   const handleAddItem = (type: "meal_1" | "meal_2" | "drink") => {
-    setItems([...items, EMPTY_ITEM(type)]);
+    setPickerType(type);
+    setPickerSearch("");
+    setPickerOpen(true);
+  };
+
+  const handleAddManualItem = (type: "meal_1" | "meal_2" | "drink") => {
+    setItems((prev) => [...prev, EMPTY_ITEM(type)]);
+    setPickerOpen(false);
+  };
+
+  const handleSelectDish = (dish: Dish, type: "meal_1" | "meal_2" | "drink") => {
+    setItems((prev) => [
+      ...prev,
+      {
+        name: dish.name,
+        imageUrl: dish.image_url || "",
+        itemType: type,
+      },
+    ]);
+    setPickerOpen(false);
   };
 
   const handleRemoveItem = (index: number) => {
@@ -176,8 +197,6 @@ function MenuManageContent() {
           name: i.name,
           imageUrl: i.imageUrl || null,
           itemType: i.itemType,
-          ingredients: i.ingredients || null,
-          calories: i.calories ? Number(i.calories) : null,
         })),
       };
 
@@ -256,6 +275,13 @@ function MenuManageContent() {
               Өдөр сонгоод цэс нэмэх, засах, хариулт харах
             </p>
           </div>
+          <Link
+            href="/menu/dishes"
+            className="ml-auto flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700 hover:bg-brand-50 px-3 py-2 rounded-lg transition-colors"
+          >
+            <BookOpen className="h-4 w-4" />
+            Хоолны сан
+          </Link>
         </div>
 
         {/* Main layout */}
@@ -541,48 +567,6 @@ function MenuManageContent() {
                                 />
                               </div>
 
-                              <div className="grid grid-cols-1 sm:grid-cols-[1fr_120px] gap-3">
-                                <div>
-                                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
-                                    Орц найрлага
-                                  </label>
-                                  <input
-                                    value={item.ingredients}
-                                    onChange={(e) =>
-                                      handleItemChange(
-                                        idx,
-                                        "ingredients",
-                                        e.target.value,
-                                      )
-                                    }
-                                    placeholder="Үхрийн мах, төмс, лууван..."
-                                    className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring bg-card placeholder:text-muted-foreground/40 transition-colors"
-                                  />
-                                  <p className="text-[11px] text-muted-foreground/50 mt-1">
-                                    Таслалаар тусгаарлана
-                                  </p>
-                                </div>
-                                <div>
-                                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
-                                    Калори
-                                  </label>
-                                  <input
-                                    type="number"
-                                    value={item.calories}
-                                    onChange={(e) =>
-                                      handleItemChange(
-                                        idx,
-                                        "calories",
-                                        e.target.value,
-                                      )
-                                    }
-                                    placeholder="ккал"
-                                    min={0}
-                                    className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring bg-card placeholder:text-muted-foreground/40 transition-colors"
-                                  />
-                                </div>
-                              </div>
-
                               <ImageUpload
                                 value={item.imageUrl}
                                 onChange={(url) =>
@@ -616,7 +600,128 @@ function MenuManageContent() {
           </div>
         </div>
       </div>
+
+      {/* Dish Picker Dialog */}
+      <DishPickerDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        itemType={pickerType}
+        search={pickerSearch}
+        onSearchChange={setPickerSearch}
+        onSelect={(dish, type) => handleSelectDish(dish, type)}
+        onManualAdd={(type) => handleAddManualItem(type)}
+      />
     </main>
+  );
+}
+
+function DishPickerDialog({
+  open,
+  onOpenChange,
+  itemType,
+  search,
+  onSearchChange,
+  onSelect,
+  onManualAdd,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  itemType: "meal_1" | "meal_2" | "drink";
+  search: string;
+  onSearchChange: (search: string) => void;
+  onSelect: (dish: Dish, type: "meal_1" | "meal_2" | "drink") => void;
+  onManualAdd: (type: "meal_1" | "meal_2" | "drink") => void;
+}) {
+  const { dishes, loading } = useDishes(
+    open ? { itemType, search: search || undefined } : {}
+  );
+  const config = ITEM_TYPE_CONFIG[itemType];
+  const Icon = config.icon;
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg border ${config.accent}`}>
+              <Icon className="h-3.5 w-3.5" />
+            </span>
+            Хоолны сангаас сонгох — {config.label}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="flex items-center gap-2 pt-1">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+            <input
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Хоол хайх..."
+              className="w-full pl-9 pr-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring bg-muted/30 placeholder:text-muted-foreground/40 transition-colors"
+            />
+          </div>
+          <button
+            onClick={() => onManualAdd(itemType)}
+            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2 rounded-lg border border-border hover:bg-muted/60 transition-colors whitespace-nowrap"
+          >
+            <PenLine className="h-4 w-4" />
+            Гараар нэмэх
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto min-h-0 pt-2">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground/40" />
+            </div>
+          ) : dishes.length === 0 ? (
+            <div className="text-center py-12">
+              <BookOpen className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">
+                {search ? "Хайлтад тохирох хоол олдсонгүй" : "Энэ төрлийн хоол бүртгэгдээгүй байна"}
+              </p>
+              <button
+                onClick={() => onManualAdd(itemType)}
+                className="mt-2 text-sm font-medium text-brand-600 hover:text-brand-700"
+              >
+                Гараар нэмэх
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {dishes.map((dish) => (
+                <button
+                  key={dish.id}
+                  onClick={() => onSelect(dish, itemType)}
+                  className="bg-card rounded-xl border border-border overflow-hidden hover:shadow-md hover:border-brand-300 transition-all text-left group"
+                >
+                  <div className="aspect-[4/3] bg-muted/30 relative">
+                    {dish.image_url ? (
+                      <img
+                        src={`${backendUrl}${dish.image_url}`}
+                        alt={dish.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Icon className="h-8 w-8 text-muted-foreground/15" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-brand-600/0 group-hover:bg-brand-600/5 transition-colors" />
+                  </div>
+                  <div className="p-2.5">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {dish.name}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
