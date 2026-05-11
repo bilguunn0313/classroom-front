@@ -45,6 +45,12 @@ export function useVideoPlayer({
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // Reset completion flag when the target lesson changes (initialPosition changes per-lesson)
+  useEffect(() => {
+    hasMarkedComplete.current = false;
+    lastSavedPosition.current = 0;
+  }, [initialPosition]);
+
   // Seek to initial position when video loads
   useEffect(() => {
     if (videoRef.current && initialPosition > 0 && duration > 0) {
