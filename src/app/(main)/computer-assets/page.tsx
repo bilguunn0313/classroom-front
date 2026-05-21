@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import Link from "next/link";
 import {
   Plus,
   Pencil,
@@ -24,6 +25,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardCheck,
+  ScanLine,
 } from "lucide-react";
 import {
   ComputerSpec,
@@ -255,13 +257,21 @@ export default function ComputerAssetsPage() {
     <ProtectedRoute requiredRole="admin">
       <main className="container mx-auto px-6 py-10 max-w-screen-2xl">
         <div className="space-y-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">
-              МАБТТАX үзлэг
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Төхөөрөмжд техникийн мэдээлэл оруулж, QR код үүсгэх
-            </p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground tracking-tight">
+                МАБТТАX үзлэг
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                Төхөөрөмжд техникийн мэдээлэл оруулж, QR код үүсгэх
+              </p>
+            </div>
+            <Button asChild variant="outline">
+              <Link href="/computer-assets/scan">
+                <ScanLine className="mr-2 h-4 w-4" />
+                Скайнер
+              </Link>
+            </Button>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
