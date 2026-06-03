@@ -1,7 +1,7 @@
 // app/course/[id]/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -14,8 +14,10 @@ import {
   PlayCircle,
   X,
   FileText,
-  Download,
   Lock,
+  Maximize2,
+  Minimize2,
+  Download,
 } from "lucide-react";
 
 // Hooks
@@ -30,6 +32,12 @@ import { useUserContext } from "@/lib/userProvider";
 import { ManageLessonsDialog } from "@/components/lesson/ManageLessonsDialog";
 import { EnrollCourseDialog } from "@/components/EnrollCourseDialog";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Lesson } from "@/types/schema.types";
 import { pdfAPI } from "@/lib/pdf";
 import { useSubjectWithCourse } from "@/hooks/useSubjectWithCourse";
@@ -77,6 +85,25 @@ const CourseDetailPage = () => {
   // Utility hooks
   const { totalFormatted, formatDuration } = useDuration(lessons);
 
+  // Capture initial position ONCE per lesson change.
+  // Using a ref for getLastPosition so this effect doesn't refire on every
+  // progress mutation (which would otherwise re-seek the video).
+  const getLastPositionRef = useRef(getLastPosition);
+  useEffect(() => {
+    getLastPositionRef.current = getLastPosition;
+  }, [getLastPosition]);
+
+  const [initialPositionForLesson, setInitialPositionForLesson] = useState(0);
+  useEffect(() => {
+    if (selectedLesson) {
+      setInitialPositionForLesson(
+        getLastPositionRef.current(selectedLesson.id),
+      );
+    } else {
+      setInitialPositionForLesson(0);
+    }
+  }, [selectedLesson?.id]);
+
   // Video player hook
   const { videoRef, handleTimeUpdate, handleLoadedMetadata } = useVideoPlayer({
     onProgressUpdate: (position) => {
@@ -98,13 +125,15 @@ const CourseDetailPage = () => {
         markComplete(selectedLesson.id);
       }
     },
-    initialPosition: selectedLesson ? getLastPosition(selectedLesson.id) : 0,
+    initialPosition: initialPositionForLesson,
   });
 
   // UI state
   const [showLessonList, setShowLessonList] = useState(false);
   const [pdfMaterials, setPdfMaterials] = useState<PdfMaterial[]>([]);
   const [loadingPdfs, setLoadingPdfs] = useState(false);
+  const [previewPdf, setPreviewPdf] = useState<PdfMaterial | null>(null);
+  const [pdfFullscreen, setPdfFullscreen] = useState(false);
 
   // Enrollment state
   const [isEnrolled, setIsEnrolled] = useState(false);
@@ -136,16 +165,6 @@ const CourseDetailPage = () => {
   const handleEnrollSuccess = () => {
     setIsEnrolled(true);
   };
-
-  // Seek to last position when lesson changes
-  useEffect(() => {
-    if (videoRef.current && selectedLesson) {
-      const lastPosition = getLastPosition(selectedLesson.id);
-      if (lastPosition > 0) {
-        videoRef.current.currentTime = lastPosition;
-      }
-    }
-  }, [selectedLesson?.id, getLastPosition]);
 
   // Fetch PDF materials when lesson changes
   useEffect(() => {
@@ -311,56 +330,58 @@ const CourseDetailPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Left: Video Player & Course Info */}
           <div className="lg:col-span-2 space-y-4 md:space-y-6">
-            {/* Video Player */}
-            <div className="bg-black rounded-lg overflow-hidden aspect-video">
-              {!canAccessContent ? (
-                <div className="w-full h-full flex items-center justify-center text-white bg-gray-900">
-                  <div className="text-center px-4">
-                    <Lock
-                      size={48}
-                      className="mx-auto mb-4 opacity-50 md:w-16 md:h-16"
-                    />
-                    <p className="text-lg md:text-xl font-semibold mb-2">
-                      Хичээлүүд түгжигдсэн
-                    </p>
-                    <p className="text-sm md:text-base text-gray-400">
-                      Хичээлүүдийг үзэхийн тулд сургалтанд бүртгүүлнэ үү
-                    </p>
+            {/* Video Player — hidden when the selected lesson has no video */}
+            {!(canAccessContent && selectedLesson && !selectedLesson.video_url) && (
+              <div className="bg-black rounded-lg overflow-hidden aspect-video">
+                {!canAccessContent ? (
+                  <div className="w-full h-full flex items-center justify-center text-white bg-gray-900">
+                    <div className="text-center px-4">
+                      <Lock
+                        size={48}
+                        className="mx-auto mb-4 opacity-50 md:w-16 md:h-16"
+                      />
+                      <p className="text-lg md:text-xl font-semibold mb-2">
+                        Хичээлүүд түгжигдсэн
+                      </p>
+                      <p className="text-sm md:text-base text-gray-400">
+                        Хичээлүүдийг үзэхийн тулд сургалтанд бүртгүүлнэ үү
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ) : selectedLesson?.video_url ? (
-                <video
-                  ref={videoRef}
-                  src={getFullVideoUrl(selectedLesson.video_url) || ""}
-                  controls
-                  className="w-full h-full"
-                  controlsList="nodownload"
-                  onTimeUpdate={handleTimeUpdate}
-                  onLoadedMetadata={handleLoadedMetadata}
-                  onError={(e) => {
-                    console.error("Video error:", e);
-                    console.error(
-                      "Video URL:",
-                      getFullVideoUrl(selectedLesson.video_url),
-                    );
-                  }}
-                >
-                  Таны браузер видео дэмжихгүй байна.
-                </video>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-white">
-                  <div className="text-center px-4">
-                    <PlayCircle
-                      size={48}
-                      className="mx-auto mb-4 opacity-50 md:w-16 md:h-16"
-                    />
-                    <p className="text-sm md:text-lg">
-                      Хичээл сонгож суралцаж эхлээрэй
-                    </p>
+                ) : selectedLesson?.video_url ? (
+                  <video
+                    ref={videoRef}
+                    src={getFullVideoUrl(selectedLesson.video_url) || ""}
+                    controls
+                    className="w-full h-full"
+                    controlsList="nodownload"
+                    onTimeUpdate={handleTimeUpdate}
+                    onLoadedMetadata={handleLoadedMetadata}
+                    onError={(e) => {
+                      console.error("Video error:", e);
+                      console.error(
+                        "Video URL:",
+                        getFullVideoUrl(selectedLesson.video_url),
+                      );
+                    }}
+                  >
+                    Таны браузер видео дэмжихгүй байна.
+                  </video>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white">
+                    <div className="text-center px-4">
+                      <PlayCircle
+                        size={48}
+                        className="mx-auto mb-4 opacity-50 md:w-16 md:h-16"
+                      />
+                      <p className="text-sm md:text-lg">
+                        Хичээл сонгож суралцаж эхлээрэй
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {/* Current Lesson Info */}
             {selectedLesson && (
@@ -454,15 +475,10 @@ const CourseDetailPage = () => {
                               </div>
                             </div>
                             <button
-                              onClick={() =>
-                                window.open(
-                                  getFullPdfUrl(material.file_url),
-                                  "_blank",
-                                )
-                              }
+                              onClick={() => setPreviewPdf(material)}
                               className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-brand-600 hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors cursor-pointer"
                             >
-                              <Download className="h-4 w-4" />
+                              <FileText className="h-4 w-4" />
                               <span>Үзэх</span>
                             </button>
                           </div>
@@ -612,6 +628,65 @@ const CourseDetailPage = () => {
           total_duration: totalFormatted,
         }}
       />
+
+      {/* PDF Preview Dialog */}
+      <Dialog
+        open={!!previewPdf}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPreviewPdf(null);
+            setPdfFullscreen(false);
+          }
+        }}
+      >
+        <DialogContent
+          className={
+            pdfFullscreen
+              ? "!max-w-none sm:!max-w-none w-screen h-screen p-0 flex flex-col gap-0 rounded-none border-0 top-0 left-0 translate-x-0 translate-y-0"
+              : "!max-w-5xl sm:!max-w-5xl w-[95vw] h-[90vh] p-0 flex flex-col gap-0"
+          }
+        >
+          <DialogHeader className="px-4 py-3 border-b flex-row items-center justify-between space-y-0">
+            <DialogTitle className="text-base font-semibold truncate pr-2">
+              {previewPdf?.title}
+            </DialogTitle>
+            <div className="flex items-center gap-1 mr-6">
+              {previewPdf && (
+                <a
+                  href={getFullPdfUrl(previewPdf.file_url)}
+                  download={previewPdf.title}
+                  className="inline-flex items-center gap-1.5 px-2.5 h-8 rounded-md hover:bg-gray-100 text-gray-700 text-sm font-medium"
+                  aria-label="Татаж авах"
+                  title="Татаж авах"
+                >
+                  <Download className="h-4 w-4" />
+                  <span className="hidden sm:inline">Татах</span>
+                </a>
+              )}
+              <button
+                type="button"
+                onClick={() => setPdfFullscreen((v) => !v)}
+                className="inline-flex items-center justify-center h-8 w-8 rounded-md hover:bg-gray-100 text-gray-600"
+                aria-label={pdfFullscreen ? "Багасгах" : "Бүтэн дэлгэц"}
+                title={pdfFullscreen ? "Багасгах" : "Бүтэн дэлгэц"}
+              >
+                {pdfFullscreen ? (
+                  <Minimize2 className="h-4 w-4" />
+                ) : (
+                  <Maximize2 className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+          </DialogHeader>
+          {previewPdf && (
+            <iframe
+              src={`${getFullPdfUrl(previewPdf.file_url)}#view=FitH`}
+              title={previewPdf.title}
+              className="flex-1 w-full border-0"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

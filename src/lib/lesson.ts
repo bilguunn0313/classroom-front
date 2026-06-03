@@ -69,6 +69,11 @@ export const lessonAPI = {
     return res.data;
   },
 
+  deleteVideo: async (id: number) => {
+    const res = await api.delete(`/lesson/${id}/video`);
+    return res.data;
+  },
+
   delete: async (id: number) => {
     const res = await api.delete(`/lesson/${id}`);
     return res.data;

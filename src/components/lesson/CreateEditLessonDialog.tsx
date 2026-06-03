@@ -15,13 +15,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Save, Plus, Upload, X, Video } from "lucide-react";
+import { Save, Plus, Upload, X, Video, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { lessonAPI } from "@/lib/lesson";
 import { Lesson } from "@/types/schema.types";
 import { PdfUploadZone } from "./PdfUploadZone";
 import { Progress } from "@/components/ui/progress";
 import { pdfAPI } from "@/lib/pdf";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface CreateEditLessonDialogProps {
   courseId: number;
@@ -51,6 +62,11 @@ export function CreateEditLessonDialog({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [pendingPdfFiles, setPendingPdfFiles] = useState<File[]>([]);
+  const [existingVideoUrl, setExistingVideoUrl] = useState<string | null>(null);
+  const [existingVideoDuration, setExistingVideoDuration] = useState<
+    number | null
+  >(null);
+  const [deletingVideo, setDeletingVideo] = useState(false);
 
   const isEdit = !!lesson;
 
@@ -64,6 +80,8 @@ export function CreateEditLessonDialog({
         setVideoDuration(lesson.video_duration?.toString() || "");
         setText(lesson.text || "");
         setLessonOrder(lesson.lesson_order.toString());
+        setExistingVideoUrl(lesson.video_url || null);
+        setExistingVideoDuration(lesson.video_duration ?? null);
 
         // Load PDF materials for editing
         if (lesson.id) {
@@ -165,6 +183,38 @@ export function CreateEditLessonDialog({
 
   const handleRemovePendingPdf = (index: number) => {
     setPendingPdfFiles(pendingPdfFiles.filter((_, i) => i !== index));
+  };
+
+  const handleDeleteExistingVideo = async () => {
+    if (!lesson?.id) return;
+    setDeletingVideo(true);
+    try {
+      await lessonAPI.deleteVideo(lesson.id);
+      setExistingVideoUrl(null);
+      setExistingVideoDuration(null);
+      setVideoDuration("");
+      toast.success("Видео амжилттай устгагдлаа");
+      onSuccess();
+      router.refresh();
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.message || "Видео устгахад алдаа гарлаа",
+      );
+    } finally {
+      setDeletingVideo(false);
+    }
+  };
+
+  const formatVideoDurationLabel = (sec: number | null) => {
+    if (!sec || sec <= 0) return "";
+    const mins = Math.floor(sec / 60);
+    const secs = sec % 60;
+    return `${mins} мин ${secs} сек`;
+  };
+
+  const getVideoFileName = (url: string) => {
+    const parts = url.split("/");
+    return parts[parts.length - 1] || url;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -274,6 +324,9 @@ export function CreateEditLessonDialog({
     setUploadProgress(0);
     setUploading(false);
     setPendingPdfFiles([]);
+    setExistingVideoUrl(null);
+    setExistingVideoDuration(null);
+    setDeletingVideo(false);
 
     // Clear file inputs
     const videoInput = document.getElementById("videoFile") as HTMLInputElement;
@@ -347,25 +400,87 @@ export function CreateEditLessonDialog({
             <h4 className="font-semibold mb-4">Видео хуулах (заавал биш)</h4>
 
             <div className="space-y-4">
+              {/* Existing video (edit mode, only when no new file is staged) */}
+              {isEdit && existingVideoUrl && !videoFile && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Video className="h-4 w-4 text-green-700 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-green-900 truncate">
+                          {getVideoFileName(existingVideoUrl)}
+                        </p>
+                        <p className="text-xs text-green-700">
+                          Одоогийн видео
+                          {existingVideoDuration
+                            ? ` • ${formatVideoDurationLabel(existingVideoDuration)}`
+                            : ""}
+                        </p>
+                      </div>
+                    </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={uploading || deletingVideo}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Устгах
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Видеог устгах уу?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Энэ хичээлийн видео файлыг бүрмөсөн устгана. Энэ
+                            үйлдлийг буцаах боломжгүй.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Цуцлах</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleDeleteExistingVideo}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Устгах
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2">
-                <Label htmlFor="videoFile">Видео файл (MAX 500MB)</Label>
+                <Label htmlFor="videoFile">
+                  {existingVideoUrl
+                    ? "Видео солих (MAX 500MB)"
+                    : "Видео файл (MAX 500MB)"}
+                </Label>
                 <div className="flex gap-2">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => document.getElementById("videoFile")?.click()}
-                    disabled={uploading}
+                    disabled={uploading || deletingVideo}
                     className="w-full"
                   >
                     <Upload className="mr-2 h-4 w-4" />
-                    {videoFile ? "Өөр файл сонгох" : "Видео файл сонгох"}
+                    {videoFile
+                      ? "Өөр файл сонгох"
+                      : existingVideoUrl
+                        ? "Шинэ видеогоор солих"
+                        : "Видео файл сонгох"}
                   </Button>
                   <input
                     id="videoFile"
                     type="file"
                     accept="video/*"
                     onChange={handleVideoFileChange}
-                    disabled={uploading}
+                    disabled={uploading || deletingVideo}
                     className="hidden"
                   />
                 </div>
