@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -15,9 +16,6 @@ import {
   X,
   FileText,
   Lock,
-  Maximize2,
-  Minimize2,
-  Download,
 } from "lucide-react";
 
 // Hooks
@@ -35,13 +33,17 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Lesson } from "@/types/schema.types";
 import { pdfAPI } from "@/lib/pdf";
 import { useSubjectWithCourse } from "@/hooks/useSubjectWithCourse";
 import { enrollmentAPI } from "@/lib/enrollment";
+
+// react-pdf relies on browser-only APIs, so load it client-side only.
+const PdfViewer = dynamic(() => import("@/components/pdf/PdfViewer"), {
+  ssr: false,
+});
 
 interface PdfMaterial {
   id: number;
@@ -475,7 +477,10 @@ const CourseDetailPage = () => {
                               </div>
                             </div>
                             <button
-                              onClick={() => setPreviewPdf(material)}
+                              onClick={() => {
+                                setPreviewPdf(material);
+                                setPdfFullscreen(true);
+                              }}
                               className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-brand-600 hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors cursor-pointer"
                             >
                               <FileText className="h-4 w-4" />
@@ -646,43 +651,15 @@ const CourseDetailPage = () => {
               : "!max-w-5xl sm:!max-w-5xl w-[95vw] h-[90vh] p-0 flex flex-col gap-0"
           }
         >
-          <DialogHeader className="px-4 py-3 border-b flex-row items-center justify-between space-y-0">
-            <DialogTitle className="text-base font-semibold truncate pr-2">
-              {previewPdf?.title}
-            </DialogTitle>
-            <div className="flex items-center gap-1 mr-6">
-              {previewPdf && (
-                <a
-                  href={getFullPdfUrl(previewPdf.file_url)}
-                  download={previewPdf.title}
-                  className="inline-flex items-center gap-1.5 px-2.5 h-8 rounded-md hover:bg-gray-100 text-gray-700 text-sm font-medium"
-                  aria-label="Татаж авах"
-                  title="Татаж авах"
-                >
-                  <Download className="h-4 w-4" />
-                  <span className="hidden sm:inline">Татах</span>
-                </a>
-              )}
-              <button
-                type="button"
-                onClick={() => setPdfFullscreen((v) => !v)}
-                className="inline-flex items-center justify-center h-8 w-8 rounded-md hover:bg-gray-100 text-gray-600"
-                aria-label={pdfFullscreen ? "Багасгах" : "Бүтэн дэлгэц"}
-                title={pdfFullscreen ? "Багасгах" : "Бүтэн дэлгэц"}
-              >
-                {pdfFullscreen ? (
-                  <Minimize2 className="h-4 w-4" />
-                ) : (
-                  <Maximize2 className="h-4 w-4" />
-                )}
-              </button>
-            </div>
-          </DialogHeader>
+          <DialogTitle className="sr-only">{previewPdf?.title}</DialogTitle>
           {previewPdf && (
-            <iframe
-              src={`${getFullPdfUrl(previewPdf.file_url)}#view=FitH`}
+            <PdfViewer
+              url={getFullPdfUrl(previewPdf.file_url)}
               title={previewPdf.title}
-              className="flex-1 w-full border-0"
+              downloadUrl={getFullPdfUrl(previewPdf.file_url)}
+              downloadName={previewPdf.title}
+              isFullscreen={pdfFullscreen}
+              onToggleFullscreen={() => setPdfFullscreen((v) => !v)}
             />
           )}
         </DialogContent>
