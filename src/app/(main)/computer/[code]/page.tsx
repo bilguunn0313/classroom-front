@@ -179,16 +179,28 @@ function ComputerSpecContent() {
             {spec.odoo_asset_name || "Нэргүй хөрөнгө"}
           </h1>
 
-          {spec.odoo_asset_code && (
-            <div className="mt-3 inline-flex items-center gap-1.5 bg-white/15 backdrop-blur rounded-md px-3 py-1.5">
-              <span className="text-xs font-bold tracking-wider text-blue-100">
-                КОД
-              </span>
-              <span className="text-sm font-semibold">
-                {spec.odoo_asset_code}
-              </span>
-            </div>
-          )}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {spec.odoo_asset_barcode && (
+              <div className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur rounded-md px-3 py-1.5">
+                <span className="text-xs font-bold tracking-wider text-blue-100">
+                  БАРКОД
+                </span>
+                <span className="text-sm font-semibold">
+                  {spec.odoo_asset_barcode}
+                </span>
+              </div>
+            )}
+            {spec.odoo_asset_code && (
+              <div className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur rounded-md px-3 py-1.5">
+                <span className="text-xs font-bold tracking-wider text-blue-100">
+                  КОД
+                </span>
+                <span className="text-sm font-semibold">
+                  {spec.odoo_asset_code}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

@@ -143,6 +143,7 @@ export interface ComputerSpec {
   id: number;
   odoo_asset_id: number;
   odoo_asset_code: string | null;
+  odoo_asset_barcode: string | null;
   odoo_asset_name: string | null;
   descr: string | null;
   notes: string | null;
@@ -162,6 +163,7 @@ export interface ComputerInspection {
   inspected_by_name?: string;
   odoo_asset_name?: string;
   odoo_asset_code?: string;
+  odoo_asset_barcode?: string;
   created_at: string;
   updated_at: string;
 }
@@ -170,10 +172,21 @@ export interface ComputerSpecWithInspection extends ComputerSpec {
   latest_inspection?: ComputerInspection | null;
 }
 
+export interface ComputerSpecHistory {
+  id: number;
+  computer_spec_id: number;
+  descr: string | null;
+  notes: string | null;
+  created_by: number | null;
+  created_by_name?: string;
+  created_at: string;
+}
+
 export interface OdooAsset {
   id: number;
   name: string;
   code: string | false;
+  barcode: string | false;
   state: string;
   category_id: [number, string];
   value: number;

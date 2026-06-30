@@ -26,6 +26,7 @@ import {
   ChevronRight,
   ClipboardCheck,
   ScanLine,
+  History,
 } from "lucide-react";
 import {
   ComputerSpec,
@@ -44,6 +45,7 @@ import { QRCodeDialog } from "@/components/admin/QRCodeDialog";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 import { InspectionFormDialog } from "@/components/admin/InspectionFormDialog";
 import { InspectionHistoryDialog } from "@/components/admin/InspectionHistoryDialog";
+import { SpecHistoryDialog } from "@/components/admin/SpecHistoryDialog";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import {
   Tooltip,
@@ -74,6 +76,7 @@ export default function ComputerAssetsPage() {
   // Dialog state
   const [formOpen, setFormOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
+  const [specHistoryOpen, setSpecHistoryOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedSpec, setSelectedSpec] = useState<ComputerSpec | null>(null);
   const [selectedAsset, setSelectedAsset] = useState<OdooAsset | null>(null);
@@ -112,7 +115,10 @@ export default function ComputerAssetsPage() {
         a.name?.toLowerCase().includes(q) ||
         (a.code &&
           typeof a.code === "string" &&
-          a.code.toLowerCase().includes(q)),
+          a.code.toLowerCase().includes(q)) ||
+        (a.barcode &&
+          typeof a.barcode === "string" &&
+          a.barcode.toLowerCase().includes(q)),
     );
   }, [assets, odooSearch]);
 
@@ -126,6 +132,23 @@ export default function ComputerAssetsPage() {
     setFormOpen(true);
   };
 
+  // Row click in the Odoo assets tab: if the asset already has a spec, jump to
+  // the specs list filtered to it; otherwise open the add-spec dialog.
+  const handleAssetRowClick = (asset: OdooAsset, hasSpec: boolean) => {
+    if (!hasSpec) {
+      handleAddSpec(asset);
+      return;
+    }
+    const term =
+      (typeof asset.barcode === "string" && asset.barcode) ||
+      (typeof asset.code === "string" && asset.code) ||
+      asset.name ||
+      "";
+    setSpecsSearch(term);
+    setSpecsPage(1);
+    setActiveTab("specs");
+  };
+
   const handleEditSpec = (spec: ComputerSpec) => {
     setSelectedSpec(spec);
     setSelectedAsset(null);
@@ -137,6 +160,11 @@ export default function ComputerAssetsPage() {
     setQrOpen(true);
   };
 
+  const handleViewSpecHistory = (spec: ComputerSpec) => {
+    setSelectedSpec(spec);
+    setSpecHistoryOpen(true);
+  };
+
   const handleDeletePrompt = (spec: ComputerSpec) => {
     setSelectedSpec(spec);
     setDeleteOpen(true);
@@ -144,10 +172,12 @@ export default function ComputerAssetsPage() {
 
   const handleFormSubmit = async (data: Record<string, string | undefined>) => {
     try {
+      let res;
       if (selectedSpec) {
         // Edit
-        await computerSpecsAPI.update(selectedSpec.id, {
+        res = await computerSpecsAPI.update(selectedSpec.id, {
           odooAssetCode: selectedSpec.odoo_asset_code,
+          odooAssetBarcode: selectedSpec.odoo_asset_barcode,
           odooAssetName: selectedSpec.odoo_asset_name,
           descr: data.descr || null,
           notes: data.notes || null,
@@ -155,15 +185,23 @@ export default function ComputerAssetsPage() {
         toast.success("Мэдээлэл амжилттай шинэчлэгдлээ");
       } else if (selectedAsset) {
         // Create
-        await computerSpecsAPI.create({
+        res = await computerSpecsAPI.create({
           odooAssetId: selectedAsset.id,
           odooAssetCode:
             typeof selectedAsset.code === "string" ? selectedAsset.code : null,
+          odooAssetBarcode:
+            typeof selectedAsset.barcode === "string"
+              ? selectedAsset.barcode
+              : null,
           odooAssetName: selectedAsset.name,
           descr: data.descr || null,
           notes: data.notes || null,
         });
         toast.success("Мэдээлэл амжилттай нэмэгдлээ");
+      }
+      // Surface ERP sync outcome — data is saved locally regardless
+      if (res && res.erp_synced === false) {
+        toast.warning("ERP рүү бичих үед алдаа гарлаа. Дараа дахин оролдоно уу.");
       }
       refetchSpecs();
       refetchIds();
@@ -298,12 +336,13 @@ export default function ComputerAssetsPage() {
                   Ачааллаж байна...
                 </div>
               ) : (
-                <div className="rounded-md border">
+                <div className="rounded-md border overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>Нэр</TableHead>
                         <TableHead>Код</TableHead>
+                        <TableHead>Баркод</TableHead>
                         <TableHead>Төлөв</TableHead>
                         <TableHead>Мэдээлэл</TableHead>
                         <TableHead className="text-right">Үйлдэл</TableHead>
@@ -313,7 +352,7 @@ export default function ComputerAssetsPage() {
                       {filteredAssets.length === 0 ? (
                         <TableRow>
                           <TableCell
-                            colSpan={5}
+                            colSpan={6}
                             className="text-center py-8 text-muted-foreground"
                           >
                             Хөрөнгө олдсонгүй
@@ -323,13 +362,22 @@ export default function ComputerAssetsPage() {
                         filteredAssets.map((asset) => {
                           const hasSpec = specifiedIds.includes(asset.id);
                           return (
-                            <TableRow key={asset.id}>
+                            <TableRow
+                              key={asset.id}
+                              onClick={() => handleAssetRowClick(asset, hasSpec)}
+                              className="cursor-pointer hover:bg-muted/50"
+                            >
                               <TableCell className="font-medium">
                                 {asset.name}
                               </TableCell>
                               <TableCell className="text-muted-foreground">
                                 {typeof asset.code === "string"
                                   ? asset.code
+                                  : "—"}
+                              </TableCell>
+                              <TableCell className="text-muted-foreground">
+                                {typeof asset.barcode === "string"
+                                  ? asset.barcode
                                   : "—"}
                               </TableCell>
                               <TableCell>
@@ -363,10 +411,13 @@ export default function ComputerAssetsPage() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => handleAddSpec(asset)}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleAddSpec(asset);
+                                    }}
                                   >
                                     <Plus className="mr-1 h-4 w-4" />
-                                    Нэмэх
+                                    ERP руу нэмэх
                                   </Button>
                                 )}
                               </TableCell>
@@ -400,14 +451,16 @@ export default function ComputerAssetsPage() {
                   Ачааллаж байна...
                 </div>
               ) : (
-                <div className="rounded-md border">
+                <div className="rounded-md border overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>Хөрөнгө</TableHead>
                         <TableHead>Код</TableHead>
+                        <TableHead>Баркод</TableHead>
                         <TableHead>Тодорхойлолт</TableHead>
                         <TableHead>Тэмдэглэл</TableHead>
+                        <TableHead>Огноо</TableHead>
                         <TableHead className="text-right">Үйлдэл</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -415,7 +468,7 @@ export default function ComputerAssetsPage() {
                       {specs.length === 0 ? (
                         <TableRow>
                           <TableCell
-                            colSpan={5}
+                            colSpan={7}
                             className="text-center py-8 text-muted-foreground"
                           >
                             Мэдээлэл олдсонгүй
@@ -430,15 +483,41 @@ export default function ComputerAssetsPage() {
                             <TableCell className="text-muted-foreground">
                               {spec.odoo_asset_code || "—"}
                             </TableCell>
-                            <TableCell className="max-w-[300px] truncate">
+                            <TableCell className="text-muted-foreground">
+                              {spec.odoo_asset_barcode || "—"}
+                            </TableCell>
+                            <TableCell className="max-w-[160px] truncate">
                               {spec.descr || "—"}
                             </TableCell>
                             <TableCell className="max-w-[200px] truncate">
                               {spec.notes || "—"}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="whitespace-nowrap text-muted-foreground">
+                              {spec.updated_at
+                                ? new Date(spec.updated_at).toLocaleDateString(
+                                    "mn-MN",
+                                  )
+                                : "—"}
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap">
                               <TooltipProvider delayDuration={300}>
                                 <div className="flex items-center justify-end gap-1">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleViewSpecHistory(spec)
+                                        }
+                                      >
+                                        <History className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      Мэдээллийн түүх
+                                    </TooltipContent>
+                                  </Tooltip>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Button
@@ -451,6 +530,7 @@ export default function ComputerAssetsPage() {
                                     </TooltipTrigger>
                                     <TooltipContent>Үзлэгийн түүх</TooltipContent>
                                   </Tooltip>
+                                  {/* QR код түр нуусан
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Button
@@ -463,6 +543,7 @@ export default function ComputerAssetsPage() {
                                     </TooltipTrigger>
                                     <TooltipContent>QR код</TooltipContent>
                                   </Tooltip>
+                                  */}
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Button
@@ -550,12 +631,13 @@ export default function ComputerAssetsPage() {
                   Ачааллаж байна...
                 </div>
               ) : (
-                <div className="rounded-md border">
+                <div className="rounded-md border overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>Хөрөнгө</TableHead>
                         <TableHead>Код</TableHead>
+                        <TableHead>Баркод</TableHead>
                         <TableHead>Огноо</TableHead>
                         <TableHead>Төлөв</TableHead>
                         <TableHead>Шалгасан</TableHead>
@@ -567,7 +649,7 @@ export default function ComputerAssetsPage() {
                       {inspections.length === 0 ? (
                         <TableRow>
                           <TableCell
-                            colSpan={7}
+                            colSpan={8}
                             className="text-center py-8 text-muted-foreground"
                           >
                             Үзлэгийн мэдээлэл олдсонгүй
@@ -581,6 +663,9 @@ export default function ComputerAssetsPage() {
                             </TableCell>
                             <TableCell className="text-muted-foreground">
                               {insp.odoo_asset_code || "—"}
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">
+                              {insp.odoo_asset_barcode || "—"}
                             </TableCell>
                             <TableCell>
                               {new Date(
@@ -604,7 +689,7 @@ export default function ComputerAssetsPage() {
                             <TableCell className="max-w-[200px] truncate">
                               {insp.notes || "—"}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="whitespace-nowrap">
                               <TooltipProvider delayDuration={300}>
                                 <div className="flex items-center justify-end gap-1">
                                   <Tooltip>
@@ -692,6 +777,15 @@ export default function ComputerAssetsPage() {
             isOpen={qrOpen}
             onClose={() => {
               setQrOpen(false);
+              setSelectedSpec(null);
+            }}
+            spec={selectedSpec}
+          />
+
+          <SpecHistoryDialog
+            isOpen={specHistoryOpen}
+            onClose={() => {
+              setSpecHistoryOpen(false);
               setSelectedSpec(null);
             }}
             spec={selectedSpec}

@@ -3,6 +3,7 @@ import api from "./axios";
 export interface CreateComputerSpecPayload {
   odooAssetId: number;
   odooAssetCode?: string | null;
+  odooAssetBarcode?: string | null;
   odooAssetName?: string | null;
   descr?: string | null;
   notes?: string | null;
@@ -10,6 +11,7 @@ export interface CreateComputerSpecPayload {
 
 export interface UpdateComputerSpecPayload {
   odooAssetCode?: string | null;
+  odooAssetBarcode?: string | null;
   odooAssetName?: string | null;
   descr?: string | null;
   notes?: string | null;
@@ -50,6 +52,13 @@ export const computerSpecsAPI = {
 
   delete: async (id: number) => {
     const res = await api.delete(`/assets/specs/${id}`);
+    return res.data;
+  },
+
+  getSpecHistory: async (specId: number, page = 1, limit = 20) => {
+    const res = await api.get(`/assets/specs/${specId}/history`, {
+      params: { page, limit },
+    });
     return res.data;
   },
 

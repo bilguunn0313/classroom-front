@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   ComputerSpec,
   ComputerInspection,
+  ComputerSpecHistory,
   OdooAsset,
 } from "@/types/schema.types";
 import { computerSpecsAPI } from "@/lib/computer-specs";
@@ -124,6 +125,37 @@ export function useInspectionHistory(
 
   return {
     inspections: query.data?.data ?? [],
+    total: query.data?.total ?? 0,
+    loading: query.isPending,
+    error: query.error?.message ?? null,
+    refetch: async () => {
+      await query.refetch();
+    },
+  };
+}
+
+export function useSpecHistory(
+  specId: number | null,
+  page: number = 1,
+  limit: number = 20
+) {
+  const query = useQuery({
+    queryKey: ["spec-history", specId, page, limit],
+    queryFn: async () => {
+      const response = await computerSpecsAPI.getSpecHistory(
+        specId!,
+        page,
+        limit
+      );
+      if (!response.success)
+        throw new Error("Мэдээлэл ачаалахад алдаа гарлаа");
+      return { data: response.data as ComputerSpecHistory[], total: response.total as number };
+    },
+    enabled: !!specId,
+  });
+
+  return {
+    history: query.data?.data ?? [],
     total: query.data?.total ?? 0,
     loading: query.isPending,
     error: query.error?.message ?? null,
